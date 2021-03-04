@@ -8,6 +8,11 @@ class Player {
 		this.init()
 	}
 
+	getLeft = () => parseFloat(this.div.style.left)
+	getRight = () => parseFloat(this.div.style.left) + this.size
+	getTop = () => parseFloat(this.div.style.top)
+	getBottom = () => parseFloat(this.div.style.top) + this.size
+
 	setLeft = val => {
 		this.div.style.left = `${parseFloat(val)}px`
 	}
@@ -52,13 +57,14 @@ class Player {
 
 	animate = () => {
 		const callback = () => {
-			if (this.keysPressed['KeyD'])
-				this.moveRight()
-			if (this.keysPressed['KeyA'])
+			// console.log(this.div)
+			if (this.keysPressed['KeyA'] && this.getLeft() >= 0)
 				this.moveLeft()
-			if (this.keysPressed['KeyW'])
+			if (this.keysPressed['KeyD'] && this.getRight() <= window.innerWidth)
+				this.moveRight()
+			if (this.keysPressed['KeyW'] && this.getTop() >= 0)
 				this.moveUp()
-			if (this.keysPressed['KeyS'])
+			if (this.keysPressed['KeyS'] && this.getBottom() <= window.innerHeight)
 				this.moveDown()
 			requestAnimationFrame(callback)
 		}
