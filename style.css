@@ -24,7 +24,85 @@ body {
     border: 1px solid black;
 }
 
-.player {
+#bomberman {
     position: absolute;
-    background: tomato;
+    object-fit: contain;
+    overflow: hidden;
+}
+
+#bomberman-sprite {
+    /*transform: translateY(-50%);*/
+    /*animation: animateBomberman 1s steps(7) infinite;*/
+}
+
+.pixel-art {
+    image-rendering: pixelated;
+}
+
+.bomberman-look-left {
+    transform: translate3d(0, -75%, 0);
+}
+
+.bomberman-walk-left {
+    animation: bomberman-walk-left 1s steps(7) infinite;
+}
+
+.bomberman-look-right {
+    transform: translate3d(0, -25%, 0);
+}
+
+.bomberman-walk-right {
+    animation: bomberman-walk-right 1s steps(7) infinite;
+}
+
+.bomberman-look-up {
+    transform: translate3d(0, 0, 0);
+}
+
+.bomberman-walk-up {
+    animation: bomberman-walk-up 1s steps(7) infinite;
+}
+
+.bomberman-look-down {
+    transform: translate3d(0, -50%, 0);
+}
+
+.bomberman-walk-down {
+    animation: bomberman-walk-down 1s steps(7) infinite;
+}
+
+@keyframes bomberman-walk-left {
+    from {
+        transform: translate3d(0, -75%, 0);
+    }
+    to {
+        transform: translate3d(-100%, -75%, 0);
+    }
+}
+
+@keyframes bomberman-walk-right {
+    from {
+        transform: translate3d(0, -25%, 0);
+    }
+    to {
+        transform: translate3d(-100%, -25%, 0);
+    }
+}
+
+@keyframes bomberman-walk-up {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@keyframes bomberman-walk-down {
+    from {
+        transform: translate3d(0, -50%, 0);
+    }
+    to {
+        transform: translate3d(-100%, -50%, 0);
+    }
 }
