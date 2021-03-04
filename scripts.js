@@ -3,6 +3,7 @@ class Player {
 		this.left = 0
 		this.top = 0
 		this.step = 5
+		this.keysPressed = {}
 		this.init()
 	}
 
@@ -14,42 +15,60 @@ class Player {
 		this.div.style.top = `${this.top}px`
 		this.addEventListeners()
 		this.root.append(this.div)
+		this.animate()
 	}
 
 	addEventListeners = () => {
 		document.addEventListener('keydown', e => {
-			if (e.code === 'KeyD') {
-				this.moveRight()
-			} else if (e.code === 'KeyA') {
-				this.moveLeft()
-			} else if (e.code === 'KeyW') {
-				this.moveUp()
-			} else if (e.code === 'KeyS') {
-				this.moveDown()
-			}
+			this.keysPressed[e.code] = true
+		})
+		document.addEventListener('keyup', e => {
+			delete this.keysPressed[e.code]
 		})
 	}
 
-	changeLeft = val => {
-		const left = this.div.style.left
-		this.div.style.left = `${parseInt(left.substr(0, left.length - 2)) + val}px`
+	setLeft = val => {
+		this.div.style.left = `${parseFloat(val)}px`
 	}
-	changeTop = val => {
-		const top = this.div.style.top
-		this.div.style.top = `${parseInt(top.substr(0, top.length - 2)) + val}px`
+	setTop = val => {
+		this.div.style.top = `${parseFloat(val)}px`
+	}
+
+	updateLeft = val => {
+		const left = parseFloat(this.div.style.left) + val
+		this.setLeft(left)
+	}
+	updateTop = val => {
+		const top = parseFloat(this.div.style.top) + val
+		this.setTop(top)
+	}
+
+	animate = () => {
+		const callback = () => {
+			if (this.keysPressed['KeyD'])
+				this.moveRight()
+			if (this.keysPressed['KeyA'])
+				this.moveLeft()
+			if (this.keysPressed['KeyW'])
+				this.moveUp()
+			if (this.keysPressed['KeyS'])
+				this.moveDown()
+			requestAnimationFrame(callback)
+		}
+		requestAnimationFrame(callback)
 	}
 
 	moveLeft = () => {
-		this.changeLeft(-this.step)
+		this.updateLeft(-this.step)
 	}
 	moveRight = () => {
-		this.changeLeft(this.step)
+		this.updateLeft(this.step)
 	}
 	moveUp = () => {
-		this.changeTop(-this.step)
+		this.updateTop(-this.step)
 	}
 	moveDown = () => {
-		this.changeTop(this.step)
+		this.updateTop(this.step)
 	}
 }
 
