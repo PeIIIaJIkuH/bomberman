@@ -1,9 +1,10 @@
 class Bomberman {
-	constructor(left = 0, top = 0, size = 32, step = 2) {
+	constructor(left = 0, top = 0, size = 32, step = 2, pixelSize = 2) {
 		this.left = left
 		this.top = top
 		this.size = size
 		this.step = step
+		this.pixelSize = pixelSize
 		this.keysPressed = {}
 		this.init()
 	}
@@ -32,14 +33,36 @@ class Bomberman {
 		this.animate()
 	}
 
+	createAnimationStyle = () => {
+		const style = document.createElement('style')
+		style.innerHTML = `
+			.bomberman-walk-left {
+    			animation: bomberman-walk-left ${1 / this.step}s steps(7) infinite;
+			}
+			.bomberman-walk-right {
+    			animation: bomberman-walk-right ${1 / this.step}s steps(7) infinite;
+			}
+			.bomberman-walk-up {
+    			animation: bomberman-walk-up ${1 / this.step}s steps(7) infinite;
+			}
+			.bomberman-walk-down {
+    			animation: bomberman-walk-down ${1 / this.step}s steps(7) infinite;
+			}`
+		document.querySelector('head').append(style)
+	}
+
 	createHTML = () => {
+		this.createAnimationStyle()
 		this.root = document.querySelector('#root')
 		this.div = document.querySelector('#bomberman')
 		this.img = document.querySelector('#bomberman-sprite')
 		this.div.style.left = `${this.left}px`
 		this.div.style.top = `${this.top}px`
-		this.div.style.width = `${this.size}px`
-		this.div.style.height = `${this.size}px`
+		this.div.style.width = `${this.size * this.pixelSize}px`
+		this.div.style.height = `${this.size * this.pixelSize}px`
+		this.img.style.width = `${32 * 7 * this.pixelSize}px`
+		this.img.style.height = `${32 * 4 * this.pixelSize}px`
+		this.img.classList.add('bomberman-look-down')
 	}
 
 	addEventListeners = () => {
@@ -52,11 +75,11 @@ class Bomberman {
 	}
 
 	removeClasses = () => {
-		this.img.className = ''
+		this.img.className = 'pixel-art'
 	}
 
 	addLookDirection = direction => {
-		this.img.className = `bomberman-look-${direction}`
+		this.img.className = `pixel-art bomberman-look-${direction}`
 	}
 
 	moveLeft = (root, div) => {
@@ -105,4 +128,4 @@ class Bomberman {
 	}
 }
 
-const player = new Bomberman()
+const bomberman = new Bomberman()
