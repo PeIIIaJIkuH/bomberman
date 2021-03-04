@@ -1,5 +1,5 @@
 class Player {
-	constructor(left = 0, top = 0, size = 30, step = 2) {
+	constructor(left = 0, top = 0, size = 30, step = 5) {
 		this.left = left
 		this.top = top
 		this.size = size
@@ -8,24 +8,26 @@ class Player {
 		this.init()
 	}
 
-	getLeft = () => parseFloat(this.div.style.left)
-	getRight = () => parseFloat(this.div.style.left) + this.size
-	getTop = () => parseFloat(this.div.style.top)
-	getBottom = () => parseFloat(this.div.style.top) + this.size
+	getLeft = () => this.left
+	getRight = () => this.left + this.size
+	getTop = () => this.top
+	getBottom = () => this.top + this.size
 
 	setLeft = val => {
-		this.div.style.left = `${parseFloat(val)}px`
+		this.left = parseFloat(val)
+		this.div.style.left = `${this.left}px`
 	}
 	setTop = val => {
-		this.div.style.top = `${parseFloat(val)}px`
+		this.top = parseFloat(val)
+		this.div.style.top = `${this.top}px`
 	}
 
 	updateLeft = val => {
-		const left = parseFloat(this.div.style.left) + val
+		const left = this.left + val
 		this.setLeft(left)
 	}
 	updateTop = val => {
-		const top = parseFloat(this.div.style.top) + val
+		const top = this.top + val
 		this.setTop(top)
 	}
 
@@ -36,7 +38,7 @@ class Player {
 	}
 
 	createHTML = () => {
-		this.root = document.querySelector('.root')
+		this.root = document.querySelector('#root')
 		this.div = document.createElement('div')
 		this.div.classList.add('player')
 		this.div.style.left = `${this.left}px`
@@ -57,14 +59,15 @@ class Player {
 
 	animate = () => {
 		const callback = () => {
-			// console.log(this.div)
-			if (this.keysPressed['KeyA'] && this.getLeft() >= 0)
+			const root = this.root.getBoundingClientRect()
+			const div = this.div.getBoundingClientRect()
+			if (this.keysPressed['KeyA'] && div.left > root.left + this.step)
 				this.moveLeft()
-			if (this.keysPressed['KeyD'] && this.getRight() <= window.innerWidth)
+			if (this.keysPressed['KeyD'] && div.right < root.right - this.step)
 				this.moveRight()
-			if (this.keysPressed['KeyW'] && this.getTop() >= 0)
+			if (this.keysPressed['KeyW'] && div.top > root.top + this.step)
 				this.moveUp()
-			if (this.keysPressed['KeyS'] && this.getBottom() <= window.innerHeight)
+			if (this.keysPressed['KeyS'] && div.bottom < root.bottom - this.step)
 				this.moveDown()
 			requestAnimationFrame(callback)
 		}
