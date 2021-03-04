@@ -1,5 +1,5 @@
 class Bomberman {
-	constructor(left = 0, top = 0, size = 32, step = 2, pixelSize = 2) {
+	constructor({left = 0, top = 0, size = 32, step = 1, pixelSize = 1} = {}) {
 		this.left = left
 		this.top = top
 		this.size = size
@@ -83,27 +83,39 @@ class Bomberman {
 	}
 
 	moveLeft = (root, div) => {
-		this.updateLeft(-Math.min(Math.abs(root - div + 1), this.step))
-		this.removeClasses()
-		this.img.classList.add('bomberman-walk-left')
+		const min = Math.min(Math.abs(root - div + 1), this.step)
+		if (min) {
+			this.updateLeft(-min)
+			this.removeClasses()
+			this.img.classList.add('bomberman-walk-left')
+		}
 		return 'left'
 	}
 	moveRight = (root, div) => {
-		this.updateLeft(Math.min(Math.abs(root - div - 1), this.step))
-		this.removeClasses()
-		this.img.classList.add('bomberman-walk-right')
+		const min = Math.min(Math.abs(root - div - 1), this.step)
+		if (min) {
+			this.updateLeft(min)
+			this.removeClasses()
+			this.img.classList.add('bomberman-walk-right')
+		}
 		return 'right'
 	}
 	moveUp = (root, div) => {
-		this.updateTop(-Math.min(Math.abs(root - div + 1), this.step))
-		this.removeClasses()
-		this.img.classList.add('bomberman-walk-up')
+		const min = Math.min(Math.abs(root - div + 1), this.step)
+		if(min) {
+			this.updateTop(-min)
+			this.removeClasses()
+			this.img.classList.add('bomberman-walk-up')
+		}
 		return 'up'
 	}
 	moveDown = (root, div) => {
-		this.updateTop(Math.min(Math.abs(root - div - 1), this.step))
-		this.removeClasses()
-		this.img.classList.add('bomberman-walk-down')
+		const min = Math.min(Math.abs(root - div - 1), this.step)
+		if (min) {
+			this.updateTop(min)
+			this.removeClasses()
+			this.img.classList.add('bomberman-walk-down')
+		}
 		return 'down'
 	}
 
@@ -128,4 +140,7 @@ class Bomberman {
 	}
 }
 
-const bomberman = new Bomberman()
+new Bomberman({
+	pixelSize: 3,
+	step: 2
+})
