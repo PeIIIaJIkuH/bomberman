@@ -1,30 +1,11 @@
 class Player {
-	constructor() {
-		this.left = 0
-		this.top = 0
-		this.step = 5
+	constructor(left = 0, top = 0, size = 30, step = 2) {
+		this.left = left
+		this.top = top
+		this.size = size
+		this.step = step
 		this.keysPressed = {}
 		this.init()
-	}
-
-	init = () => {
-		this.root = document.getElementsByClassName('root')[0]
-		this.div = document.createElement('div')
-		this.div.classList.add('player')
-		this.div.style.left = `${this.left}px`
-		this.div.style.top = `${this.top}px`
-		this.addEventListeners()
-		this.root.append(this.div)
-		this.animate()
-	}
-
-	addEventListeners = () => {
-		document.addEventListener('keydown', e => {
-			this.keysPressed[e.code] = true
-		})
-		document.addEventListener('keyup', e => {
-			delete this.keysPressed[e.code]
-		})
 	}
 
 	setLeft = val => {
@@ -41,6 +22,32 @@ class Player {
 	updateTop = val => {
 		const top = parseFloat(this.div.style.top) + val
 		this.setTop(top)
+	}
+
+	init = () => {
+		this.createHTML()
+		this.addEventListeners()
+		this.animate()
+	}
+
+	createHTML = () => {
+		this.root = document.querySelector('.root')
+		this.div = document.createElement('div')
+		this.div.classList.add('player')
+		this.div.style.left = `${this.left}px`
+		this.div.style.top = `${this.top}px`
+		this.div.style.width = `${this.size}px`
+		this.div.style.height = `${this.size}px`
+		this.root.append(this.div)
+	}
+
+	addEventListeners = () => {
+		document.addEventListener('keydown', e => {
+			this.keysPressed[e.code] = true
+		})
+		document.addEventListener('keyup', e => {
+			delete this.keysPressed[e.code]
+		})
 	}
 
 	animate = () => {
