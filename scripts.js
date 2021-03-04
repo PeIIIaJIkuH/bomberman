@@ -60,8 +60,8 @@ class Bomberman {
 		this.div.style.top = `${this.top}px`
 		this.div.style.width = `${this.size * this.pixelSize}px`
 		this.div.style.height = `${this.size * this.pixelSize}px`
-		this.img.style.width = `${32 * 7 * this.pixelSize}px`
-		this.img.style.height = `${32 * 4 * this.pixelSize}px`
+		this.img.style.width = `${this.size * 7 * this.pixelSize}px`
+		this.img.style.height = `${this.size * 4 * this.pixelSize}px`
 		this.img.classList.add('bomberman-look-down')
 	}
 
@@ -85,55 +85,59 @@ class Bomberman {
 	moveLeft = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
 		if (min) {
-			this.updateLeft(-min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-left')
+			this.updateLeft(-min)
 		}
-		return 'left'
+		return ['left', true]
 	}
 	moveRight = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
 		if (min) {
-			this.updateLeft(min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-right')
+			this.updateLeft(min)
 		}
-		return 'right'
+		return ['right', true]
 	}
 	moveUp = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
-		if(min) {
-			this.updateTop(-min)
+		if (min) {
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-up')
+			this.updateTop(-min)
 		}
-		return 'up'
+		return ['up', true]
 	}
 	moveDown = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
 		if (min) {
-			this.updateTop(min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-down')
+			this.updateTop(min)
 		}
-		return 'down'
+		return ['down', true]
 	}
 
 	animate = () => {
-		let direction
+		let direction = 'down'
 		const callback = () => {
+			let isMoving = false
 			const root = this.root.getBoundingClientRect()
 			const div = this.div.getBoundingClientRect()
-			if (direction)
-				this.addLookDirection(direction)
 			if (this.keysPressed['KeyA'] && div.left > root.left)
-				direction = this.moveLeft(root.left, div.left)
+				[direction, isMoving] = this.moveLeft(root.left, div.left)
 			if (this.keysPressed['KeyD'] && div.right < root.right)
-				direction = this.moveRight(root.right, div.right)
+				[direction, isMoving] = this.moveRight(root.right, div.right)
 			if (this.keysPressed['KeyW'] && div.top > root.top)
-				direction = this.moveUp(root.top, div.top)
+				[direction, isMoving] = this.moveUp(root.top, div.top)
 			if (this.keysPressed['KeyS'] && div.bottom < root.bottom)
-				direction = this.moveDown(root.bottom, div.bottom)
+				[direction, isMoving] = this.moveDown(root.bottom, div.bottom)
+			if (!isMoving) {
+				setTimeout(() => {
+					this.addLookDirection(direction)
+				}, 50)
+			}
 			requestAnimationFrame(callback)
 		}
 		requestAnimationFrame(callback)
@@ -141,6 +145,7 @@ class Bomberman {
 }
 
 new Bomberman({
-	pixelSize: 3,
+	size: 50,
+	pixelSize: 1,
 	step: 2
 })
