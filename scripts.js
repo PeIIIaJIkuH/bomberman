@@ -84,39 +84,47 @@ class Bomberman {
 
 	moveLeft = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
+		let isMoving = false
 		if (min) {
+			isMoving = true
+			this.updateLeft(-min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-left')
-			this.updateLeft(-min)
 		}
-		return ['left', true]
+		return ['left', isMoving]
 	}
 	moveRight = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
+		let isMoving = false
 		if (min) {
+			isMoving = true
+			this.updateLeft(min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-right')
-			this.updateLeft(min)
 		}
-		return ['right', true]
+		return ['right', isMoving]
 	}
 	moveUp = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
+		let isMoving = false
 		if (min) {
+			isMoving = true
+			this.updateTop(-min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-up')
-			this.updateTop(-min)
 		}
-		return ['up', true]
+		return ['up', isMoving]
 	}
 	moveDown = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
+		let isMoving = false
 		if (min) {
+			isMoving = true
+			this.updateTop(min)
 			this.removeClasses()
 			this.img.classList.add('bomberman-walk-down')
-			this.updateTop(min)
 		}
-		return ['down', true]
+		return ['down', isMoving]
 	}
 
 	animate = () => {
@@ -133,11 +141,10 @@ class Bomberman {
 				[direction, isMoving] = this.moveUp(root.top, div.top)
 			if (this.keysPressed['KeyS'] && div.bottom < root.bottom)
 				[direction, isMoving] = this.moveDown(root.bottom, div.bottom)
-			if (!isMoving) {
+			if (!isMoving)
 				setTimeout(() => {
 					this.addLookDirection(direction)
 				}, 50)
-			}
 			requestAnimationFrame(callback)
 		}
 		requestAnimationFrame(callback)
@@ -146,6 +153,6 @@ class Bomberman {
 
 new Bomberman({
 	size: 50,
-	pixelSize: 1,
-	step: 2
+	pixelSize: 2,
+	step: 3
 })
