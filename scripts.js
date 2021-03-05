@@ -7,6 +7,7 @@ class Bomberman {
 		this.direction = direction
 		this.pixelSize = pixelSize
 		this.keysPressed = {}
+		this.imgDefaultClasses = 'pixel-art'
 		this.init()
 	}
 
@@ -75,17 +76,17 @@ class Bomberman {
 	}
 
 	removeClasses = () => {
-		this.img.className = 'pixel-art'
+		this.img.className = `${this.imgDefaultClasses}`
 	}
 
 	addLookDirection = direction => {
-		this.img.className = `pixel-art bomberman-look-${direction}`
+		this.img.className = `${this.imgDefaultClasses} bomberman-look-${direction}`
 	}
 
 	moveLeft = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
 		if (min) {
-			this.img.className = 'pixel-art bomberman-walk-left'
+			this.img.className = `${this.imgDefaultClasses} bomberman-walk-left`
 			this.updateLeft(-min)
 			this.direction = 'left'
 			return true
@@ -95,7 +96,7 @@ class Bomberman {
 	moveRight = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
 		if (min) {
-			this.img.className = 'pixel-art bomberman-walk-right'
+			this.img.className = `${this.imgDefaultClasses} bomberman-walk-right`
 			this.updateLeft(min)
 			this.direction = 'right'
 			return true
@@ -105,7 +106,7 @@ class Bomberman {
 	moveUp = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
 		if (min) {
-			this.img.className = 'pixel-art bomberman-walk-up'
+			this.img.className = `${this.imgDefaultClasses} bomberman-walk-up`
 			this.updateTop(-min)
 			this.direction = 'up'
 			return true
@@ -115,7 +116,7 @@ class Bomberman {
 	moveDown = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
 		if (min) {
-			this.img.className = 'pixel-art bomberman-walk-down'
+			this.img.className = `${this.imgDefaultClasses} bomberman-walk-down`
 			this.updateTop(min)
 			this.direction = 'down'
 			return true
@@ -137,9 +138,8 @@ class Bomberman {
 			if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW'] && div.bottom < root.bottom)
 				isMovingDown = this.moveDown(root.bottom, div.bottom)
 			let isMoving = isMovingLeft || isMovingRight || isMovingUp || isMovingDown
-			console.log(isMovingLeft, isMovingRight, isMovingUp, isMovingDown, this.direction)
 			if (!isMoving)
-				setTimeout(() => this.addLookDirection(this.direction), 50)
+				setTimeout(() => this.addLookDirection(this.direction), 10)
 			requestAnimationFrame(callback)
 		}
 		requestAnimationFrame(callback)
