@@ -1,9 +1,10 @@
 class Bomberman {
-	constructor({left = 0, top = 0, size = 32, step = 1, pixelSize = 1} = {}) {
+	constructor({left = 0, top = 0, size = 32, step = 1, pixelSize = 1, direction = 'down'} = {}) {
 		this.left = left
 		this.top = top
 		this.size = size
 		this.step = step
+		this.direction = direction
 		this.pixelSize = pixelSize
 		this.keysPressed = {}
 		this.init()
@@ -62,7 +63,6 @@ class Bomberman {
 		this.div.style.height = `${this.size * this.pixelSize}px`
 		this.img.style.width = `${this.size * 7 * this.pixelSize}px`
 		this.img.style.height = `${this.size * 4 * this.pixelSize}px`
-		this.img.classList.add('bomberman-look-down')
 	}
 
 	addEventListeners = () => {
@@ -84,67 +84,62 @@ class Bomberman {
 
 	moveLeft = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
-		let isMoving = false
 		if (min) {
-			isMoving = true
+			this.img.className = 'pixel-art bomberman-walk-left'
 			this.updateLeft(-min)
-			this.removeClasses()
-			this.img.classList.add('bomberman-walk-left')
+			this.direction = 'left'
+			return true
 		}
-		return ['left', isMoving]
+		return false
 	}
 	moveRight = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
-		let isMoving = false
 		if (min) {
-			isMoving = true
+			this.img.className = 'pixel-art bomberman-walk-right'
 			this.updateLeft(min)
-			this.removeClasses()
-			this.img.classList.add('bomberman-walk-right')
+			this.direction = 'right'
+			return true
 		}
-		return ['right', isMoving]
+		return false
 	}
 	moveUp = (root, div) => {
 		const min = Math.min(Math.abs(root - div + 1), this.step)
-		let isMoving = false
 		if (min) {
-			isMoving = true
+			this.img.className = 'pixel-art bomberman-walk-up'
 			this.updateTop(-min)
-			this.removeClasses()
-			this.img.classList.add('bomberman-walk-up')
+			this.direction = 'up'
+			return true
 		}
-		return ['up', isMoving]
+		return false
 	}
 	moveDown = (root, div) => {
 		const min = Math.min(Math.abs(root - div - 1), this.step)
-		let isMoving = false
 		if (min) {
-			isMoving = true
+			this.img.className = 'pixel-art bomberman-walk-down'
 			this.updateTop(min)
-			this.removeClasses()
-			this.img.classList.add('bomberman-walk-down')
+			this.direction = 'down'
+			return true
 		}
-		return ['down', isMoving]
+		return false
 	}
 
 	animate = () => {
-		let direction = 'down'
 		const callback = () => {
-			let isMoving = false
 			const root = this.root.getBoundingClientRect()
 			const div = this.div.getBoundingClientRect()
-			if (this.keysPressed['KeyA'] && div.left > root.left)
-				[direction, isMoving] = this.moveLeft(root.left, div.left)
-			if (this.keysPressed['KeyD'] && div.right < root.right)
-				[direction, isMoving] = this.moveRight(root.right, div.right)
-			if (this.keysPressed['KeyW'] && div.top > root.top)
-				[direction, isMoving] = this.moveUp(root.top, div.top)
-			if (this.keysPressed['KeyS'] && div.bottom < root.bottom)
-				[direction, isMoving] = this.moveDown(root.bottom, div.bottom)
+			let isMovingLeft, isMovingRight, isMovingUp, isMovingDown
+			if (this.keysPressed['KeyA'] && !this.keysPressed['KeyD'] && div.left > root.left)
+				isMovingLeft = this.moveLeft(root.left, div.left)
+			if (this.keysPressed['KeyD'] && !this.keysPressed['KeyA'] && div.right < root.right)
+				isMovingRight = this.moveRight(root.right, div.right)
+			if (this.keysPressed['KeyW'] && !this.keysPressed['KeyS'] && div.top > root.top)
+				isMovingUp = this.moveUp(root.top, div.top)
+			if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW'] && div.bottom < root.bottom)
+				isMovingDown = this.moveDown(root.bottom, div.bottom)
+			let isMoving = isMovingLeft || isMovingRight || isMovingUp || isMovingDown
+			console.log(isMovingLeft, isMovingRight, isMovingUp, isMovingDown, this.direction)
 			if (!isMoving)
-				setTimeout(() => {
-					this.addLookDirection(direction)
-				}, 50)
+				setTimeout(() => this.addLookDirection(this.direction), 50)
 			requestAnimationFrame(callback)
 		}
 		requestAnimationFrame(callback)
