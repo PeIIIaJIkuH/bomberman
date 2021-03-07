@@ -17,17 +17,29 @@ body {
     height: 100%;
 }
 
-#root {
+#board {
     position: relative;
-    width: 80%;
-    height: 80%;
-    border: 1px solid black;
+    display: grid;
+    background: #398400;
 }
 
 #bomberman {
-    position: absolute;
-    object-fit: contain;
     overflow: hidden;
+    object-fit: contain;
+    position: absolute;
+}
+
+#bomberman img {
+    height: 500%;
+}
+
+.rock {
+    background: url(./img/rock.jpg) center center / cover no-repeat;
+}
+
+.wall {
+    overflow: hidden;
+    object-fit: contain;
 }
 
 .pixel-art {
@@ -35,69 +47,69 @@ body {
 }
 
 .bomberman-look-left {
-    transform: translate3d(0, -75%, 0);
+    transform: translate3d(calc(-3 / 7 * 100%), 0, 0);
 }
-
-/*.bomberman-walk-left {*/
-/*    animation: bomberman-walk-left 1s steps(7) infinite;*/
-/*}*/
 
 .bomberman-look-right {
-    transform: translate3d(0, -25%, 0);
+    transform: translate3d(calc(-3 / 7 * 100%), -20%, 0);
 }
-
-/*.bomberman-walk-right {*/
-/*    animation: bomberman-walk-right 1s steps(7) infinite;*/
-/*}*/
 
 .bomberman-look-up {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(calc(-3 / 7 * 100%), -60%, 0);
 }
-
-/*.bomberman-walk-up {*/
-/*    animation: bomberman-walk-up 1s steps(7) infinite;*/
-/*}*/
 
 .bomberman-look-down {
-    transform: translate3d(0, -50%, 0);
+    transform: translate3d(calc(-3 / 7 * 100%), -40%, 0);
 }
 
-/*.bomberman-walk-down {*/
-/*    animation: bomberman-walk-down 1s steps(7) infinite;*/
-/*}*/
+.bomberman-walk-left {
+    animation: bomberman-walk-left 0.7s steps(3) infinite;
+}
 
 @keyframes bomberman-walk-left {
-    from {
-        transform: translate3d(0, -75%, 0);
-    }
-    to {
-        transform: translate3d(-100%, -75%, 0);
-    }
-}
-
-@keyframes bomberman-walk-right {
-    from {
-        transform: translate3d(0, -25%, 0);
-    }
-    to {
-        transform: translate3d(-100%, -25%, 0);
-    }
-}
-
-@keyframes bomberman-walk-up {
     from {
         transform: translate3d(0, 0, 0);
     }
     to {
-        transform: translate3d(-100%, 0, 0);
+        transform: translate3d(calc(-3 / 7 * 100%), 0, 0);
     }
+}
+
+.bomberman-walk-right {
+    animation: bomberman-walk-right 0.7s steps(3) infinite;
+}
+
+@keyframes bomberman-walk-right {
+    from {
+        transform: translate3d(0, -20%, 0);
+    }
+    to {
+        transform: translate3d(calc(-3 / 7 * 100%), -20%, 0);
+    }
+}
+
+.bomberman-walk-up {
+    animation: bomberman-walk-up 0.7s steps(3) infinite;
+}
+
+@keyframes bomberman-walk-up {
+    from {
+        transform: translate3d(0, -60%, 0);
+    }
+    to {
+        transform: translate3d(calc(-3 / 7 * 100%), -60%, 0);
+    }
+}
+
+.bomberman-walk-down {
+    animation: bomberman-walk-down 0.7s steps(3) infinite;
 }
 
 @keyframes bomberman-walk-down {
     from {
-        transform: translate3d(0, -50%, 0);
+        transform: translate3d(0, -40%, 0);
     }
     to {
-        transform: translate3d(-100%, -50%, 0);
+        transform: translate3d(calc(-3 / 7 * 100%), -40%, 0);
     }
 }

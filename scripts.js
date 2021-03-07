@@ -1,69 +1,230 @@
-class Bomberman {
-	constructor({left = 0, top = 0, size = 32, step = 1, pixelSize = 1, direction = 'down'} = {}) {
+const getRandomInt = (min, max) => {
+	min = Math.ceil(min)
+	max = Math.ceil(max)
+	return Math.floor(Math.random() * (max - min)) + min
+}
+
+class Entity {
+	constructor({left = 0, top = 0, speed = 1, board, rows = 13, columns = 31} = {}) {
 		this.left = left
 		this.top = top
-		this.size = size
-		this.step = step
-		this.direction = direction
-		this.pixelSize = pixelSize
-		this.keysPressed = {}
-		this.imgDefaultClasses = 'pixel-art'
-		this.init()
-	}
+		this.speed = speed
+		this.board = board
+		this.rows = rows
+		this.columns = columns
 
-	setLeft = val => {
-		this.left = parseFloat(val)
-		this.div.style.left = `${this.left}px`
-	}
-	setTop = val => {
-		this.top = parseFloat(val)
-		this.div.style.top = `${this.top}px`
-	}
-
-	updateLeft = val => {
-		const left = this.left + val
-		this.setLeft(left)
-	}
-	updateTop = val => {
-		const top = this.top + val
-		this.setTop(top)
-	}
-
-	init = () => {
-		this.createHTML()
-		this.addEventListeners()
-		this.animate()
-	}
-
-	createAnimationStyle = () => {
-		const style = document.createElement('style')
-		style.innerHTML = `
-			.bomberman-walk-left {
-    			animation: bomberman-walk-left ${1 / this.step}s steps(7) infinite;
-			}
-			.bomberman-walk-right {
-    			animation: bomberman-walk-right ${1 / this.step}s steps(7) infinite;
-			}
-			.bomberman-walk-up {
-    			animation: bomberman-walk-up ${1 / this.step}s steps(7) infinite;
-			}
-			.bomberman-walk-down {
-    			animation: bomberman-walk-down ${1 / this.step}s steps(7) infinite;
-			}`
-		document.querySelector('head').append(style)
+		this.initialize()
+		this.draw()
 	}
 
 	createHTML = () => {
-		this.createAnimationStyle()
-		this.root = document.querySelector('#root')
-		this.div = document.querySelector('#bomberman')
-		this.img = document.querySelector('#bomberman-sprite')
-		this.div.style.left = `${this.left}px`
-		this.div.style.top = `${this.top}px`
-		this.div.style.width = `${this.size * this.pixelSize}px`
-		this.div.style.height = `${this.size * this.pixelSize}px`
-		this.img.style.width = `${this.size * 7 * this.pixelSize}px`
-		this.img.style.height = `${this.size * 4 * this.pixelSize}px`
+		this.div = document.createElement('div')
+		this.div.classList.add('pixel-art')
+		this.div.style.height = `${1 / this.rows * 100}%`
+		this.div.style.width = `${1 / this.columns * 100}%`
+		this.img = document.createElement('img')
+		this.div.append(this.img)
+		this.board.append(this.div)
+	}
+
+	moveLeft() {
+		this.left -= this.speed
+	}
+
+	moveRight() {
+		this.left += this.speed
+	}
+
+	moveUp() {
+		this.top -= this.speed
+	}
+
+	moveDown() {
+		this.top += this.speed
+	}
+
+	draw = () => {
+		this.div.style.left = `calc(${1 / this.columns * 100}% + ${this.left}px)`
+		this.div.style.top = `calc(${1 / this.rows * 100}% + ${this.top}px)`
+	}
+
+	initialize = () => {
+		this.createHTML()
+	}
+}
+
+class Bomberman extends Entity {
+	constructor({left = 0, top = 0, speed = 1, board, rows = 13, columns = 31} = {}) {
+		super({left, top, speed, board, rows, columns})
+		this.direction = 'down'
+
+		this.initialize()
+	}
+
+	createHTML = () => {
+		this.div.id = 'bomberman'
+		this.img.src = './img/bomberman.png'
+	}
+
+	moveLeft() {
+		super.moveLeft()
+		this.img.className = 'pixel-art bomberman-walk-left'
+	}
+
+	moveRight() {
+		super.moveRight()
+		this.img.className = 'pixel-art bomberman-walk-right'
+	}
+
+	moveUp() {
+		super.moveUp()
+		this.img.className = 'pixel-art bomberman-walk-up'
+	}
+
+	moveDown() {
+		super.moveDown()
+		this.img.className = 'pixel-art bomberman-walk-down'
+	}
+
+	initialize = () => {
+		this.createHTML()
+	}
+}
+
+class Block {
+	constructor({x = 1, y = 1, board} = {}) {
+		this.x = x
+		this.y = y
+		this.board = board
+
+		this.initialize()
+	}
+
+	createHTML = () => {
+		this.div = document.createElement('div')
+		this.div.style.gridColumnStart = String(this.x)
+		this.div.style.gridRowStart = String(this.y)
+		this.board.append(this.div)
+	}
+
+	initialize = () => {
+		this.createHTML()
+	}
+}
+
+class Rock extends Block {
+	constructor({x = 1, y = 1, board} = {}) {
+		super({x, y, board})
+		this.initialize()
+	}
+
+	initialize = () => {
+		this.createHTML()
+	}
+
+	createHTML = () => {
+		this.div.classList.add('pixel-art', 'rock')
+	}
+}
+
+class Wall extends Block {
+	constructor({x = 1, y = 1, board} = {}) {
+		super({x, y, board})
+		this.initialize()
+	}
+
+	initialize = () => {
+		this.createHTML()
+	}
+
+	createHTML = () => {
+		this.div.classList.add('pixel-art', 'wall')
+		this.img = document.createElement('img')
+		this.img.src = './img/wall.png'
+		this.img.style.height = '100%'
+		this.div.append(this.img)
+	}
+}
+
+class Game {
+	constructor({rows = 13, columns = 31} = {}) {
+		this.rows = rows
+		this.columns = columns
+		this.keysPressed = {}
+		this.board = document.querySelector('#board')
+		this.rocks = []
+		this.walls = []
+		this.bomberman = new Bomberman({board: this.board})
+
+		this.initialize()
+	}
+
+	initialize = () => {
+		this.createHTML()
+		this.createCSS()
+		this.addEventListeners()
+
+		this.animate()
+	}
+
+	createRocks = () => {
+		for (let i = 1; i <= this.columns; i++) {
+			this.rocks.push(new Rock({x: i, y: 1, board: this.board}))
+			this.rocks.push(new Rock({x: i, y: this.rows, board: this.board}))
+		}
+		for (let i = 2; i < this.rows; i++) {
+			this.rocks.push(new Rock({x: 1, y: i, board: this.board}))
+			if (i === 2)
+				console.log(this.rocks[this.rocks.length - 1])
+			this.rocks.push(new Rock({x: this.columns, y: i, board: this.board}))
+		}
+		for (let i = 3; i < this.columns; i += 2)
+			for (let j = 3; j < this.rows; j += 2)
+				this.rocks.push(new Rock({x: i, y: j, board: this.board}))
+	}
+
+	isBlock = (x, y) => {
+		return this.rocks.some(rock => rock.x === x && rock.y === y) || this.walls.some(wall => wall.x === x && wall.y === y)
+	}
+
+	createWalls = () => {
+		const count = Math.round(this.rows * this.columns / 8)
+		const wallsCount = getRandomInt(count * 0.9, count * 1.1)
+		let sum = 0
+		while (sum < wallsCount) {
+			const x = getRandomInt(1, this.columns),
+				y = getRandomInt(1, this.rows)
+			if (!this.isBlock(x, y) && !(x <= 4 && y <= 4)) {
+				this.walls.push(new Wall({x, y, board: this.board}))
+				sum++
+			}
+		}
+	}
+
+	createHTML = () => {
+		this.createRocks()
+		this.createWalls()
+	}
+
+	createCSS = () => {
+		const style = document.createElement('style')
+		style.innerHTML = `
+			#board {
+				grid-template-rows: repeat(${this.rows}, 1fr);
+				grid-template-columns: repeat(${this.columns}, 1fr);
+			}`
+		document.querySelector('head').append(style)
+		this.updateSizes()
+	}
+
+	updateSizes = () => {
+		const body = document.querySelector('body').getBoundingClientRect()
+		const wRatio = body.width / this.columns,
+			hRatio = body.height / this.rows
+		const max = Math.max(wRatio, hRatio)
+		this.board.style.width = `${hRatio / max * 100}%`
+		this.board.style.height = `${wRatio / max * 100}%`
+		// this.blockSize = parseFloat(this.board.style.height) / this.rows
 	}
 
 	addEventListeners = () => {
@@ -73,81 +234,48 @@ class Bomberman {
 		document.addEventListener('keyup', e => {
 			delete this.keysPressed[e.code]
 		})
+		window.addEventListener('resize', () => {
+			this.updateSizes()
+		})
 	}
 
-	removeClasses = () => {
-		this.img.className = `${this.imgDefaultClasses}`
-	}
-
-	addLookDirection = direction => {
-		this.img.className = `${this.imgDefaultClasses} bomberman-look-${direction}`
-	}
-
-	moveLeft = (root, div) => {
-		const min = Math.min(Math.abs(root - div + 1), this.step)
-		if (min) {
-			this.img.className = `${this.imgDefaultClasses} bomberman-walk-left`
-			this.updateLeft(-min)
-			this.direction = 'left'
-			return true
-		}
-		return false
-	}
-	moveRight = (root, div) => {
-		const min = Math.min(Math.abs(root - div - 1), this.step)
-		if (min) {
-			this.img.className = `${this.imgDefaultClasses} bomberman-walk-right`
-			this.updateLeft(min)
-			this.direction = 'right'
-			return true
-		}
-		return false
-	}
-	moveUp = (root, div) => {
-		const min = Math.min(Math.abs(root - div + 1), this.step)
-		if (min) {
-			this.img.className = `${this.imgDefaultClasses} bomberman-walk-up`
-			this.updateTop(-min)
-			this.direction = 'up'
-			return true
-		}
-		return false
-	}
-	moveDown = (root, div) => {
-		const min = Math.min(Math.abs(root - div - 1), this.step)
-		if (min) {
-			this.img.className = `${this.imgDefaultClasses} bomberman-walk-down`
-			this.updateTop(min)
-			this.direction = 'down'
-			return true
-		}
-		return false
+	draw = () => {
+		this.bomberman.draw()
 	}
 
 	animate = () => {
 		const callback = () => {
-			const root = this.root.getBoundingClientRect()
-			const div = this.div.getBoundingClientRect()
-			let isMovingLeft, isMovingRight, isMovingUp, isMovingDown
-			if (this.keysPressed['KeyA'] && !this.keysPressed['KeyD'] && div.left > root.left)
-				isMovingLeft = this.moveLeft(root.left, div.left)
-			if (this.keysPressed['KeyD'] && !this.keysPressed['KeyA'] && div.right < root.right)
-				isMovingRight = this.moveRight(root.right, div.right)
-			if (this.keysPressed['KeyW'] && !this.keysPressed['KeyS'] && div.top > root.top)
-				isMovingUp = this.moveUp(root.top, div.top)
-			if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW'] && div.bottom < root.bottom)
-				isMovingDown = this.moveDown(root.bottom, div.bottom)
-			let isMoving = isMovingLeft || isMovingRight || isMovingUp || isMovingDown
-			if (!isMoving)
-				setTimeout(() => this.addLookDirection(this.direction), 10)
 			requestAnimationFrame(callback)
+			const rock = this.rocks[0].div.getBoundingClientRect()
+			if (this.keysPressed['KeyA'] && !this.keysPressed['KeyD']) {
+				const left = Math.floor(this.bomberman.left) / Math.floor(rock.width) + 1,
+					top = this.bomberman.top / rock.height + 2
+				if (!this.isBlock(Math.ceil(left), Math.ceil(top)))
+					this.bomberman.moveLeft()
+			}
+			if (this.keysPressed['KeyD'] && !this.keysPressed['KeyA']) {
+				const right = Math.floor(this.bomberman.left) / Math.floor(rock.width) + 2,
+					top = this.bomberman.top / rock.height + 2
+				if (!this.isBlock(Math.ceil(right), Math.ceil(top)))
+					this.bomberman.moveRight()
+			}
+			if (this.keysPressed['KeyW'] && !this.keysPressed['KeyS']) {
+				const left = Math.floor(this.bomberman.left) / Math.floor(rock.width) + 2,
+					top = this.bomberman.top / rock.height + 1
+				if (!this.isBlock(Math.ceil(left), Math.ceil(top)))
+					this.bomberman.moveUp()
+			}
+			if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW']) {
+				const left = Math.floor(this.bomberman.left) / Math.floor(rock.width) + 2,
+					bottom = this.bomberman.top / rock.height + 2
+				if (!this.isBlock(Math.ceil(left), Math.ceil(bottom)))
+					this.bomberman.moveDown()
+			}
+
+			this.draw()
 		}
 		requestAnimationFrame(callback)
 	}
 }
 
-new Bomberman({
-	size: 50,
-	pixelSize: 2,
-	step: 3
-})
+const game = new Game()
