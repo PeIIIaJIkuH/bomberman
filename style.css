@@ -26,7 +26,6 @@ body {
 #bomberman {
     overflow: hidden;
     object-fit: contain;
-    position: absolute;
 }
 
 #bomberman img {
@@ -47,19 +46,19 @@ body {
 }
 
 .bomberman-look-left {
-    transform: translate3d(calc(-3 / 7 * 100%), 0, 0);
+    transform: translate3d(calc(-2 / 7 * 100%), 0, 0);
 }
 
 .bomberman-look-right {
-    transform: translate3d(calc(-3 / 7 * 100%), -20%, 0);
+    transform: translate3d(calc(-2 / 7 * 100%), -20%, 0);
 }
 
 .bomberman-look-up {
-    transform: translate3d(calc(-3 / 7 * 100%), -60%, 0);
+    transform: translate3d(calc(-2 / 7 * 100%), -60%, 0);
 }
 
 .bomberman-look-down {
-    transform: translate3d(calc(-3 / 7 * 100%), -40%, 0);
+    transform: translate3d(calc(-2 / 7 * 100%), -40%, 0);
 }
 
 .bomberman-walk-left {
