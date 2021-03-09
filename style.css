@@ -26,7 +26,7 @@ body {
 #bomberman {
     overflow: hidden;
     object-fit: contain;
-    position: absolute;
+    z-index: 5;
 }
 
 #bomberman img {
@@ -112,5 +112,75 @@ body {
     }
     to {
         transform: translate3d(-60%, 0, 0);
+    }
+}
+
+.bomberman-die {
+    animation: bomberman-die 0.7s steps(7) infinite;
+}
+
+@keyframes bomberman-die {
+    from {
+        transform: translate3d(0, -50%, 0);
+    }
+    to {
+        transform: translate3d(-70%, -50%, 0);
+    }
+}
+
+.enemy {
+    overflow: hidden;
+    object-fit: contain;
+}
+
+.enemy img {
+    height: 200%;
+    width: 1000%;
+}
+
+.enemy-walk-left {
+    animation: enemy-walk-left 0.7s steps(3) infinite;
+}
+
+@keyframes enemy-walk-left {
+    from {
+        transform: translate3d(-30%, 0, 0);
+    }
+    to {
+        transform: translate3d(-60%, 0, 0);
+    }
+}
+
+.enemy-walk-right {
+    animation: enemy-walk-right 0.7s steps(3) infinite;
+}
+
+@keyframes enemy-walk-right {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(-30%, 0, 0);
+    }
+}
+
+.enemy-walk-up {
+    animation: enemy-walk-left 0.7s steps(3) infinite;
+}
+
+.enemy-walk-down {
+    animation: enemy-walk-right 0.7s steps(3) infinite;
+}
+
+.enemy-die {
+    animation: enemy-die 0.7s steps(7) infinite;
+}
+
+@keyframes enemy-die {
+    from {
+        transform: translate3d(0, -50%, 0);
+    }
+    to {
+        transform: translate3d(-50%, -50%, 0);
     }
 }
