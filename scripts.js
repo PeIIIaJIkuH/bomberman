@@ -202,6 +202,9 @@ class Bomberman extends Entity {
 
 	die() {
 		this.img.className = 'pixel-art bomberman-die'
+		setTimeout(() => {
+			this.img.className = 'pixel-art bomberman-dead'
+		}, 700)
 	}
 
 	initialize = () => {
@@ -222,6 +225,7 @@ class Game {
 		this.walls = []
 		this.bomberman = new Bomberman({board: this.board, pixelSize: this.pixelSize})
 		this.enemies = []
+		this.over = false
 
 		this.initialize()
 	}
@@ -313,36 +317,54 @@ class Game {
 		})
 	}
 
+	checkCollisionWithEnemies() {
+		const left = this.bomberman.left,
+			right = this.bomberman.left + this.bomberman.size,
+			top = this.bomberman.top,
+			bottom = this.bomberman.top + this.bomberman.size
+		for (let enemy of this.enemies) {
+			const eLeft = enemy.left,
+				eRight = enemy.left + enemy.size,
+				eTop = enemy.top,
+				eBottom = enemy.top + enemy.size
+			if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop)) {
+				this.bomberman.die()
+				return true
+			}
+		}
+	}
+
 	updateBomberman = () => {
+		if (this.checkCollisionWithEnemies()) {
+			this.over = true
+			return
+		}
+
 		const left = (this.bomberman.left - 1) / this.size + 2,
 			right = (this.bomberman.left + this.bomberman.size) / this.size + 2,
 			top = (this.bomberman.top - 1) / this.size + 2,
 			bottom = (this.bomberman.top + this.bomberman.size) / this.size + 2
 		let moved = false
-		if (this.keysPressed['KeyA'] && !this.keysPressed['KeyD']) {
+		if (this.keysPressed['KeyA'] && !this.keysPressed['KeyD'])
 			if (!this.isBlock(left, top + 0.05) && !this.isBlock(left, bottom - 0.05)) {
 				this.bomberman.moveLeft()
 				moved = true
 			}
-		}
-		if (this.keysPressed['KeyD'] && !this.keysPressed['KeyA']) {
+		if (this.keysPressed['KeyD'] && !this.keysPressed['KeyA'])
 			if (!this.isBlock(right, top + 0.05) && !this.isBlock(right, bottom - 0.05)) {
 				this.bomberman.moveRight()
 				moved = true
 			}
-		}
-		if (this.keysPressed['KeyW'] && !this.keysPressed['KeyS']) {
+		if (this.keysPressed['KeyW'] && !this.keysPressed['KeyS'])
 			if (!this.isBlock(left + 0.05, top) && !this.isBlock(right - 0.05, top)) {
 				this.bomberman.moveUp()
 				moved = true
 			}
-		}
-		if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW']) {
+		if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW'])
 			if (!this.isBlock(left + 0.05, bottom) && !this.isBlock(right - 0.05, bottom)) {
 				this.bomberman.moveDown()
 				moved = true
 			}
-		}
 		if (!moved) this.bomberman.img.className = `pixel-art bomberman-look-${this.bomberman.direction}`
 	}
 
@@ -352,35 +374,31 @@ class Game {
 			top = (enemy.top - 1) / this.size + 2,
 			bottom = (enemy.top + enemy.size) / this.size + 2
 		if (enemy.direction === 'left') {
-			if (!this.isBlock(left, top + 0.05) && !this.isBlock(left, bottom - 0.05)) {
+			if (!this.isBlock(left, top + 0.05) && !this.isBlock(left, bottom - 0.05))
 				enemy.moveLeft()
-			} else {
+			else
 				enemy.direction = getRandomDirection(['right', 'up', 'down'])
-			}
 			return
 		}
 		if (enemy.direction === 'right') {
-			if (!this.isBlock(right, top + 0.05) && !this.isBlock(right, bottom - 0.05)) {
+			if (!this.isBlock(right, top + 0.05) && !this.isBlock(right, bottom - 0.05))
 				enemy.moveRight()
-			} else {
+			else
 				enemy.direction = getRandomDirection(['left', 'up', 'down'])
-			}
 			return
 		}
 		if (enemy.direction === 'up') {
-			if (!this.isBlock(left + 0.05, top) && !this.isBlock(right - 0.05, top)) {
+			if (!this.isBlock(left + 0.05, top) && !this.isBlock(right - 0.05, top))
 				enemy.moveUp()
-			} else {
+			else
 				enemy.direction = getRandomDirection(['left', 'right', 'down'])
-			}
 			return
 		}
 		if (enemy.direction === 'down') {
-			if (!this.isBlock(left + 0.05, bottom) && !this.isBlock(right - 0.05, bottom)) {
+			if (!this.isBlock(left + 0.05, bottom) && !this.isBlock(right - 0.05, bottom))
 				enemy.moveDown()
-			} else {
+			else
 				enemy.direction = getRandomDirection(['left', 'right', 'up'])
-			}
 		}
 	}
 
@@ -400,10 +418,12 @@ class Game {
 
 	animate = () => {
 		const callback = () => {
-			requestAnimationFrame(callback)
+			if (!this.over) {
+				requestAnimationFrame(callback)
 
-			this.update()
-			this.draw()
+				this.update()
+				this.draw()
+			}
 		}
 		requestAnimationFrame(callback)
 	}

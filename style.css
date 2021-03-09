@@ -119,6 +119,10 @@ body {
     animation: bomberman-die 0.7s steps(7) infinite;
 }
 
+.bomberman-dead {
+    transform: translate3d(-80%, 0, 0);
+}
+
 @keyframes bomberman-die {
     from {
         transform: translate3d(0, -50%, 0);
