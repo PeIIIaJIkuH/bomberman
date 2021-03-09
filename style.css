@@ -26,10 +26,12 @@ body {
 #bomberman {
     overflow: hidden;
     object-fit: contain;
+    position: absolute;
 }
 
 #bomberman img {
-    height: 500%;
+    height: 400%;
+    width: 1000%;
 }
 
 .rock {
@@ -46,19 +48,19 @@ body {
 }
 
 .bomberman-look-left {
-    transform: translate3d(calc(-2 / 7 * 100%), 0, 0);
+    transform: translate3d(-10%, 0, 0);
 }
 
 .bomberman-look-right {
-    transform: translate3d(calc(-2 / 7 * 100%), -20%, 0);
+    transform: translate3d(-10%, -25%, 0);
 }
 
 .bomberman-look-up {
-    transform: translate3d(calc(-2 / 7 * 100%), -60%, 0);
+    transform: translate3d(-40%, -25%, 0);
 }
 
 .bomberman-look-down {
-    transform: translate3d(calc(-2 / 7 * 100%), -40%, 0);
+    transform: translate3d(-40%, 0, 0);
 }
 
 .bomberman-walk-left {
@@ -70,7 +72,7 @@ body {
         transform: translate3d(0, 0, 0);
     }
     to {
-        transform: translate3d(calc(-3 / 7 * 100%), 0, 0);
+        transform: translate3d(-30%, 0, 0);
     }
 }
 
@@ -80,10 +82,10 @@ body {
 
 @keyframes bomberman-walk-right {
     from {
-        transform: translate3d(0, -20%, 0);
+        transform: translate3d(0, -25%, 0);
     }
     to {
-        transform: translate3d(calc(-3 / 7 * 100%), -20%, 0);
+        transform: translate3d(-30%, -25%, 0);
     }
 }
 
@@ -93,10 +95,10 @@ body {
 
 @keyframes bomberman-walk-up {
     from {
-        transform: translate3d(0, -60%, 0);
+        transform: translate3d(-30%, -25%, 0);
     }
     to {
-        transform: translate3d(calc(-3 / 7 * 100%), -60%, 0);
+        transform: translate3d(-60%, -25%, 0);
     }
 }
 
@@ -106,9 +108,9 @@ body {
 
 @keyframes bomberman-walk-down {
     from {
-        transform: translate3d(0, -40%, 0);
+        transform: translate3d(-30%, 0, 0);
     }
     to {
-        transform: translate3d(calc(-3 / 7 * 100%), -40%, 0);
+        transform: translate3d(-60%, 0, 0);
     }
 }
