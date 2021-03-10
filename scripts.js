@@ -109,7 +109,6 @@ class Bomberman extends Entity {
 		super({board, pixelSize})
 		this.direction = 'down'
 		this.liveCount = liveCount
-		this.bombing = false
 
 		this.createHTML()
 	}
@@ -649,7 +648,7 @@ class Game {
 	}
 
 	updateBomb = () => {
-		if (this.keyListener.isPressed('Space') && this.map.options.bombCount && !this.bomberman.bombing) {
+		if (this.keyListener.isPressed('Space') && this.map.options.bombCount) {
 			const x = Math.floor((this.bomberman.left - 1 + (this.map.options.tileSize / 2)) / this.map.options.tileSize + 2),
 				y = Math.floor((this.bomberman.top - 1 + (this.map.options.tileSize / 2)) / this.map.options.tileSize + 2)
 			if (!this.map.isBomb(x, y)) {
@@ -657,7 +656,7 @@ class Game {
 					board: this.board, x, y, size: this.map.options.explosionSize, map: this.map
 				}))
 				this.map.options.bombCount--
-				this.bomberman.bombing = true
+
 				setTimeout(() => {
 					this.map.options.bombCount++
 					this.map.bombs = this.map.bombs.filter(bomb => {
@@ -669,9 +668,6 @@ class Game {
 						return true
 					})
 				}, this.map.options.explosionTime)
-				setTimeout(() => {
-					this.bomberman.bombing = false
-				}, 400)
 			}
 		}
 	}
@@ -702,8 +698,8 @@ class Game {
 
 new Game({
 	pixelSize: 3,
-	bombSize: 1,
-	enemyCount: 7
+	enemyCount: 7,
+	bombCount: 2
 })
 
 // TODO:
