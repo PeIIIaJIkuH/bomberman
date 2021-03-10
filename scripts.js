@@ -105,10 +105,10 @@ class Enemy extends Entity {
 }
 
 class Bomberman extends Entity {
-	constructor({board, pixelSize, lives}) {
+	constructor({board, pixelSize, liveCount}) {
 		super({board, pixelSize})
 		this.direction = 'down'
-		this.lives = lives
+		this.liveCount = liveCount
 		this.bombing = false
 
 		this.createHTML()
@@ -145,7 +145,7 @@ class Bomberman extends Entity {
 
 	die() {
 		this.img.className = 'bomberman-die'
-		this.lives--
+		this.liveCount--
 		setTimeout(() => {
 			this.img.className = 'bomberman-dead'
 		}, 600)
@@ -503,16 +503,22 @@ class GameMap {
 	}
 }
 
+class GameState {
+	constructor() {
+		this.paused = false
+		this.over = false
+		this.won = false
+	}
+}
+
 class Game {
 	constructor({
 					rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
 					explosionTime = 2000, explosionSize = 1, bombCount = 1, liveCount = 3
 				} = {}) {
 		this.board = document.querySelector('#board')
-		this.bomberman = new Bomberman({board: this.board, pixelSize, lives: liveCount})
-
-		this.over = false
-		this.paused = false
+		this.bomberman = new Bomberman({board: this.board, pixelSize, liveCount})
+		this.state = new GameState()
 
 		this.keyListener = new KeyListener()
 		this.map = new GameMap({
@@ -548,8 +554,8 @@ class Game {
 
 	handleBombermanDeath() {
 		this.bomberman.die()
-		if (!this.bomberman.lives) {
-			this.over = true
+		if (!this.bomberman.liveCount) {
+			this.state.over = true
 		}
 	}
 
@@ -683,7 +689,7 @@ class Game {
 
 	animate = () => {
 		const callback = () => {
-			if (!this.over && !this.paused) {
+			if (!this.state.over && !this.state.paused) {
 				requestAnimationFrame(callback)
 
 				this.update()
