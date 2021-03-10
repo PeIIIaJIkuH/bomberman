@@ -9,7 +9,7 @@ const getRandomDirection = (directions = ['left', 'right', 'up', 'down']) => {
 }
 
 class Entity {
-	constructor({board, pixelSize = 1, left, top, speed}) {
+	constructor({board, pixelSize, left, top, speed}) {
 		this.board = board
 		this.pixelSize = pixelSize
 		this.speed = speed || pixelSize / 3
@@ -17,7 +17,7 @@ class Entity {
 		this.top = top || pixelSize * 2
 		this.size = 16 * pixelSize * 0.75
 
-		this.initialize()
+		this.createHTML()
 		this.draw()
 	}
 
@@ -53,20 +53,16 @@ class Entity {
 		this.div.style.width = `${this.size}px`
 
 	}
-
-	initialize = () => {
-		this.createHTML()
-	}
 }
 
 class Enemy extends Entity {
-	constructor({board, pixelSize = 1, left, top}) {
+	constructor({board, pixelSize, left, top}) {
 		super({board, pixelSize, left, top})
 		this.speed /= 2
 		this.direction = getRandomDirection()
 		this.dead = false
 
-		this.initialize()
+		this.createHTML()
 	}
 
 	createHTML = () => {
@@ -104,11 +100,57 @@ class Enemy extends Entity {
 		setTimeout(() => {
 			this.img.className = 'enemy-dead'
 			this.div.remove()
-		}, 700)
+		}, 500)
+	}
+}
+
+class Bomberman extends Entity {
+	constructor({board, pixelSize, bombCount, lives}) {
+		super({board, pixelSize})
+		this.direction = 'down'
+		this.bombCount = bombCount
+		this.bombs = []
+		this.bombing = false
+		this.lives = lives
+
+		this.createHTML()
 	}
 
-	initialize = () => {
-		this.createHTML()
+	createHTML = () => {
+		this.div.id = 'bomberman'
+		this.img.src = './img/bomberman.png'
+	}
+
+	moveLeft() {
+		super.moveLeft()
+		this.img.className = 'bomberman-walk-left'
+		this.direction = 'left'
+	}
+
+	moveRight() {
+		super.moveRight()
+		this.img.className = 'bomberman-walk-right'
+		this.direction = 'right'
+	}
+
+	moveUp() {
+		super.moveUp()
+		this.img.className = 'bomberman-walk-up'
+		this.direction = 'up'
+	}
+
+	moveDown() {
+		super.moveDown()
+		this.img.className = 'bomberman-walk-down'
+		this.direction = 'down'
+	}
+
+	die() {
+		this.img.className = 'bomberman-die'
+		this.lives--
+		setTimeout(() => {
+			this.img.className = 'bomberman-dead'
+		}, 600)
 	}
 }
 
@@ -136,14 +178,11 @@ class Block {
 class Rock extends Block {
 	constructor({board, x, y}) {
 		super({board, x, y})
-		this.initialize()
+
+		this.addClass()
 	}
 
-	initialize = () => {
-		this.createHTML()
-	}
-
-	createHTML = () => {
+	addClass = () => {
 		this.div.classList.add('rock')
 	}
 }
@@ -151,15 +190,17 @@ class Rock extends Block {
 class Wall extends Block {
 	constructor({board, x, y}) {
 		super({board, x, y})
-		this.initialize()
+
+		this.addImage()
 	}
 
-	initialize = () => {
-		this.createHTML()
-	}
-
-	createHTML = () => {
+	addClass = () => {
 		this.div.classList.add('wall')
+	}
+
+	addImage = () => {
+		this.addClass()
+
 		this.img = document.createElement('img')
 		this.img.src = './img/wall.png'
 		this.div.append(this.img)
@@ -210,7 +251,7 @@ class Explosion {
 		this.game = game
 		this.arr = []
 
-		this.initialize()
+		this.createHTML()
 	}
 
 	create = (x, y, className) => {
@@ -227,9 +268,8 @@ class Explosion {
 			div.append(img)
 			this.board.append(div)
 			setTimeout(() => {
-				this.game.explosions = this.game.explosions.filter(explosion => {
-					return !(explosion.style.gridRowStart === div.style.gridRowStart && explosion.style.gridColumnStart === div.style.gridColumnStart)
-				})
+				this.game.explosions = this.game.explosions.filter(explosion =>
+					!(explosion.style.gridRowStart === div.style.gridRowStart && explosion.style.gridColumnStart === div.style.gridColumnStart))
 				div.remove()
 			}, 500)
 			created = true
@@ -242,9 +282,8 @@ class Explosion {
 				this.game.deleteWall(x, y)
 			}, 500)
 			created = false
-		} else if (this.game.isRock(x, y)) {
+		} else if (this.game.isRock(x, y))
 			created = false
-		}
 		return {created, data}
 	}
 
@@ -320,92 +359,56 @@ class Explosion {
 		if (this.createBottomVerticals())
 			this.createBottom()
 	}
-
-	initialize = () => {
-		this.createHTML()
-	}
 }
 
-class Bomberman extends Entity {
-	constructor({board, pixelSize = 1, bombCount = 1}) {
-		super({board, pixelSize})
-		this.direction = 'down'
-		this.bombCount = bombCount
-		this.bombs = []
-		this.bombing = false
+class KeyListener {
+	constructor() {
+		this.keysPressed = {}
 
 		this.initialize()
 	}
 
-	createHTML = () => {
-		this.div.id = 'bomberman'
-		this.img.src = './img/bomberman.png'
-	}
-
-	moveLeft() {
-		super.moveLeft()
-		this.img.className = 'bomberman-walk-left'
-		this.direction = 'left'
-	}
-
-	moveRight() {
-		super.moveRight()
-		this.img.className = 'bomberman-walk-right'
-		this.direction = 'right'
-	}
-
-	moveUp() {
-		super.moveUp()
-		this.img.className = 'bomberman-walk-up'
-		this.direction = 'up'
-	}
-
-	moveDown() {
-		super.moveDown()
-		this.img.className = 'bomberman-walk-down'
-		this.direction = 'down'
-	}
-
-	die() {
-		this.img.className = 'bomberman-die'
-		setTimeout(() => {
-			this.img.className = 'bomberman-dead'
-		}, 700)
-	}
-
 	initialize = () => {
-		this.createHTML()
+		document.addEventListener('keydown', e => {
+			this.keysPressed[e.code] = true
+		})
+		document.addEventListener('keyup', e => {
+			this.keysPressed[e.code] = false
+		})
 	}
+
+	isPressed = code => this.keysPressed[code]
 }
 
 class Game {
 	constructor({
 					rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
-					explodeTime = 2000, explosionSize = 1, bombCount = 1
+					explodeTime = 2000, explosionSize = 1, bombCount = 1, liveCount = 3
 				} = {}) {
+		this.board = document.querySelector('#board')
 		this.rows = rows
 		this.columns = columns
 		this.pixelSize = pixelSize
-		this.keysPressed = {}
-		this.board = document.querySelector('#board')
+		this.bomberman = new Bomberman({board: this.board, pixelSize: this.pixelSize, bombCount, lives: liveCount})
 		this.size = 16 * this.pixelSize
 		this.enemyCount = enemyCount
 		this.rocks = []
 		this.walls = []
-		this.bomberman = new Bomberman({board: this.board, pixelSize: this.pixelSize, bombCount})
 		this.enemies = []
+		this.explosions = []
 		this.over = false
+		this.paused = false
 		this.explodeTime = explodeTime
 		this.explosionSize = explosionSize
-		this.explosions = []
+
+		this.keyListener = new KeyListener()
 
 		this.initialize()
 	}
 
 	initialize = () => {
 		this.createHTML()
-		this.createCSS()
-		this.addEventListeners()
+		this.addStyles()
 
 		this.animate()
 	}
@@ -424,9 +427,7 @@ class Game {
 				this.rocks.push(new Rock({x: i, y: j, board: this.board}))
 	}
 
-	getWall = (x, y) => {
-		return this.walls.filter(wall => wall.x === x && wall.y === y)[0]
-	}
+	getWall = (x, y) => this.walls.filter(wall => wall.x === x && wall.y === y)[0]
 
 	deleteWall = (x, y) => {
 		this.walls = this.walls.filter(wall => {
@@ -438,13 +439,9 @@ class Game {
 		})
 	}
 
-	isWall = (x, y) => {
-		return this.walls.some(wall => wall.x === x && wall.y === y)
-	}
+	isWall = (x, y) => this.walls.some(wall => wall.x === x && wall.y === y)
 
-	isRock = (x, y) => {
-		return this.rocks.some(rock => rock.x === x && rock.y === y)
-	}
+	isRock = (x, y) => this.rocks.some(rock => rock.x === x && rock.y === y)
 
 	isBlock = (x, y, withoutBombs = false) => {
 		x = Math.floor(x)
@@ -493,7 +490,7 @@ class Game {
 		this.createEnemies()
 	}
 
-	createCSS = () => {
+	addStyles = () => {
 		const style = document.createElement('style')
 		style.innerHTML = `
 			#board {
@@ -501,24 +498,11 @@ class Game {
 				grid-template-columns: repeat(${this.columns}, ${this.size}px);
 			}`
 		document.querySelector('head').append(style)
-		this.updateSizes()
-	}
-
-	updateSizes = () => {
 		this.board.style.width = `${this.size * this.columns}px`
 		this.board.style.height = `${this.size * this.rows}px`
 	}
 
-	addEventListeners = () => {
-		document.addEventListener('keydown', e => {
-			this.keysPressed[e.code] = true
-		})
-		document.addEventListener('keyup', e => {
-			this.keysPressed[e.code] = false
-		})
-	}
-
-	checkCollisionWithEnemies() {
+	collidedWithEnemies() {
 		const left = this.bomberman.left,
 			right = this.bomberman.left + this.bomberman.size,
 			top = this.bomberman.top,
@@ -533,25 +517,29 @@ class Game {
 		}
 	}
 
-	checkBombermanExplode() {
+	isBombermanExploded() {
 		const left = this.bomberman.left / this.size + 2,
 			right = (this.bomberman.left + this.bomberman.size) / this.size + 2,
 			top = this.bomberman.top / this.size + 2,
 			bottom = (this.bomberman.top + this.bomberman.size) / this.size + 2
 		return this.isExplosion(left, top) || this.isExplosion(left, bottom) || this.isExplosion(right, top) || this.isExplosion(right, bottom)
+	}
 
+	handleBombermanDeath() {
+		this.bomberman.die()
+		if (!this.bomberman.lives) {
+			this.over = true
+		}
 	}
 
 	updateBomberman = () => {
-		if (this.checkCollisionWithEnemies()) {
-			this.over = true
-			this.bomberman.die()
+		if (this.collidedWithEnemies()) {
+			this.handleBombermanDeath()
 			return
 		}
 
-		if (this.checkBombermanExplode()) {
-			this.over = true
-			this.bomberman.die()
+		if (this.isBombermanExploded()) {
+			this.handleBombermanDeath()
 			return
 		}
 
@@ -560,22 +548,22 @@ class Game {
 			top = (this.bomberman.top - 1) / this.size + 2,
 			bottom = (this.bomberman.top + this.bomberman.size) / this.size + 2
 		let moved = false
-		if (this.keysPressed['KeyA'] && !this.keysPressed['KeyD'])
+		if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD'))
 			if (!this.isBlock(left, top + 0.05, true) && !this.isBlock(left, bottom - 0.05, true)) {
 				this.bomberman.moveLeft()
 				moved = true
 			}
-		if (this.keysPressed['KeyD'] && !this.keysPressed['KeyA'])
+		if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA'))
 			if (!this.isBlock(right, top + 0.05, true) && !this.isBlock(right, bottom - 0.05, true)) {
 				this.bomberman.moveRight()
 				moved = true
 			}
-		if (this.keysPressed['KeyW'] && !this.keysPressed['KeyS'])
+		if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS'))
 			if (!this.isBlock(left + 0.05, top, true) && !this.isBlock(right - 0.05, top, true)) {
 				this.bomberman.moveUp()
 				moved = true
 			}
-		if (this.keysPressed['KeyS'] && !this.keysPressed['KeyW'])
+		if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW'))
 			if (!this.isBlock(left + 0.05, bottom, true) && !this.isBlock(right - 0.05, bottom, true)) {
 				this.bomberman.moveDown()
 				moved = true
@@ -584,7 +572,7 @@ class Game {
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
 	}
 
-	checkEnemyExplode(enemy) {
+	isEnemyExploded(enemy) {
 		const left = enemy.left / this.size + 2,
 			right = (enemy.left + enemy.size - 1) / this.size + 2,
 			top = enemy.top / this.size + 2,
@@ -596,7 +584,7 @@ class Game {
 	}
 
 	updateEnemy = enemy => {
-		this.checkEnemyExplode(enemy)
+		this.isEnemyExploded(enemy)
 
 		if (!enemy.dead) {
 			const left = (enemy.left - 1) / this.size + 2,
@@ -634,7 +622,7 @@ class Game {
 	}
 
 	updateBomb = () => {
-		if (this.keysPressed['Space'] && this.bomberman.bombCount && !this.bomberman.bombing) {
+		if (this.keyListener.isPressed('Space') && this.bomberman.bombCount && !this.bomberman.bombing) {
 			const x = Math.floor((this.bomberman.left - 1 + (this.size / 2)) / this.size + 2),
 				y = Math.floor((this.bomberman.top - 1 + (this.size / 2)) / this.size + 2)
 			this.bomberman.bombs.push(new Bomb({board: this.board, x, y, size: this.explosionSize, game: this}))
@@ -674,7 +662,7 @@ class Game {
 
 	animate = () => {
 		const callback = () => {
-			if (!this.over) {
+			if (!this.over && !this.paused) {
 				requestAnimationFrame(callback)
 
 				this.update()
@@ -687,5 +675,11 @@ class Game {
 
 new Game({
 	pixelSize: 3,
-	bombSize: 1
+	bombSize: 1,
+	enemyCount: 7
 })
+
+// TODO:
+// bonuses, level win, lives, timer, score, sounds, pause, game over, main menu
+// score count after enemy death
+// refactor to more classes

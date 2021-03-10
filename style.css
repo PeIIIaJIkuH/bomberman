@@ -196,7 +196,7 @@ img {
 }
 
 .enemy-die {
-    animation: enemy-die 0.7s steps(6);
+    animation: enemy-die 0.6s steps(6);
 }
 
 @keyframes enemy-die {
