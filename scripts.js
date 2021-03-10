@@ -109,6 +109,7 @@ class Bomberman extends Entity {
 		super({board, pixelSize})
 		this.direction = 'down'
 		this.liveCount = liveCount
+		this.instantly = false
 
 		this.createHTML()
 	}
@@ -209,14 +210,14 @@ class Wall extends Block {
 }
 
 class Bomb {
-	constructor({board, x, y, size, map}) {
+	constructor({board, x, y, explosionSize, map}) {
 		this.board = board
 		this.x = x
 		this.y = y
-		this.size = size
+		this.explosionSize = explosionSize
 		this.map = map
 
-		this.initialize()
+		this.createHTML()
 	}
 
 	createHTML = () => {
@@ -230,12 +231,15 @@ class Bomb {
 		this.board.append(this.div)
 	}
 
-	initialize = () => {
-		this.createHTML()
-	}
-
 	explode = () => {
-		this.explosion = new Explosion({board: this.board, x: this.x, y: this.y, size: this.size, map: this.map})
+		this.div.remove()
+		this.explosion = new Explosion({
+			board: this.board,
+			x: this.x,
+			y: this.y,
+			size: this.explosionSize,
+			map: this.map
+		})
 	}
 }
 
@@ -254,7 +258,12 @@ class Explosion {
 	create = (x, y, className) => {
 		let created = true,
 			data
-		if (!this.map.isBlock(x, y, true)) {
+		if (className !== 'explosion-center' && this.map.isBomb(x, y)) {
+			console.log('explosion', x, y)
+			const bomb = this.map.getBomb(x, y)
+			bomb.instantly = true
+			created = false
+		} else if (!this.map.isBlock(x, y, true)) {
 			const div = document.createElement('div')
 			const img = document.createElement('img')
 			div.classList.add('explosion')
@@ -391,8 +400,8 @@ class GameOptions {
 }
 
 class GameMap {
-	constructor({board, rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionTime, explosionSize}) {
-		this.board = board
+	constructor({rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionTime, explosionSize}) {
+		this.board = document.querySelector('#board')
 		this.options = new GameOptions({
 			rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionSize, explosionTime
 		})
@@ -491,6 +500,8 @@ class GameMap {
 
 	getWall = (x, y) => this.walls.filter(wall => wall.x === x && wall.y === y)[0]
 
+	getBomb = (x, y) => this.bombs.filter(bomb => bomb.x === x && bomb.y === y)[0]
+
 	deleteWall = (x, y) => {
 		this.walls = this.walls.filter(wall => {
 			if (wall.x === x && wall.y === y) {
@@ -515,20 +526,15 @@ class Game {
 					rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
 					explosionTime = 2000, explosionSize = 1, bombCount = 1, liveCount = 3
 				} = {}) {
-		this.board = document.querySelector('#board')
-		this.bomberman = new Bomberman({board: this.board, pixelSize, liveCount})
-		this.state = new GameState()
-
-		this.keyListener = new KeyListener()
 		this.map = new GameMap({
-			board: this.board, rows, columns, pixelSize, tileSize: 16 * pixelSize, enemyCount, bombCount,
-			explosionTime, explosionSize
+			rows, columns, pixelSize, tileSize: 16 * pixelSize, enemyCount, bombCount, explosionTime, explosionSize
 		})
-
-		this.animate()
+		this.bomberman = new Bomberman({board: this.map.board, pixelSize, liveCount})
+		this.state = new GameState()
+		this.keyListener = new KeyListener()
 	}
 
-	isCollidedWithEnemies() {
+	isBombermanCollidedWithEnemies() {
 		const left = this.bomberman.left,
 			right = this.bomberman.left + this.bomberman.size,
 			top = this.bomberman.top,
@@ -559,7 +565,7 @@ class Game {
 	}
 
 	updateBomberman = () => {
-		if (this.isCollidedWithEnemies()) {
+		if (this.isBombermanCollidedWithEnemies()) {
 			this.handleBombermanDeath()
 			return
 		}
@@ -653,15 +659,14 @@ class Game {
 				y = Math.floor((this.bomberman.top - 1 + (this.map.options.tileSize / 2)) / this.map.options.tileSize + 2)
 			if (!this.map.isBomb(x, y)) {
 				this.map.bombs.push(new Bomb({
-					board: this.board, x, y, size: this.map.options.explosionSize, map: this.map
+					board: this.map.board, x, y, explosionSize: this.map.options.explosionSize, map: this.map
 				}))
 				this.map.options.bombCount--
-
-				setTimeout(() => {
+				const bomb = this.map.getBomb(x, y)
+				bomb.timeout = setTimeout(() => {
 					this.map.options.bombCount++
 					this.map.bombs = this.map.bombs.filter(bomb => {
 						if (bomb.x === x && bomb.y === y) {
-							bomb.div.remove()
 							bomb.explode()
 							return false
 						}
@@ -670,6 +675,21 @@ class Game {
 				}, this.map.options.explosionTime)
 			}
 		}
+		this.map.bombs.forEach(bomb => {
+			if (bomb.instantly) {
+				clearTimeout(bomb.timeout)
+				setTimeout(() => {
+					this.map.bombs = this.map.bombs.filter(b => {
+						if (bomb.x === b.x && bomb.y === b.y) {
+							bomb.explode()
+							this.map.options.bombCount++
+							return false
+						}
+						return true
+					})
+				}, 100)
+			}
+		})
 	}
 
 	update = () => {
@@ -683,7 +703,7 @@ class Game {
 		this.map.enemies.forEach(enemy => enemy.draw())
 	}
 
-	animate = () => {
+	run = () => {
 		const callback = () => {
 			if (!this.state.over && !this.state.paused) {
 				requestAnimationFrame(callback)
@@ -696,11 +716,15 @@ class Game {
 	}
 }
 
-new Game({
+const game = new Game({
 	pixelSize: 3,
 	enemyCount: 7,
-	bombCount: 2
+	bombCount: 5
 })
+
+game.run()
+
+window.game = game
 
 // TODO:
 // bonuses, level win, lives, timer, score, sounds, pause, game over, main menu
