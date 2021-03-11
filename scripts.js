@@ -115,7 +115,7 @@ class Enemy extends Entity {
 		setTimeout(() => {
 			this.img.className = 'enemy-dead'
 			this.div.remove()
-		}, 500)
+		}, 1100)
 	}
 }
 
@@ -788,8 +788,9 @@ class Game {
 
 const game = new Game({
 	pixelSize: 3,
-	enemyCount: 1,
-	bombCount: 5
+	enemyCount: 5,
+	bombCount: 5,
+	explosionTime: 2000
 })
 
 game.run()
