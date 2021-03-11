@@ -109,7 +109,6 @@ class Bomberman extends Entity {
 		super({board, pixelSize})
 		this.direction = 'down'
 		this.liveCount = liveCount
-		this.instantly = false
 
 		this.createHTML()
 	}
@@ -249,7 +248,6 @@ class Bomb {
 
 	explodeAfter = () => {
 		this.timeout = setTimeout(() => {
-			this.map.options.bombCount++
 			this.createExplosions()
 			this.map.deleteBomb(this.x, this.y)
 		}, this.map.options.explosionTime)
@@ -268,32 +266,33 @@ class Explosion {
 		this.createHTML()
 	}
 
+	createHTMLForOne = (x, y, className) => {
+		const div = document.createElement('div')
+		const img = document.createElement('img')
+		div.classList.add('explosion')
+		img.classList.add(className)
+		img.src = './img/explosion.png'
+		div.style.gridColumnStart = String(x)
+		div.style.gridRowStart = String(y)
+		div.append(img)
+		this.board.append(div)
+		return div
+	}
+
 	create = (x, y, className) => {
 		let created = true,
 			data
 		if (className !== 'explosion-center' && this.map.isBomb(x, y)) {
-			console.log('explosion', x, y)
 			const bomb = this.map.getBomb(x, y)
-			bomb.instantly = true
+			bomb.instant = true
 			created = false
 		} else if (!this.map.isBlock(x, y, true)) {
-			const div = document.createElement('div')
-			const img = document.createElement('img')
-			div.classList.add('explosion')
-			img.classList.add(className)
-			img.src = './img/explosion.png'
-			div.style.gridColumnStart = String(x)
-			div.style.gridRowStart = String(y)
-			div.append(img)
-			this.board.append(div)
+			data = this.createHTMLForOne(x, y, className)
+			this.map.explosions.push(data)
 			setTimeout(() => {
-				this.map.explosions = this.map.explosions.filter(explosion =>
-					!(explosion.style.gridRowStart === div.style.gridRowStart && explosion.style.gridColumnStart === div.style.gridColumnStart))
-				div.remove()
+				this.map.deleteExplosion(data)
 			}, 500)
 			created = true
-			data = div
-			this.map.explosions.push(data)
 		} else if (this.map.isWall(x, y)) {
 			const wall = this.map.getWall(x, y)
 			wall.explode()
@@ -425,14 +424,7 @@ class GameOptions {
 
 class GameMap {
 	constructor({
-					rows,
-					columns,
-					pixelSize,
-					tileSize,
-					enemyCount,
-					bombCount,
-					explosionTime,
-					explosionSize,
+					rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionTime, explosionSize,
 					chainExplosionTime
 				}) {
 		this.board = document.querySelector('#board')
@@ -558,6 +550,16 @@ class GameMap {
 		this.options.bombCount++
 	}
 
+	deleteExplosion = div => {
+		this.explosions = this.explosions.filter(explosion =>
+			!(explosion.style.gridRowStart === div.style.gridRowStart && explosion.style.gridColumnStart === div.style.gridColumnStart))
+		div.remove()
+	}
+
+	deleteEnemy = enemy => {
+		this.enemies = this.enemies.filter(e => e !== enemy)
+	}
+
 	addBomb = bomb => {
 		this.bombs.push(bomb)
 		this.options.bombCount--
@@ -657,20 +659,24 @@ class Game {
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
 	}
 
-	isEnemyExploded(enemy) {
+	handleEnemyExplosion(enemy) {
 		const left = enemy.left / this.map.options.tileSize + 2,
 			right = (enemy.left + enemy.size - 1) / this.map.options.tileSize + 2,
 			top = enemy.top / this.map.options.tileSize + 2,
 			bottom = (enemy.top + enemy.size - 1) / this.map.options.tileSize + 2
 		if (this.map.isExplosion(left, top) || this.map.isExplosion(left, bottom) || this.map.isExplosion(right, top) || this.map.isExplosion(right, bottom)) {
-			this.map.enemies = this.map.enemies.filter(e => e !== enemy)
+			this.map.deleteEnemy(enemy)
 			enemy.die()
 		}
 	}
 
-	updateEnemy = enemy => {
-		this.isEnemyExploded(enemy)
+	updateEnemies = () => {
+		this.map.enemies.forEach(enemy => {
+			this.updateEnemy(enemy)
+		})
+	}
 
+	moveEnemyRandomly(enemy) {
 		if (!enemy.dead) {
 			const left = (enemy.left - 1) / this.map.options.tileSize + 2,
 				right = (enemy.left + enemy.size) / this.map.options.tileSize + 2,
@@ -706,10 +712,15 @@ class Game {
 		}
 	}
 
-	checkInstantlyBombs = () => {
+	updateEnemy = enemy => {
+		this.handleEnemyExplosion(enemy)
+		this.moveEnemyRandomly(enemy)
+	}
+
+	updateInstantBombs = () => {
 		this.map.bombs.forEach(bomb => {
-			if (bomb.instantly) {
-				bomb.instantly = false
+			if (bomb.instant) {
+				bomb.instant = false
 				clearTimeout(bomb.timeout)
 				setTimeout(() => {
 					bomb.createExplosions()
@@ -730,18 +741,24 @@ class Game {
 				this.map.addBomb(bomb)
 			}
 		}
-		this.checkInstantlyBombs()
+		this.updateInstantBombs()
 	}
 
 	update = () => {
 		this.updateBombs()
 		this.updateBomberman()
-		this.map.enemies.forEach(enemy => this.updateEnemy(enemy))
+		this.updateEnemies()
+	}
+
+	drawEnemies = () => {
+		this.map.enemies.forEach(enemy => {
+			enemy.draw()
+		})
 	}
 
 	draw = () => {
 		this.bomberman.draw()
-		this.map.enemies.forEach(enemy => enemy.draw())
+		this.drawEnemies()
 	}
 
 	run = () => {
@@ -759,8 +776,8 @@ class Game {
 
 const game = new Game({
 	pixelSize: 3,
-	enemyCount: 7,
-	bombCount: 5
+	enemyCount: 5,
+	bombCount: 2
 })
 
 game.run()
