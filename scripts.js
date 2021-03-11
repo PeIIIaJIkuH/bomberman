@@ -51,7 +51,22 @@ class Entity {
 		this.div.style.top = `${16 * this.pixelSize + this.top}px`
 		this.div.style.height = `${this.size}px`
 		this.div.style.width = `${this.size}px`
+	}
 
+	getBorders(pixelSize, tileSize, {own = true} = {}) {
+		let x = 0
+		if (!own)
+			x = 1
+		let left = (this.left - x + (pixelSize + 1)) / tileSize + 2,
+			right = (this.left - 1 + x + this.size - (pixelSize + 1)) / tileSize + 2,
+			top = (this.top - x) / tileSize + 2,
+			bottom = (this.top - 1 + x + this.size - (pixelSize - 1)) / tileSize + 2
+		if (this instanceof Enemy) {
+			left = (this.left - x) / tileSize + 2
+			right = (this.left - 1 + x + this.size) / tileSize + 2
+			bottom = (this.top + x + this.size) / tileSize + 2
+		}
+		return {left, right, top, bottom}
 	}
 }
 
@@ -400,14 +415,7 @@ class KeyListener {
 
 class GameOptions {
 	constructor({
-					rows,
-					columns,
-					pixelSize,
-					tileSize,
-					enemyCount,
-					bombCount,
-					explosionTime,
-					explosionSize,
+					rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionTime, explosionSize,
 					chainExplosionTime
 				}) {
 		this.rows = rows
@@ -474,8 +482,8 @@ class GameMap {
 			const x = getRandomInt(1, this.options.columns),
 				y = getRandomInt(1, this.options.rows)
 			if (!this.isBlock(x, y) && !(x <= 5 && y <= 5)) {
-				const left = this.options.tileSize * (x - 2) + (2 * this.options.pixelSize),
-					top = this.options.tileSize * (y - 2) + (2 * this.options.pixelSize)
+				const left = this.options.tileSize * (x - 2),
+					top = this.options.tileSize * (y - 2)
 				this.enemies.push(new Enemy({left, top, board: this.board, pixelSize: this.options.pixelSize}))
 				sum++
 			}
@@ -590,25 +598,30 @@ class Game {
 	}
 
 	isBombermanCollidedWithEnemies() {
-		const left = this.bomberman.left,
-			right = this.bomberman.left + this.bomberman.size,
-			top = this.bomberman.top,
-			bottom = this.bomberman.top + this.bomberman.size
+		// const left = this.bomberman.left,
+		// 	right = this.bomberman.left + this.bomberman.size,
+		// 	top = this.bomberman.top,
+		// 	bottom = this.bomberman.top + this.bomberman.size
+		const {
+			left, right, top, bottom
+		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
 		for (let enemy of this.map.enemies) {
-			const eLeft = enemy.left,
-				eRight = enemy.left + enemy.size,
-				eTop = enemy.top,
-				eBottom = enemy.top + enemy.size
+			// const eLeft = enemy.left,
+			// 	eRight = enemy.left + enemy.size,
+			// 	eTop = enemy.top,
+			// 	eBottom = enemy.top + enemy.size
+			const {
+				left: eLeft, right: eRight, top: eTop, bottom: eBottom
+			} = enemy.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
 			if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop))
 				return true
 		}
 	}
 
 	isBombermanExploded() {
-		const left = this.bomberman.left / this.map.options.tileSize + 2,
-			right = (this.bomberman.left + this.bomberman.size) / this.map.options.tileSize + 2,
-			top = this.bomberman.top / this.map.options.tileSize + 2,
-			bottom = (this.bomberman.top + this.bomberman.size) / this.map.options.tileSize + 2
+		const {
+			left, right, top, bottom
+		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
 		return this.map.isExplosion(left, top) || this.map.isExplosion(left, bottom) || this.map.isExplosion(right, top) || this.map.isExplosion(right, bottom)
 	}
 
@@ -630,10 +643,10 @@ class Game {
 			return
 		}
 
-		const left = (this.bomberman.left - 1) / this.map.options.tileSize + 2,
-			right = (this.bomberman.left + this.bomberman.size) / this.map.options.tileSize + 2,
-			top = (this.bomberman.top - 1) / this.map.options.tileSize + 2,
-			bottom = (this.bomberman.top + this.bomberman.size) / this.map.options.tileSize + 2
+		const {
+			left, right, top, bottom
+		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: false})
+
 		let moved = false
 		if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD'))
 			if (!this.map.isBlock(left, top + 0.05, true) && !this.map.isBlock(left, bottom - 0.05, true)) {
@@ -660,10 +673,9 @@ class Game {
 	}
 
 	handleEnemyExplosion(enemy) {
-		const left = enemy.left / this.map.options.tileSize + 2,
-			right = (enemy.left + enemy.size - 1) / this.map.options.tileSize + 2,
-			top = enemy.top / this.map.options.tileSize + 2,
-			bottom = (enemy.top + enemy.size - 1) / this.map.options.tileSize + 2
+		const {
+			left, right, top, bottom
+		} = enemy.getBorders(this.map.options.pixelSize, this.map.options.tileSize)
 		if (this.map.isExplosion(left, top) || this.map.isExplosion(left, bottom) || this.map.isExplosion(right, top) || this.map.isExplosion(right, bottom)) {
 			this.map.deleteEnemy(enemy)
 			enemy.die()
@@ -678,10 +690,10 @@ class Game {
 
 	moveEnemyRandomly(enemy) {
 		if (!enemy.dead) {
-			const left = (enemy.left - 1) / this.map.options.tileSize + 2,
-				right = (enemy.left + enemy.size) / this.map.options.tileSize + 2,
-				top = (enemy.top - 1) / this.map.options.tileSize + 2,
-				bottom = (enemy.top + enemy.size) / this.map.options.tileSize + 2
+			const {
+				left, right, top, bottom
+			} = enemy.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
+
 			if (enemy.direction === 'left') {
 				if (!this.map.isBlock(left, top + 0.05) && !this.map.isBlock(left, bottom - 0.05))
 					enemy.moveLeft()
@@ -776,8 +788,8 @@ class Game {
 
 const game = new Game({
 	pixelSize: 3,
-	enemyCount: 5,
-	bombCount: 2
+	enemyCount: 1,
+	bombCount: 5
 })
 
 game.run()
@@ -786,5 +798,4 @@ window.game = game
 
 // TODO:
 // bonuses, level win, lives, timer, score, sounds, pause, game over, main menu
-// score count after enemy death
-// refactor to more classes
+// show score after enemy death
