@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 *, *:before, *:after {
     box-sizing: border-box;
     margin: 0;
@@ -15,6 +17,7 @@ body {
     align-items: center;
     width: 100%;
     height: 100%;
+    background: black;
 }
 
 img {
@@ -31,7 +34,7 @@ img {
     overflow: hidden;
     object-fit: contain;
     z-index: 5;
-    /*border: 1px solid white;*/
+    /*border: 1px solid black;*/
 }
 
 #bomberman img {
@@ -83,7 +86,7 @@ img {
 }
 
 .bomberman-walk-left {
-    animation: bomberman-walk-left 0.7s steps(3) infinite;
+    animation: bomberman-walk-left 0.4s steps(3) infinite;
 }
 
 @keyframes bomberman-walk-left {
@@ -96,7 +99,7 @@ img {
 }
 
 .bomberman-walk-right {
-    animation: bomberman-walk-right 0.7s steps(3) infinite;
+    animation: bomberman-walk-right 0.4s steps(3) infinite;
 }
 
 @keyframes bomberman-walk-right {
@@ -109,7 +112,7 @@ img {
 }
 
 .bomberman-walk-up {
-    animation: bomberman-walk-up 0.7s steps(3) infinite;
+    animation: bomberman-walk-up 0.4s steps(3) infinite;
 }
 
 @keyframes bomberman-walk-up {
@@ -122,7 +125,7 @@ img {
 }
 
 .bomberman-walk-down {
-    animation: bomberman-walk-down 0.7s steps(3) infinite;
+    animation: bomberman-walk-down 0.4s steps(3) infinite;
 }
 
 @keyframes bomberman-walk-down {
@@ -161,6 +164,22 @@ img {
 .enemy img {
     height: 200%;
     width: 1000%;
+}
+
+.enemy-look-left {
+    transform: translate3d(-40%, 0, 0);
+}
+
+.enemy-look-right {
+    transform: translate3d(-10%, 0, 0);
+}
+
+.enemy-look-up {
+    transform: translate3d(-40%, 0, 0);
+}
+
+.enemy-look-down {
+    transform: translate3d(-10%, 0, 0);
 }
 
 .enemy-walk-left {
@@ -225,7 +244,14 @@ img {
 
 .bomb img {
     height: 100%;
+}
+
+.bomb-exploding {
     animation: bomb 1s steps(3) infinite;
+}
+
+.bomb-paused {
+    transform: translate3d(0, 0, 0);
 }
 
 @keyframes bomb {
@@ -335,4 +361,48 @@ img {
     to {
         transform: translate3d(-100%, 0, 0) scaleY(-1);
     }
+}
+
+
+#main-menu {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#main-menu-img {
+    margin-bottom: 50px;
+    object-fit: contain;
+    width: 400px;
+}
+
+#press-enter {
+    margin-bottom: 20px;
+    animation: press-enter 2s infinite;
+}
+
+@keyframes press-enter {
+    from {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+#high-score {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+#high-score-number {
+    margin-left: 50px;
 }

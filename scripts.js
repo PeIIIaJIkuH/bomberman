@@ -8,6 +8,30 @@ const getRandomDirection = (directions = ['left', 'right', 'up', 'down']) => {
 	return directions[getRandomInt(0, directions.length)]
 }
 
+class Timer {
+	constructor(callback, delay) {
+		this.callback = callback
+		this.remaining = delay
+
+		this.resume()
+	}
+
+	pause() {
+		clearTimeout(this.timerID)
+		this.remaining -= new Date().getTime() - this.start
+	}
+
+	resume() {
+		this.start = new Date().getTime()
+		this.clear()
+		this.timerID = setTimeout(this.callback, this.remaining)
+	}
+
+	clear() {
+		clearTimeout(this.timerID)
+	}
+}
+
 class Entity {
 	constructor({board, pixelSize, left, top, speed}) {
 		this.board = board
@@ -27,6 +51,8 @@ class Entity {
 		this.img = document.createElement('img')
 		this.div.append(this.img)
 		this.board.append(this.div)
+		this.div.style.height = `${this.size}px`
+		this.div.style.width = `${this.size}px`
 	}
 
 	moveLeft() {
@@ -49,8 +75,6 @@ class Entity {
 		this.div.style.position = 'absolute'
 		this.div.style.left = `${16 * this.pixelSize + this.left}px`
 		this.div.style.top = `${16 * this.pixelSize + this.top}px`
-		this.div.style.height = `${this.size}px`
-		this.div.style.width = `${this.size}px`
 	}
 
 	getBorders(pixelSize, tileSize, {own = true} = {}) {
@@ -60,7 +84,7 @@ class Entity {
 		let left = (this.left - x + (pixelSize + 1)) / tileSize + 2,
 			right = (this.left - 1 + x + this.size - (pixelSize + 1)) / tileSize + 2,
 			top = (this.top - x) / tileSize + 2,
-			bottom = (this.top - 1 + x + this.size - (pixelSize - 1)) / tileSize + 2
+			bottom = (this.top + x + this.size - (pixelSize - 1)) / tileSize + 2
 		if (this instanceof Enemy) {
 			left = (this.left - x) / tileSize + 2
 			right = (this.left - 1 + x + this.size) / tileSize + 2
@@ -112,7 +136,7 @@ class Enemy extends Entity {
 	die() {
 		this.img.className = 'enemy-die'
 		this.dead = true
-		setTimeout(() => {
+		this.timer = new Timer(() => {
 			this.img.className = 'enemy-dead'
 			this.div.remove()
 		}, 1100)
@@ -124,7 +148,9 @@ class Bomberman extends Entity {
 		super({board, pixelSize})
 		this.direction = 'down'
 		this.liveCount = liveCount
+	}
 
+	initialize = () => {
 		this.createHTML()
 	}
 
@@ -160,7 +186,7 @@ class Bomberman extends Entity {
 	die() {
 		this.img.className = 'bomberman-die'
 		this.liveCount--
-		setTimeout(() => {
+		this.timer = new Timer(() => {
 			this.img.className = 'bomberman-dead'
 		}, 600)
 	}
@@ -245,6 +271,7 @@ class Bomb {
 		this.div.classList.add('bomb')
 		this.div.style.gridColumnStart = String(this.x)
 		this.div.style.gridRowStart = String(this.y)
+		this.img.classList.add('bomb-exploding')
 		this.img.src = './img/bomb.png'
 		this.div.append(this.img)
 		this.board.append(this.div)
@@ -262,7 +289,7 @@ class Bomb {
 	}
 
 	explodeAfter = () => {
-		this.timeout = setTimeout(() => {
+		this.timer = new Timer(() => {
 			this.createExplosions()
 			this.map.deleteBomb(this.x, this.y)
 		}, this.map.options.explosionTime)
@@ -304,14 +331,14 @@ class Explosion {
 		} else if (!this.map.isBlock(x, y, true)) {
 			data = this.createHTMLForOne(x, y, className)
 			this.map.explosions.push(data)
-			setTimeout(() => {
+			new Timer(() => {
 				this.map.deleteExplosion(data)
 			}, 500)
 			created = true
 		} else if (this.map.isWall(x, y)) {
 			const wall = this.map.getWall(x, y)
 			wall.explode()
-			setTimeout(() => {
+			new Timer(() => {
 				this.map.deleteWall(x, y)
 			}, 500)
 			created = false
@@ -444,8 +471,6 @@ class GameMap {
 		this.enemies = []
 		this.bombs = []
 		this.explosions = []
-
-		this.initialize()
 	}
 
 	createRocks = () => {
@@ -574,14 +599,6 @@ class GameMap {
 	}
 }
 
-class GameState {
-	constructor() {
-		this.paused = false
-		this.over = false
-		this.won = false
-	}
-}
-
 class Game {
 	constructor({
 					rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
@@ -593,23 +610,30 @@ class Game {
 			chainExplosionTime
 		})
 		this.bomberman = new Bomberman({board: this.map.board, pixelSize, liveCount})
-		this.state = new GameState()
+		this.state = 'menu'
 		this.keyListener = new KeyListener()
+
+		this.menu = document.querySelector('#main-menu')
+		this.addMenuEventListener()
+	}
+
+	addMenuEventListener = () => {
+		const enterListener = e => {
+			if (e.code === 'Enter') {
+				this.state = 'start'
+				this.menu.style.display = 'none'
+				document.removeEventListener('keypress', enterListener)
+			}
+		}
+
+		document.addEventListener('keypress', enterListener)
 	}
 
 	isBombermanCollidedWithEnemies() {
-		// const left = this.bomberman.left,
-		// 	right = this.bomberman.left + this.bomberman.size,
-		// 	top = this.bomberman.top,
-		// 	bottom = this.bomberman.top + this.bomberman.size
 		const {
 			left, right, top, bottom
 		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
 		for (let enemy of this.map.enemies) {
-			// const eLeft = enemy.left,
-			// 	eRight = enemy.left + enemy.size,
-			// 	eTop = enemy.top,
-			// 	eBottom = enemy.top + enemy.size
 			const {
 				left: eLeft, right: eRight, top: eTop, bottom: eBottom
 			} = enemy.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
@@ -628,7 +652,7 @@ class Game {
 	handleBombermanDeath() {
 		this.bomberman.die()
 		if (!this.bomberman.liveCount) {
-			this.state.over = true
+			this.state = 'over'
 		}
 	}
 
@@ -733,8 +757,8 @@ class Game {
 		this.map.bombs.forEach(bomb => {
 			if (bomb.instant) {
 				bomb.instant = false
-				clearTimeout(bomb.timeout)
-				setTimeout(() => {
+				bomb.timer.clear()
+				bomb.timer = new Timer(() => {
 					bomb.createExplosions()
 					this.map.deleteBomb(bomb.x, bomb.y)
 				}, this.map.options.chainExplosionTime)
@@ -773,11 +797,77 @@ class Game {
 		this.drawEnemies()
 	}
 
+	initialize = () => {
+		this.map.initialize()
+		this.bomberman.initialize()
+
+		document.addEventListener('keypress', e => {
+			if (e.code === 'KeyP') {
+				if (this.state === 'running') {
+					this.pause()
+					this.state = 'pause'
+				} else if (this.state === 'pause') {
+					this.resume()
+					this.state = 'running'
+				}
+			}
+		})
+	}
+
+	pauseBomberman = () => {
+		this.bomberman.timer && this.bomberman.timer.pause()
+		this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
+	}
+
+	resumeBomberman = () => {
+		this.bomberman.timer && this.bomberman.timer.resume()
+	}
+
+	pauseEnemies = () => {
+		this.map.enemies.forEach(enemy => {
+			enemy.img.className = `enemy-look-${enemy.direction}`
+			enemy.timer && enemy.timer.pause()
+		})
+	}
+
+	resumeEnemies = () => {
+		this.map.enemies.forEach(enemy => {
+			enemy.timer && enemy.timer.resume()
+		})
+	}
+
+	pauseBombs = () => {
+		this.map.bombs.forEach(bomb => {
+			bomb.timer && bomb.timer.pause()
+			bomb.img.className = 'bomb-paused'
+		})
+	}
+
+	resumeBombs = () => {
+		this.map.bombs.forEach(bomb => {
+			bomb.timer && bomb.timer.resume()
+		})
+	}
+
+	pause = () => {
+		this.pauseBomberman()
+		this.pauseEnemies()
+		this.pauseBombs()
+	}
+
+	resume = () => {
+		this.resumeBomberman()
+		this.resumeEnemies()
+		this.resumeBombs()
+	}
+
 	run = () => {
 		const callback = () => {
-			if (!this.state.over && !this.state.paused) {
-				requestAnimationFrame(callback)
-
+			requestAnimationFrame(callback)
+			if (this.state === 'start') {
+				this.initialize()
+				this.state = 'running'
+			} else if (this.state === 'running') {
 				this.update()
 				this.draw()
 			}
@@ -789,7 +879,7 @@ class Game {
 const game = new Game({
 	pixelSize: 3,
 	enemyCount: 5,
-	bombCount: 5,
+	bombCount: 2,
 	explosionTime: 2000
 })
 
