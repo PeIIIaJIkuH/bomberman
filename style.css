@@ -4,6 +4,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Press Start 2P', cursive;
 }
 
 html {
@@ -47,9 +48,16 @@ img {
     image-rendering: pixelated;
 }
 
+.exit-door {
+    background: url(./img/exit-door.png) center center / cover no-repeat;
+    image-rendering: pixelated;
+    z-index: 0;
+}
+
 .wall {
     overflow: hidden;
     object-fit: contain;
+    z-index: 1;
 }
 
 .wall img {
@@ -365,7 +373,6 @@ img {
 
 
 #main-menu {
-    font-family: 'Press Start 2P', cursive;
     font-size: 24px;
     color: white;
     display: flex;
@@ -405,4 +412,78 @@ img {
 
 #high-score-number {
     margin-left: 50px;
+}
+
+#game {
+    position: relative;
+}
+
+#game-menu,
+#pre-level,
+#game-over {
+    color: white;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    z-index: 6;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#click-me {
+    cursor: pointer;
+    color: white;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+#pre-level,
+#game-over {
+    background: black;
+}
+
+.game-menu-hide,
+.pre-level-hide,
+.game-over-hide {
+    opacity: 0;
+}
+
+.game-menu-show,
+.pre-level-show,
+.game-over-show {
+    opacity: 1;
+}
+
+.game-menu-item {
+    padding: 5px;
+    margin-bottom: 10px;
+    color: #a6a6a6;
+}
+
+.game-menu-item-selected {
+    color: white;
+}
+
+#ending {
+    opacity: 0;
+    color: white;
+    text-align: center;
+    position: relative;
+}
+
+#ending div {
+    margin-bottom: 10px;
 }
