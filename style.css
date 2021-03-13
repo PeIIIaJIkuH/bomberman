@@ -487,3 +487,24 @@ img {
 #ending div {
     margin-bottom: 10px;
 }
+
+#timer,
+#live-count,
+#score {
+    color: white;
+    position: absolute;
+    top: -30px;
+}
+
+#timer {
+    left: 0;
+}
+
+#live-count {
+    right: 0;
+}
+
+#score {
+    left: 50%;
+    transform: translateX(-50%);
+}

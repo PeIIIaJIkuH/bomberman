@@ -11,25 +11,25 @@ const getRandomDirection = (directions = ['left', 'right', 'up', 'down']) => {
 playExplosionSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/explosion.wav'
-	sound.play()
+	sound.play().then()
 }
 
 playBombLeaveSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/leave-bomb.wav'
-	sound.play()
+	sound.play().then()
 }
 
 playHorizontalStepSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/move-horizontal.wav'
-	sound.play()
+	sound.play().then()
 }
 
 playVerticalStepSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/move-vertical.wav'
-	sound.play()
+	sound.play().then()
 }
 
 class Timer {
@@ -95,7 +95,7 @@ class Entity {
 		this.top += this.speed
 	}
 
-	draw = () => {
+	draw() {
 		this.div.style.position = 'absolute'
 		this.div.style.left = `${16 * this.pixelSize + this.left}px`
 		this.div.style.top = `${16 * this.pixelSize + this.top}px`
@@ -119,11 +119,12 @@ class Entity {
 }
 
 class Enemy extends Entity {
-	constructor({board, pixelSize, left, top}) {
+	constructor({board, pixelSize, left, top, xp}) {
 		super({board, pixelSize, left, top})
 		this.speed /= 2
 		this.direction = getRandomDirection()
 		this.dead = false
+		this.xp = xp
 
 		this.createHTML()
 	}
@@ -181,6 +182,9 @@ class Bomberman extends Entity {
 	createHTML = () => {
 		this.div.id = 'bomberman'
 		this.img.src = './img/bomberman.png'
+		this.liveCountDiv = document.createElement('div')
+		this.liveCountDiv.id = 'live-count'
+		this.board.append(this.liveCountDiv)
 	}
 
 	moveLeft() {
@@ -485,7 +489,7 @@ class KeyListener {
 class GameOptions {
 	constructor({
 					rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionTime, explosionSize,
-					chainExplosionTime
+					chainExplosionTime, roundTime
 				}) {
 		this.rows = rows
 		this.columns = columns
@@ -496,18 +500,58 @@ class GameOptions {
 		this.explosionTime = explosionTime
 		this.explosionSize = explosionSize
 		this.chainExplosionTime = chainExplosionTime
+		this.roundTime = roundTime
+		this.score = 0
+
+		this.initializeTimer()
+		this.initializeScore()
+	}
+
+	draw = () => {
+		this.drawTimer()
+		this.drawScore()
+	}
+
+	drawScore = () => {
+		this.scoreDiv.innerText = `${this.score}`
+	}
+
+	drawTimer = () => {
+		this.timer.innerText = `LEFT: ${this.roundTime}`
+	}
+
+	initializeTimer = () => {
+		this.timer = document.createElement('div')
+		this.timer.id = 'timer'
+		document.querySelector('#board').append(this.timer)
+	}
+
+	initializeScore = () => {
+		this.scoreDiv = document.createElement('div')
+		this.scoreDiv.id = 'score'
+		document.querySelector('#board').append(this.scoreDiv)
+	}
+
+	initializeTimerChange = () => {
+		const interval = setInterval(() => {
+			this.roundTime--
+			if (this.roundTime <= 0)
+				clearInterval(interval)
+		}, 1000)
+
 	}
 }
 
 class GameMap {
 	constructor({
 					rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionTime, explosionSize,
-					chainExplosionTime
+					chainExplosionTime, roundTime
 				}) {
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
 		this.options = new GameOptions({
-			rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionSize, explosionTime, chainExplosionTime
+			rows, columns, pixelSize, tileSize, enemyCount, bombCount, explosionSize, explosionTime, chainExplosionTime,
+			roundTime
 		})
 		this.rocks = []
 		this.walls = []
@@ -583,7 +627,7 @@ class GameMap {
 			if (!this.isBlock(x, y) && !(x <= 5 && y <= 5)) {
 				const left = this.options.tileSize * (x - 2),
 					top = this.options.tileSize * (y - 2)
-				this.enemies.push(new Enemy({left, top, board: this.board, pixelSize: this.options.pixelSize}))
+				this.enemies.push(new Enemy({left, top, board: this.board, pixelSize: this.options.pixelSize, xp: 100}))
 				sum++
 			}
 		}
@@ -795,15 +839,16 @@ class Game {
 	constructor({
 					rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
 					explosionTime = 2000, explosionSize = 1, bombCount = 1, liveCount = 3,
-					chainExplosionTime = 100
+					chainExplosionTime = 100, roundTime = 100
 				} = {}) {
 		this.map = new GameMap({
 			rows, columns, pixelSize, tileSize: 16 * pixelSize, enemyCount, bombCount, explosionTime, explosionSize,
-			chainExplosionTime
+			chainExplosionTime, roundTime
 		})
 		this.bomberman = new Bomberman({board: this.map.board, pixelSize, liveCount})
 		this.state = 'click-me'
 		this.keyListener = new KeyListener()
+		this.roundTime = roundTime
 
 		this.menu = document.querySelector('#main-menu')
 		this.gameMenu = new GameMenu()
@@ -843,7 +888,6 @@ class Game {
 
 	handleBombermanDeath() {
 		this.bomberman.die()
-		this.pauseEnemies()
 		this.state = 'dying'
 	}
 
@@ -906,6 +950,7 @@ class Game {
 		if (this.map.isExplosion(left, top) || this.map.isExplosion(left, bottom) || this.map.isExplosion(right, top) || this.map.isExplosion(right, bottom)) {
 			this.map.deleteEnemy(enemy)
 			enemy.die()
+			this.map.options.score += enemy.xp
 			if (!this.map.enemies.length) {
 				this.state = 'find-exit'
 			}
@@ -992,6 +1037,11 @@ class Game {
 		this.updateBombs()
 		this.updateBomberman()
 		this.updateEnemies()
+
+		if (this.map.options.roundTime === 0) {
+			this.handleBombermanDeath()
+			this.state = 'dying'
+		}
 	}
 
 	drawEnemies = () => {
@@ -1002,7 +1052,9 @@ class Game {
 
 	draw = () => {
 		this.bomberman.draw()
+		this.bomberman.liveCountDiv.innerText = `LEFT: ${this.bomberman.liveCount}`
 		this.drawEnemies()
+		this.map.options.draw()
 	}
 
 	initialize = () => {
@@ -1112,23 +1164,24 @@ class Game {
 
 			if (this.state === 'main-menu') {
 				prevTime = currTime
-				this.music.titleScreen.play()
+				this.music.titleScreen.play().then()
 			} else if (this.state === 'initializing') {
 				this.map.board.style.opacity = '0'
 				this.initialize()
 				this.state = 'pre-level-show'
 			} else if (this.state === 'pre-level-show') {
+				this.map.options.initializeTimerChange()
 				document.querySelector('#pre-level').className = 'pre-level-show'
 				this.state = 'pre-level'
 			} else if (this.state === 'pre-level') {
-				this.music.preLevel.play()
+				this.music.preLevel.play().then()
 				if (currTime - prevTime >= this.music.preLevel.duration * 1000) {
 					document.querySelector('#pre-level').className = 'pre-level-hide'
 					this.state = 'pre-running'
 				}
 			} else if (this.state === 'pre-running') {
 				this.map.board.style.opacity = '1'
-				this.music.running.play()
+				this.music.running.play().then()
 				this.state = 'running'
 			} else if (this.state === 'running') {
 				prevTime = currTime
@@ -1138,7 +1191,7 @@ class Game {
 				this.music.running.pause()
 				this.music.running.currentTime = 0
 				this.music.pause.currentTime = 0
-				this.music.pause.play()
+				this.music.pause.play().then()
 				this.pause()
 				this.state = 'pause'
 			} else if (this.state === 'pause') {
@@ -1148,7 +1201,7 @@ class Game {
 				this.music.pause.currentTime = 0
 				this.state = 'resuming'
 			} else if (this.state === 'resuming') {
-				this.music.pause.play()
+				this.music.pause.play().then()
 				this.gameMenu.hide()
 				if (currTime - prevTime >= this.music.pause.duration * 1000 / 2) {
 					this.resume()
@@ -1157,22 +1210,24 @@ class Game {
 			} else if (this.state === 'over') {
 				this.music.running.pause()
 				this.music.running.currentTime = 0
-				this.music.over.play()
+				this.music.over.play().then()
 				document.querySelector('#game-over').className = 'game-over-show'
 				this.state = 'game-over'
 			} else if (this.state === 'dying') {
 				this.music.running.pause()
 				this.music.running.currentTime = 0
-				this.music.die.play()
+				this.pauseEnemies()
+				this.music.die.play().then()
 				if (currTime - prevTime >= this.music.die.duration * 1000) {
 					this.music.die.pause()
 					this.music.die.currentTime = 0
-					this.music.dying.play()
+					this.music.dying.play().then()
 					if (currTime - prevTime >= (this.music.die.duration + this.music.dying.duration) * 1000) {
 						prevTime = currTime
-						if (this.bomberman.liveCount)
+						if (this.bomberman.liveCount) {
 							this.state = 'restarting'
-						else
+							this.map.options.roundTime = this.roundTime
+						} else
 							this.state = 'over'
 					}
 				}
@@ -1182,7 +1237,7 @@ class Game {
 			} else if (this.state === 'find-exit') {
 				this.music.running.pause()
 				this.music.running.currentTime = 0
-				this.music.findExit.play()
+				this.music.findExit.play().then()
 				this.state = 'running'
 			} else if (this.state === 'won') {
 				this.pauseBomberman()
@@ -1190,13 +1245,13 @@ class Game {
 				this.music.running.currentTime = 0
 				this.music.findExit.pause()
 				this.music.findExit.currentTime = 0
-				this.music.foundExit.play()
+				this.music.foundExit.play().then()
 				if (currTime - prevTime >= this.music.foundExit.duration * 1000) {
 					this.state = 'ending'
 				}
 			} else if (this.state === 'ending') {
 				this.map.board.remove()
-				this.music.ending.play()
+				this.music.ending.play().then()
 				document.querySelector('#ending').style.opacity = '1'
 				this.state = 'END'
 			}
@@ -1210,7 +1265,8 @@ const game = new Game({
 	enemyCount: 7,
 	bombCount: 5,
 	explosionTime: 2000,
-	liveCount: 3
+	liveCount: 1,
+	roundTime: 5
 })
 
 game.run()
