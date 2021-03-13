@@ -1263,10 +1263,9 @@ class Game {
 const game = new Game({
 	pixelSize: 3,
 	enemyCount: 7,
-	bombCount: 5,
+	bombCount: 1,
 	explosionTime: 2000,
-	liveCount: 1,
-	roundTime: 5
+	liveCount: 3
 })
 
 game.run()
