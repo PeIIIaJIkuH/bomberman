@@ -766,11 +766,9 @@ class GameMenu {
 }
 
 class Music {
-	constructor({src, loop = false}) {
-		this.audio = document.createElement('audio')
-		this.audio.volume = 0.05
-		this.audio.loop = loop
-		this.audio.src = src
+	constructor(id) {
+		this.audio = document.getElementById(id)
+		this.audio.volume = 0.03
 	}
 
 	play = () => {
@@ -797,16 +795,16 @@ class Music {
 
 class GameMusic {
 	constructor() {
-		this.titleScreen = new Music({src: './sounds/title-screen.mp3', loop: true})
-		this.stageStart = new Music({src: './sounds/stage-start.mp3'})
-		this.stage = new Music({src: './sounds/stage.mp3', loop: true})
-		this.lifeLost = new Music({src: './sounds/life-lost.mp3'})
-		this.ending = new Music({src: './sounds/ending.mp3'})
-		this.over = new Music({src: './sounds/game-over.mp3'})
-		this.complete = new Music({src: './sounds/stage-complete.mp3'})
-		this.findExit = new Music({src: './sounds/find-exit.mp3', loop: true})
-		this.pause = new Music({src: './sounds/pause.wav'})
-		this.die = new Music({src: './sounds/die.wav'})
+		this.titleScreen = new Music('title-screen-music')
+		this.stageStart = new Music('stage-start-music')
+		this.stage = new Music('stage-music')
+		this.lifeLost = new Music('life-lost-music')
+		this.ending = new Music('ending-music')
+		this.over = new Music('over-music')
+		this.complete = new Music('stage-complete-music')
+		this.findExit = new Music('find-exit-music')
+		this.pause = new Music('pause-music')
+		this.die = new Music('die-music')
 	}
 
 	stopStageMusic = () => {
@@ -1175,7 +1173,6 @@ class Game {
 			requestAnimationFrame(callback)
 
 			if (this.state === 'pre-main-menu') {
-				prevTime = currTime
 				this.screen.mainMenu.showDisplay()
 				this.music.titleScreen.play()
 				this.state = 'main-menu'
@@ -1191,6 +1188,7 @@ class Game {
 				this.screen.stage.hide()
 				this.state = 'stage-start'
 				this.music.stageStart.play()
+				prevTime = currTime
 			} else if (this.state === 'stage-start') {
 				if (currTime - prevTime >= this.music.stageStart.durationMS()) {
 					this.screen.stageStart.hide()
