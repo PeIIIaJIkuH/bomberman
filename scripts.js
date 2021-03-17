@@ -91,10 +91,12 @@ class Entity {
 		this.div.style.top = `${16 * this.pixelSize + this.top}px`
 	}
 
-	getBorders(pixelSize, tileSize, {own = true} = {}) {
+	getBorders(pixelSize, tileSize, {own = true, collideWithDoor = false} = {}) {
 		let x = 0
 		if (!own)
 			x = 1
+		if (collideWithDoor)
+			x -= pixelSize * 5
 		let left = (this.left - x + (pixelSize + 1)) / tileSize + 2,
 			right = (this.left - 1 + x + this.size - (pixelSize + 1)) / tileSize + 2,
 			top = (this.top - x) / tileSize + 2,
@@ -871,7 +873,7 @@ class Game {
 	isBombermanCollidedWithExitDoor = () => {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true})
+		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true, collideWithDoor: true})
 		return this.map.isExitDoor(left, top) || this.map.isExitDoor(left, bottom) || this.map.isExitDoor(right, top) || this.map.isExitDoor(right, bottom)
 	}
 
@@ -1234,7 +1236,8 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 2
+	pixelSize: 2,
+	enemyCount: 1
 })
 
 game.run()
