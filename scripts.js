@@ -537,7 +537,7 @@ class GameOptions {
 		}, 1000)
 
 	}
-	
+
 	resetRoundTime = () => {
 		this.roundTime += this.passedTime
 		this.passedTime = 0
@@ -817,18 +817,18 @@ class Game {
 	constructor({
 		            rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
 		            explosionTime = 2000, explosionSize = 1, bombCount = 1, liveCount = 3,
-		            chainExplosionTime = 100, roundTime = 100
+		            chainExplosionTime = 100, roundTime = 200
 	            } = {}) {
 		this.map = new GameMap({
 			rows, columns, pixelSize, tileSize: 16 * pixelSize, enemyCount, bombCount, explosionTime, explosionSize,
 			chainExplosionTime, roundTime
 		})
 		this.bomberman = new Bomberman({board: this.map.board, pixelSize, liveCount})
-		this.state = 'click-me'
 		this.keyListener = new KeyListener()
-
 		this.menu = document.querySelector('#main-menu')
 		this.gameMenu = new GameMenu()
+		
+		this.state = 'click-me'
 
 		this.handleUserInteraction()
 	}
@@ -865,7 +865,7 @@ class Game {
 
 	handleBombermanDeath() {
 		this.bomberman.die()
-		this.state = 'die'
+		this.state = 'pre-pre-die'
 	}
 
 	isBombermanCollidedWithExitDoor = () => {
@@ -1017,7 +1017,7 @@ class Game {
 
 		if (this.map.options.roundTime === 0) {
 			this.handleBombermanDeath()
-			this.state = 'die'
+			this.state = 'pre-pre-die'
 		}
 	}
 
@@ -1132,23 +1132,25 @@ class Game {
 			console.log(this.state)
 			requestAnimationFrame(callback)
 
-			if (this.state === 'main-menu') {
-				prevTime = currTime
-				this.music.titleScreen.play()
-			} else if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
+			if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
 				this.state = 'initialize'
 				this.music.titleScreen.stop()
+			} else if (this.state === 'main-menu') {
+				prevTime = currTime
+				this.music.titleScreen.play()
 			} else if (this.state === 'initialize') {
 				this.map.board.style.opacity = '0'
 				this.initialize()
 				this.state = 'stage-start-show'
 			} else if (this.state === 'stage-start-show') {
 				document.querySelector('#pre-level').className = 'stage-start-show'
+				this.map.board.style.opacity = '0'
 				this.state = 'stage-start'
-			} else if (this.state === 'stage-start') {
 				this.music.stageStart.play()
+			} else if (this.state === 'stage-start') {
 				if (currTime - prevTime >= this.music.stageStart.durationMS()) {
 					document.querySelector('#pre-level').className = 'pre-level-hide'
+					this.map.board.style.opacity = '1'
 					this.state = 'pre-stage'
 				}
 			} else if (this.state === 'pre-stage') {
@@ -1182,21 +1184,25 @@ class Game {
 				this.music.over.play()
 				document.querySelector('#game-over').className = 'game-over-show'
 				this.state = 'game-over'
-			} else if (this.state === 'die') {
+			} else if (this.state === 'pre-pre-die') {
 				this.music.stopStageMusic()
 				this.pauseEnemies()
 				this.music.die.play()
+				this.state = 'pre-die'
+			} else if (this.state === 'pre-die') {
 				if (currTime - prevTime >= this.music.die.durationMS()) {
 					this.music.die.stop()
 					this.music.lifeLost.play()
-					if (currTime - prevTime >= (this.music.die.durationMS() + this.music.lifeLost.durationMS())) {
-						prevTime = currTime
-						if (this.bomberman.liveCount) {
-							this.state = 'restart'
-							this.map.options.resetRoundTime()
-						} else
-							this.state = 'over'
-					}
+					this.state = 'die'
+				}
+			} else if(this.state === 'die') {
+				if (currTime - prevTime >= (this.music.die.durationMS() + this.music.lifeLost.durationMS())) {
+					prevTime = currTime
+					if (this.bomberman.liveCount) {
+						this.state = 'restart'
+						this.map.options.resetRoundTime()
+					} else
+						this.state = 'over'
 				}
 			} else if (this.state === 'restart') {
 				this.restart()
@@ -1224,12 +1230,7 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 2,
-	enemyCount: 7,
-	bombCount: 1,
-	explosionTime: 2000,
-	liveCount: 3,
-	roundTime: 200
+	pixelSize: 2
 })
 
 game.run()
