@@ -12,12 +12,14 @@ const playExplosionSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/explosion.wav'
 	sound.play().then()
+	sound.volume = 0.05
 }
 
 const playBombLeaveSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/leave-bomb.wav'
 	sound.play().then()
+	sound.volume = 0.05
 }
 
 class Timer {
@@ -489,6 +491,7 @@ class GameOptions {
 		this.explosionSize = explosionSize
 		this.chainExplosionTime = chainExplosionTime
 		this.roundTime = roundTime
+		this.passedTime = 0
 		this.score = 0
 
 		this.initialize()
@@ -528,10 +531,16 @@ class GameOptions {
 	initializeTimerChange = () => {
 		const interval = setInterval(() => {
 			this.roundTime--
+			this.passedTime++
 			if (this.roundTime <= 0)
 				clearInterval(interval)
 		}, 1000)
 
+	}
+	
+	resetRoundTime = () => {
+		this.roundTime += this.passedTime
+		this.passedTime = 0
 	}
 }
 
@@ -778,8 +787,8 @@ class Music {
 		this.pause()
 		this.clear()
 	}
-	
-	durationS = () => {
+
+	durationMS = () => {
 		return this.audio.duration * 1000
 	}
 }
@@ -787,15 +796,20 @@ class Music {
 class GameMusic {
 	constructor() {
 		this.titleScreen = new Music({src: './sounds/title-screen.mp3', loop: true})
-		this.preLevel = new Music({src: './sounds/stage-start.mp3'})
-		this.running = new Music({src: './sounds/stage.mp3', loop: true})
-		this.dying = new Music({src: './sounds/life-lost.mp3'})
+		this.stageStart = new Music({src: './sounds/stage-start.mp3'})
+		this.stage = new Music({src: './sounds/stage.mp3', loop: true})
+		this.lifeLost = new Music({src: './sounds/life-lost.mp3'})
 		this.ending = new Music({src: './sounds/ending.mp3'})
 		this.over = new Music({src: './sounds/game-over.mp3'})
-		this.complete = new Music({src: './sounds/found-exit.mp3'})
+		this.complete = new Music({src: './sounds/stage-complete.mp3'})
 		this.findExit = new Music({src: './sounds/find-exit.mp3', loop: true})
 		this.pause = new Music({src: './sounds/pause.wav'})
 		this.die = new Music({src: './sounds/die.wav'})
+	}
+
+	stopStageMusic = () => {
+		this.stage.stop()
+		this.findExit.stop()
 	}
 }
 
@@ -812,7 +826,6 @@ class Game {
 		this.bomberman = new Bomberman({board: this.map.board, pixelSize, liveCount})
 		this.state = 'click-me'
 		this.keyListener = new KeyListener()
-		this.roundTime = roundTime
 
 		this.menu = document.querySelector('#main-menu')
 		this.gameMenu = new GameMenu()
@@ -1133,21 +1146,21 @@ class Game {
 				document.querySelector('#pre-level').className = 'pre-level-show'
 				this.state = 'pre-level'
 			} else if (this.state === 'pre-level') {
-				this.music.preLevel.play()
-				if (currTime - prevTime >= this.music.preLevel.durationS()) {
+				this.music.stageStart.play()
+				if (currTime - prevTime >= this.music.stageStart.durationMS()) {
 					document.querySelector('#pre-level').className = 'pre-level-hide'
 					this.state = 'pre-running'
 				}
 			} else if (this.state === 'pre-running') {
 				this.map.board.style.opacity = '1'
-				this.music.running.play()
+				this.music.stage.play()
 				this.state = 'running'
 			} else if (this.state === 'running') {
 				prevTime = currTime
 				this.update()
 				this.draw()
 			} else if (this.state === 'pausing') {
-				this.music.running.stop()
+				this.music.stopStageMusic()
 				this.music.pause.play()
 				this.pause()
 				this.state = 'pause'
@@ -1160,28 +1173,27 @@ class Game {
 			} else if (this.state === 'resuming') {
 				this.music.pause.play()
 				this.gameMenu.hide()
-				if (currTime - prevTime >= this.music.pause.durationS() / 2) {
+				if (currTime - prevTime >= this.music.pause.durationMS() / 2) {
 					this.resume()
 					this.state = 'pre-running'
 				}
 			} else if (this.state === 'over') {
-				this.music.running.stop()
+				this.music.stopStageMusic()
 				this.music.over.play()
 				document.querySelector('#game-over').className = 'game-over-show'
 				this.state = 'game-over'
 			} else if (this.state === 'dying') {
-				this.music.running.stop()
-				this.music.findExit.stop()
+				this.music.stopStageMusic()
 				this.pauseEnemies()
 				this.music.die.play()
-				if (currTime - prevTime >= this.music.die.durationS() * 1000) {
+				if (currTime - prevTime >= this.music.die.durationMS()) {
 					this.music.die.stop()
-					this.music.dying.play()
-					if (currTime - prevTime >= (this.music.die.durationS() + this.music.dying.durationS()) * 1000) {
+					this.music.lifeLost.play()
+					if (currTime - prevTime >= (this.music.die.durationMS() + this.music.lifeLost.durationMS())) {
 						prevTime = currTime
 						if (this.bomberman.liveCount) {
 							this.state = 'restarting'
-							this.map.options.roundTime = this.roundTime
+							this.map.options.resetRoundTime()
 						} else
 							this.state = 'over'
 					}
@@ -1190,21 +1202,20 @@ class Game {
 				this.restart()
 				this.state = 'pre-level-show'
 			} else if (this.state === 'find-exit') {
-				this.music.running.stop()
+				this.music.stage.stop()
 				this.music.findExit.play()
 				this.state = 'running'
 			} else if (this.state === 'won') {
 				this.pauseBomberman()
-				this.music.running.stop()
-				this.music.findExit.stop()
+				this.music.stopStageMusic()
 				this.music.complete.play()
-				if (currTime - prevTime >= this.music.complete.durationS() * 1000) {
+				if (currTime - prevTime >= this.music.complete.durationMS()) {
 					this.state = 'ending'
 				}
 			} else if (this.state === 'ending') {
 				this.map.board.remove()
 				this.music.ending.play()
-				document.querySelector('#ending').style.opacity = '1'
+				document.querySelector('#ending').style.display = 'block'
 				this.state = 'END'
 			}
 		}
@@ -1226,5 +1237,4 @@ game.run()
 window.game = game
 
 // TODO:
-// bonuses, level win, lives, timer, score, sounds, pause, game over, main menu
-// show score after enemy death
+// bonuses, show score after enemy death, stage change, different enemies
