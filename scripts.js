@@ -502,7 +502,6 @@ class GameOptions {
 	initialize = () => {
 		this.initializeTimer()
 		this.initializeScore()
-		this.initializeTimerChange()
 	}
 
 	draw = () => {
@@ -531,13 +530,14 @@ class GameOptions {
 	}
 
 	initializeTimerChange = () => {
-		const interval = setInterval(() => {
+		this.resetRoundTime()
+		clearInterval(this.interval)
+		this.interval = setInterval(() => {
 			this.roundTime--
 			this.passedTime++
 			if (this.roundTime <= 0)
-				clearInterval(interval)
+				clearInterval(this.interval)
 		}, 1000)
-
 	}
 
 	resetRoundTime = () => {
@@ -1200,6 +1200,7 @@ class Game {
 			} else if (this.state === 'pre-stage') {
 				this.screen.stage.show()
 				this.music.stage.play()
+				this.map.options.initializeTimerChange()
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
 				prevTime = currTime
@@ -1283,3 +1284,4 @@ game.run()
 
 // TODO:
 // bonuses, show score after enemy death, stage change, different enemies
+// stage change: when initializing game just pass array of levels; 1 level is 2d array of 0's and 1's; 0-nothing, 1-rock
