@@ -96,7 +96,7 @@ class Entity {
 		if (!own)
 			x = 1
 		if (collideWithDoor)
-			x -= pixelSize * 5
+			x -= pixelSize * 8
 		let left = (this.left - x + (pixelSize + 1)) / tileSize + 2,
 			right = (this.left - 1 + x + this.size - (pixelSize + 1)) / tileSize + 2,
 			top = (this.top - x) / tileSize + 2,
@@ -511,11 +511,11 @@ class GameOptions {
 	}
 
 	drawScore = () => {
-		this.scoreDiv.innerText = `${this.score}`
+		this.scoreDiv.innerText = `SCORE:${this.score}`
 	}
 
 	drawTimer = () => {
-		this.timer.innerText = `LEFT: ${this.roundTime}`
+		this.timer.innerText = `TIME:${this.roundTime}`
 	}
 
 	initializeTimer = () => {
@@ -815,9 +815,47 @@ class GameMusic {
 	}
 }
 
+class Screen {
+	constructor(id) {
+		this.div = document.querySelector(`#${id}`)
+		this.hide()
+	}
+
+	hide = () => {
+		this.div.style.opacity = '0'
+	}
+
+	show = () => {
+		this.div.style.opacity = '1'
+	}
+
+	hideDisplay = () => {
+		this.div.style.display = 'none'
+	}
+
+	showDisplay = () => {
+		this.div.style.display = 'flex'
+	}
+}
+
+class GameScreen {
+	constructor() {
+		this.mainMenu = new Screen('main-menu')
+		this.mainMenu.show()
+		this.stageStart = new Screen('stage-start')
+		this.gameOver = new Screen('game-over')
+		this.gameOver.show()
+		this.gameOver.hideDisplay()
+		this.stage = new Screen('board')
+		this.ending = new Screen('ending')
+		this.ending.show()
+		this.ending.hideDisplay()
+	}
+}
+
 class Game {
 	constructor({
-		            rows = 13, columns = 31, pixelSize = 1, enemyCount = 5,
+		            rows = 13, columns = 31, pixelSize = 3, enemyCount = 7,
 		            explosionTime = 2000, explosionSize = 1, bombCount = 1, liveCount = 3,
 		            chainExplosionTime = 100, roundTime = 200
 	            } = {}) {
@@ -827,8 +865,8 @@ class Game {
 		})
 		this.bomberman = new Bomberman({board: this.map.board, pixelSize, liveCount})
 		this.keyListener = new KeyListener()
-		this.menu = document.querySelector('#main-menu')
 		this.gameMenu = new GameMenu()
+		this.screen = new GameScreen()
 
 		this.state = 'click-me'
 
@@ -838,7 +876,7 @@ class Game {
 	handleUserInteraction = () => {
 		const clickListener = () => {
 			this.music = new GameMusic()
-			this.state = 'main-menu'
+			this.state = 'pre-main-menu'
 			document.querySelector('#click-me').remove()
 			document.removeEventListener('click', clickListener)
 		}
@@ -873,7 +911,10 @@ class Game {
 	isBombermanCollidedWithExitDoor = () => {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {own: true, collideWithDoor: true})
+		} = this.bomberman.getBorders(this.map.options.pixelSize, this.map.options.tileSize, {
+			own: true,
+			collideWithDoor: true
+		})
 		return this.map.isExitDoor(left, top) || this.map.isExitDoor(left, bottom) || this.map.isExitDoor(right, top) || this.map.isExitDoor(right, bottom)
 	}
 
@@ -1031,13 +1072,13 @@ class Game {
 
 	draw = () => {
 		this.bomberman.draw()
-		this.bomberman.liveCountDiv.innerText = `LEFT: ${this.bomberman.liveCount}`
+		this.bomberman.liveCountDiv.innerText = `LIVES:${this.bomberman.liveCount}`
 		this.drawEnemies()
 		this.map.options.draw()
 	}
 
 	initialize = () => {
-		this.menu.style.display = 'none'
+		this.screen.mainMenu.hideDisplay()
 		this.map.initialize()
 		this.bomberman.initialize()
 
@@ -1131,32 +1172,33 @@ class Game {
 	run() {
 		let prevTime = 0
 		const callback = (currTime) => {
-			console.log(this.state)
 			requestAnimationFrame(callback)
 
-			if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
+			if (this.state === 'pre-main-menu') {
+				prevTime = currTime
+				this.screen.mainMenu.showDisplay()
+				this.music.titleScreen.play()
+				this.state = 'main-menu'
+			} else if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
 				this.state = 'initialize'
 				this.music.titleScreen.stop()
-			} else if (this.state === 'main-menu') {
-				prevTime = currTime
-				this.music.titleScreen.play()
 			} else if (this.state === 'initialize') {
-				this.map.board.style.opacity = '0'
+				this.screen.stage.hide()
 				this.initialize()
-				this.state = 'stage-start-show'
-			} else if (this.state === 'stage-start-show') {
-				document.querySelector('#pre-level').className = 'stage-start-show'
-				this.map.board.style.opacity = '0'
+				this.state = 'pre-stage-start'
+			} else if (this.state === 'pre-stage-start') {
+				this.screen.stageStart.show()
+				this.screen.stage.hide()
 				this.state = 'stage-start'
 				this.music.stageStart.play()
 			} else if (this.state === 'stage-start') {
 				if (currTime - prevTime >= this.music.stageStart.durationMS()) {
-					document.querySelector('#pre-level').className = 'pre-level-hide'
-					this.map.board.style.opacity = '1'
+					this.screen.stageStart.hide()
+					this.screen.stage.show()
 					this.state = 'pre-stage'
 				}
 			} else if (this.state === 'pre-stage') {
-				this.map.board.style.opacity = '1'
+				this.screen.stage.show()
 				this.music.stage.play()
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
@@ -1188,7 +1230,8 @@ class Game {
 			} else if (this.state === 'over') {
 				this.music.stopStageMusic()
 				this.music.over.play()
-				document.querySelector('#game-over').className = 'game-over-show'
+				this.screen.stage.hide()
+				this.screen.gameOver.showDisplay()
 				this.state = 'game-over'
 			} else if (this.state === 'pre-pre-die') {
 				this.music.stopStageMusic()
@@ -1212,7 +1255,7 @@ class Game {
 				}
 			} else if (this.state === 'restart') {
 				this.restart()
-				this.state = 'stage-start-show'
+				this.state = 'pre-stage-start'
 			} else if (this.state === 'find-exit') {
 				this.music.stage.stop()
 				this.music.findExit.play()
@@ -1227,7 +1270,7 @@ class Game {
 			} else if (this.state === 'ending') {
 				this.map.board.remove()
 				this.music.ending.play()
-				document.querySelector('#ending').style.display = 'block'
+				this.screen.ending.showDisplay()
 				this.state = 'END'
 			}
 		}
@@ -1235,14 +1278,8 @@ class Game {
 	}
 }
 
-const game = new Game({
-	pixelSize: 2,
-	enemyCount: 1
-})
-
+const game = new Game()
 game.run()
-
-window.game = game
 
 // TODO:
 // bonuses, show score after enemy death, stage change, different enemies
