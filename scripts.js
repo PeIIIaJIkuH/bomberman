@@ -827,7 +827,7 @@ class Game {
 		this.keyListener = new KeyListener()
 		this.menu = document.querySelector('#main-menu')
 		this.gameMenu = new GameMenu()
-		
+
 		this.state = 'click-me'
 
 		this.handleUserInteraction()
@@ -1048,7 +1048,7 @@ class Game {
 				if (this.state === 'stage') {
 					this.state = 'pre-pause'
 				} else if (this.state === 'pause') {
-					this.state = 'pre-resume'
+					this.state = 'pre-pre-resume'
 				}
 			}
 		})
@@ -1098,10 +1098,10 @@ class Game {
 	gameMenuListener = e => {
 		if (e.code === 'Enter') {
 			if (this.gameMenu.selected === 0) {
-				this.state = 'pre-resume'
+				this.state = 'pre-pre-resume'
 			} else if (this.gameMenu.selected === 1) {
 				this.restart()
-				this.state = 'pre-resume'
+				this.state = 'pre-pre-resume'
 			} else if (this.gameMenu.selected === 2) {
 				location.reload()
 			}
@@ -1163,18 +1163,22 @@ class Game {
 				this.draw()
 			} else if (this.state === 'pre-pause') {
 				this.music.stopStageMusic()
+				this.music.pause.stop()
 				this.music.pause.play()
 				this.pause()
 				this.state = 'pause'
 			} else if (this.state === 'pause') {
 				this.gameMenu.draw()
-			} else if (this.state === 'pre-resume') {
+			} else if (this.state === 'pre-pre-resume') {
 				prevTime = currTime
 				this.music.pause.clear()
-				this.state = 'resume'
-			} else if (this.state === 'resume') {
+				this.state = 'pre-resume'
+			} else if (this.state === 'pre-resume') {
+				this.music.pause.stop()
 				this.music.pause.play()
 				this.gameMenu.hide()
+				this.state = 'resume'
+			} else if (this.state === 'resume') {
 				if (currTime - prevTime >= this.music.pause.durationMS() / 2) {
 					this.resume()
 					this.state = 'pre-stage'
@@ -1195,7 +1199,7 @@ class Game {
 					this.music.lifeLost.play()
 					this.state = 'die'
 				}
-			} else if(this.state === 'die') {
+			} else if (this.state === 'die') {
 				if (currTime - prevTime >= (this.music.die.durationMS() + this.music.lifeLost.durationMS())) {
 					prevTime = currTime
 					if (this.bomberman.liveCount) {
