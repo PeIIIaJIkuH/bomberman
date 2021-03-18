@@ -433,6 +433,14 @@ img {
     justify-content: center;
 }
 
+#stage-start {
+    flex-direction: row;
+}
+
+#stage-start span {
+    margin-left: 8px;
+}
+
 #click-me {
     cursor: pointer;
     color: white;
@@ -490,6 +498,13 @@ img {
     color: white;
     position: absolute;
     top: -30px;
+}
+
+#timer img,
+#score img,
+#live-count img {
+    margin-bottom: 1px;
+    margin-right: 5px;
 }
 
 #timer {
