@@ -523,3 +523,39 @@ img {
     margin-bottom: 1px;
     margin-right: 5px;
 }
+
+.power-up {
+    image-rendering: pixelated;
+}
+
+.power-up-bombs {
+    background: url(./img/power-ups/bombs.jpg) center center / cover no-repeat;
+}
+
+.power-up-flames {
+    background: url(./img/power-ups/flames.jpg) center center / cover no-repeat;
+}
+
+.power-up-speed {
+    background: url(./img/power-ups/speed.jpg) center center / cover no-repeat;
+}
+
+.power-up-wall-pass {
+    background: url(./img/power-ups/wall-pass.jpg) center center / cover no-repeat;
+}
+
+.power-up-detonator {
+    background: url(./img/power-ups/detonator.jpg) center center / cover no-repeat;
+}
+
+.power-up-bomb-pass {
+    background: url(./img/power-ups/bomb-pass.jpg) center center / cover no-repeat;
+}
+
+.power-up-flame-pass {
+    background: url(./img/power-ups/flame-pass.jpg) center center / cover no-repeat;
+}
+
+.power-up-mystery {
+    background: url(./img/power-ups/mystery.jpg) center center / cover no-repeat;
+}
