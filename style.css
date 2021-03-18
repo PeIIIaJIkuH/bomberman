@@ -441,7 +441,8 @@ img {
     margin-left: 8px;
 }
 
-#click-me {
+#click-me,
+#incorrect-arguments {
     cursor: pointer;
     color: white;
     width: 100%;

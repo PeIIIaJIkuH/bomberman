@@ -1,3 +1,5 @@
+const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo']
+
 const getRandomInt = (min, max) => {
 	min = Math.ceil(min)
 	max = Math.ceil(max)
@@ -130,21 +132,21 @@ class Enemy extends Entity {
 			case 'ballom':
 				this.xp = 100
 				this.speed /= 3
-				this.createHTML('./img/ballom.png')
+				this.createHTML('./img/enemies/ballom.png')
 				break
 			case 'onil':
 				this.xp = 200
 				this.speed /= 2
-				this.createHTML('./img/onil.png')
+				this.createHTML('./img/enemies/onil.png')
 				break
 			case 'dahl':
 				this.xp = 400
-				this.createHTML('./img/dahl.png')
+				this.createHTML('./img/enemies/dahl.png')
 				break
 			case 'minvo':
 				this.xp = 800
 				this.speed *= 1.5
-				this.createHTML('./img/minvo.png')
+				this.createHTML('./img/enemies/minvo.png')
 				break
 		}
 	}
@@ -211,7 +213,7 @@ class Bomberman extends Entity {
 		this.liveCountDiv = document.createElement('div')
 		this.liveCountDiv.id = 'live-count'
 		const img = document.createElement('img')
-		img.src = './img/heart.png'
+		img.src = './img/game-info/heart.png'
 		img.alt = 'heart'
 		const span = document.createElement('span')
 		span.textContent = `${this.liveCount}`
@@ -568,7 +570,7 @@ class StageOptions {
 		this.timer = document.createElement('div')
 		this.timer.id = 'timer'
 		const img = document.createElement('img')
-		img.src = './img/clock.png'
+		img.src = './img/game-info/clock.png'
 		img.alt = 'clock'
 		const span = document.createElement('span')
 		span.innerText = `${this.roundTime}`
@@ -583,7 +585,7 @@ class StageOptions {
 		this.scoreDiv = document.createElement('div')
 		this.scoreDiv.id = 'score'
 		const img = document.createElement('img')
-		img.src = './img/star.png'
+		img.src = './img/game-info/star.png'
 		img.alt = 'star'
 		const span = document.createElement('span')
 		span.innerText = `${this.score}`
@@ -613,9 +615,21 @@ class Stage {
 	constructor({
 		            data, pixelSize, tileSize, bombCount, explosionTime, explosionSize, chainExplosionTime
 	            }) {
+		if (!(data instanceof Object)) {
+			this.error = 'incorrect type of stage'
+			return
+		}
+
 		const rows = data.rows || 13,
 			columns = data.columns || 31,
 			roundTime = data.roundTime || 200
+
+		const error = this.checkArguments(rows, columns, roundTime, data.enemies)
+		if (error) {
+			this.error = error
+			return
+		}
+
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
 		this.options = new StageOptions({
@@ -627,6 +641,23 @@ class Stage {
 		this.enemies = []
 		this.bombs = []
 		this.explosions = []
+	}
+
+	checkArguments = (rows, columns, roundTime, enemies) => {
+		if (isNaN(rows) || rows < 7)
+			return 'incorrect number of rows'
+		if (isNaN(columns) || columns < 7)
+			return 'incorrect number of columns'
+		if (isNaN(roundTime) || roundTime < 10)
+			return 'incorrect roundTime'
+		if (!(enemies instanceof Object))
+			return 'incorrect enemies'
+		for (const enemyType of Object.keys(enemies)) {
+			if (!ENEMY_TYPES.includes(enemyType))
+				return `incorrect type of enemy: ${enemyType}`
+			if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1)
+				return `incorrect number of enemies: ${enemyType}`
+		}
 	}
 
 	reinitialize = (data) => {
@@ -707,9 +738,9 @@ class Stage {
 		for (const enemyType of Object.keys(this.options.enemies)) {
 			let count = 0
 			while (count < this.options.enemies[enemyType]) {
-				const x = getRandomInt(1, this.options.columns),
-					y = getRandomInt(1, this.options.rows)
-				if (!this.isBlock(x, y) && !(x <= 5 && y <= 5)) {
+				const x = getRandomInt(1, this.options.columns + 1),
+					y = getRandomInt(1, this.options.rows + 1)
+				if (!this.isBlock(x, y) && !(x < 5 && y < 5)) {
 					const left = this.options.tileSize * (x - 2),
 						top = this.options.tileSize * (y - 2)
 					this.enemies.push(new Enemy({
@@ -939,6 +970,9 @@ class GameScreen {
 		this.ending.show()
 		this.ending.hideDisplay()
 		this.info = new Screen('game-info')
+		this.incorrectArguments = new Screen('incorrect-arguments')
+		this.incorrectArguments.show()
+		this.incorrectArguments.hideDisplay()
 	}
 
 	showStage = () => {
@@ -957,20 +991,48 @@ class Game {
 		            pixelSize = 3, explosionTime = 2000, explosionSize = 1,
 		            bombCount = 1, liveCount = 3, chainExplosionTime = 100, stages
 	            } = {}) {
+		this.screen = new GameScreen()
+		const error = this.checkArguments(pixelSize, explosionTime, explosionSize, bombCount, liveCount,
+			chainExplosionTime, stages)
+		if (error) {
+			this.error = error
+			return
+		}
+
 		this.stageNumber = 0
 		this.stages = stages
 		this.stage = new Stage({
 			data: stages[this.stageNumber], pixelSize, tileSize: 16 * pixelSize, bombCount, explosionTime,
 			explosionSize, chainExplosionTime
 		})
+		if (this.stage.error) {
+			this.error = this.stage.error
+			return
+		}
 		this.bomberman = new Bomberman({board: this.stage.board, pixelSize, liveCount})
 		this.keyListener = new KeyListener()
 		this.gameMenu = new GameMenu()
-		this.screen = new GameScreen()
 
 		this.state = 'click-me'
 
 		this.handleUserInteraction()
+	}
+
+	checkArguments = (pixelSize, explosionTime, explosionSize, bombCount, liveCount, chainExplosionTime, stages) => {
+		if (isNaN(pixelSize) || pixelSize < 1)
+			return 'incorrect pixelSize'
+		if (isNaN(explosionTime) || explosionTime < 500)
+			return 'incorrect explosionTime'
+		if (isNaN(explosionSize) || explosionSize < 1)
+			return 'incorrect explosionSize'
+		if (isNaN(bombCount) || bombCount < 1)
+			return 'incorrect bombCount'
+		if (isNaN(liveCount) || liveCount < 1)
+			return 'incorrect liveCount'
+		if (isNaN(chainExplosionTime) || chainExplosionTime < 1)
+			return 'incorrect chainExplosionTime'
+		if (!(stages instanceof Array))
+			return 'incorrect type of stages'
 	}
 
 	handleUserInteraction = () => {
@@ -1278,8 +1340,13 @@ class Game {
 	run() {
 		let prevTime = 0
 		const callback = (currTime) => {
-			console.log(this.state)
 			requestAnimationFrame(callback)
+
+			if (this.error) {
+				document.querySelector('#incorrect-arguments').textContent = this.error
+				this.screen.incorrectArguments.showDisplay()
+				this.state = 'INCORRECT-ARGUMENTS'
+			}
 
 			if (this.state === 'pre-main-menu') {
 				this.screen.mainMenu.showDisplay()
@@ -1394,13 +1461,16 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 3,
+	pixelSize: 2,
 	stages: [
-		{enemies: {ballom: 6}},
-		{enemies: {ballom: 3, onil: 3}}
+		{rows: 11, columns: 11, enemies: {ballom: 'one'}}
+		// {enemies: {ballom: 3, onil: 3}},
+		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
 	]
 })
 game.run()
+
+// enemy types: ballom, onil, dahl, minvo
 
 // TODO:
 // show xp for the enemy after its death
@@ -1425,3 +1495,5 @@ game.run()
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest
 // add animation to the last page
+// change order of items from the game-info section
+// add responsive design: just resize if the gameBoard is smaller than the device screen
