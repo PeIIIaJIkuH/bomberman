@@ -503,6 +503,18 @@ img {
     color: white;
 }
 
+#timer {
+    order: 1;
+}
+
+#score {
+    order: 3;
+}
+
+#live-count {
+    order: 2;
+}
+
 #timer img,
 #score img,
 #live-count img {

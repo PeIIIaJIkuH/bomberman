@@ -1463,7 +1463,7 @@ class Game {
 const game = new Game({
 	pixelSize: 2,
 	stages: [
-		{rows: 11, columns: 11, enemies: {ballom: 'one'}}
+		{rows: 11, columns: 11, enemies: {ballom: 3}}
 		// {enemies: {ballom: 3, onil: 3}},
 		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
 	]
@@ -1495,5 +1495,6 @@ game.run()
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest
 // add animation to the last page
-// change order of items from the game-info section
 // add responsive design: just resize if the gameBoard is smaller than the device screen
+// change document title depending on the state of the game
+
