@@ -613,11 +613,14 @@ class Stage {
 	constructor({
 		            data, pixelSize, tileSize, bombCount, explosionTime, explosionSize, chainExplosionTime
 	            }) {
+		const rows = data.rows || 13,
+			columns = data.columns || 31,
+			roundTime = data.roundTime || 200
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
 		this.options = new StageOptions({
-			rows: data.rows, columns: data.columns, pixelSize, tileSize, enemies: data.enemies, bombCount,
-			explosionSize, explosionTime, chainExplosionTime, roundTime: data.roundTime, score: 0
+			rows, columns, pixelSize, tileSize, enemies: data.enemies, bombCount,
+			explosionSize, explosionTime, chainExplosionTime, roundTime, score: 0
 		})
 		this.rocks = []
 		this.walls = []
@@ -628,8 +631,11 @@ class Stage {
 
 	reinitialize = (data) => {
 		this.removeAllDivs()
-		const {rows, columns, enemies, roundTime} = data,
-			{pixelSize, tileSize, bombCount, explosionSize, explosionTime, chainExplosionTime, score} = this.options
+		const rows = data.rows || 13,
+			columns = data.columns || 31,
+			roundTime = data.roundTime || 200,
+			enemies = data.enemies
+		const {pixelSize, tileSize, bombCount, explosionSize, explosionTime, chainExplosionTime, score} = this.options
 		this.options = new StageOptions({
 			rows, columns, pixelSize, tileSize, enemies, bombCount, explosionSize, explosionTime, chainExplosionTime,
 			roundTime, score
@@ -1272,6 +1278,7 @@ class Game {
 	run() {
 		let prevTime = 0
 		const callback = (currTime) => {
+			console.log(this.state)
 			requestAnimationFrame(callback)
 
 			if (this.state === 'pre-main-menu') {
@@ -1387,13 +1394,34 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 2,
+	pixelSize: 3,
 	stages: [
-		{rows: 7, columns: 7, roundTime: 200, enemies: {ballom: 1}}]
-	// {rows: 11, columns: 11, roundTime: 200, enemies: {ballom: 2, onil: 2}}]
+		{enemies: {ballom: 6}},
+		{enemies: {ballom: 3, onil: 3}}
+	]
 })
 game.run()
 
 // TODO:
-// bonuses, show score after enemy death, stage change, different enemies
-// stage change: when initializing game just pass array of levels; 1 level is 2d array of 0's and 1's; 0-nothing, 1-rock
+// show xp for the enemy after its death
+// stage change: when initializing game just pass array of stages; a stage is 2d array of 0's and 1's; 0-nothing, 1-rock
+// add enemies who can pass through wall
+// add different enemy logic
+// powerUps: 
+//          bombs: increase max bomb count (max 10)
+//          flames: increase bomb explosion size
+//          speed: increase movement speed
+//          wallPass: pass through walls
+//          detonator: detonate the oldest bomb
+//          bombPass: pass through bombs (first, remove this ability from bomberman)
+//          flamePass: immunity to explosions
+//          mystery: temporary invincibility
+// fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
+// add bomberman walk sounds
+// pause game when user looses focus
+// update collision with door
+// show score at end of the game
+// add backend:
+//          add page, where user can write his nickname and send his score to the backend
+//          add page, where user can see scores of the other players, from highest to the lowest
+// add animation to the last page
