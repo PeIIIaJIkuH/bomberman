@@ -492,12 +492,14 @@ img {
     margin-bottom: 10px;
 }
 
-#timer,
-#live-count,
-#score {
-    color: white;
+#game-info {
     position: absolute;
+    width: 100%;
     top: -30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
 }
 
 #timer img,
@@ -505,17 +507,4 @@ img {
 #live-count img {
     margin-bottom: 1px;
     margin-right: 5px;
-}
-
-#timer {
-    left: 0;
-}
-
-#live-count {
-    right: 0;
-}
-
-#score {
-    left: 50%;
-    transform: translateX(-50%);
 }

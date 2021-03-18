@@ -63,6 +63,7 @@ class Entity {
 		this.div = document.createElement('div')
 		this.div.style.position = 'absolute'
 		this.img = document.createElement('img')
+		this.img.alt = 'entity'
 		this.div.append(this.img)
 		this.board.append(this.div)
 		this.div.style.height = `${this.size}px`
@@ -206,15 +207,17 @@ class Bomberman extends Entity {
 	createHTML = () => {
 		this.div.id = 'bomberman'
 		this.img.src = './img/bomberman.png'
+		this.img.alt = 'bomberman'
 		this.liveCountDiv = document.createElement('div')
 		this.liveCountDiv.id = 'live-count'
 		const img = document.createElement('img')
 		img.src = './img/heart.png'
+		img.alt = 'heart'
 		const span = document.createElement('span')
 		span.textContent = `${this.liveCount}`
 		this.liveCountDiv.append(img)
 		this.liveCountDiv.append(span)
-		this.board.append(this.liveCountDiv)
+		document.querySelector('#game-info').append(this.liveCountDiv)
 	}
 
 	moveLeft() {
@@ -316,6 +319,7 @@ class Wall extends Block {
 
 		this.img = document.createElement('img')
 		this.img.src = './img/wall.png'
+		this.img.alt = 'wall'
 		this.div.append(this.img)
 	}
 
@@ -343,6 +347,7 @@ class Bomb {
 	createHTML = () => {
 		this.div = document.createElement('div')
 		this.img = document.createElement('img')
+		this.img.alt = 'bomb'
 		this.div.classList.add('bomb')
 		this.div.style.gridColumnStart = String(this.x)
 		this.div.style.gridRowStart = String(this.y)
@@ -390,6 +395,7 @@ class Explosion {
 		div.classList.add('explosion')
 		img.classList.add(className)
 		img.src = './img/explosion.png'
+		img.alt = 'explosion'
 		div.style.gridColumnStart = String(x)
 		div.style.gridRowStart = String(y)
 		div.append(img)
@@ -563,11 +569,12 @@ class StageOptions {
 		this.timer.id = 'timer'
 		const img = document.createElement('img')
 		img.src = './img/clock.png'
+		img.alt = 'clock'
 		const span = document.createElement('span')
 		span.innerText = `${this.roundTime}`
 		this.timer.append(img)
 		this.timer.append(span)
-		document.querySelector('#board').append(this.timer)
+		document.querySelector('#game-info').append(this.timer)
 	}
 
 	initializeScore = () => {
@@ -577,11 +584,12 @@ class StageOptions {
 		this.scoreDiv.id = 'score'
 		const img = document.createElement('img')
 		img.src = './img/star.png'
+		img.alt = 'star'
 		const span = document.createElement('span')
 		span.innerText = `${this.score}`
 		this.scoreDiv.append(img)
 		this.scoreDiv.append(span)
-		document.querySelector('#board').append(this.scoreDiv)
+		document.querySelector('#game-info').append(this.scoreDiv)
 	}
 
 	initializeTimerChange = () => {
@@ -924,6 +932,17 @@ class GameScreen {
 		this.ending = new Screen('ending')
 		this.ending.show()
 		this.ending.hideDisplay()
+		this.info = new Screen('game-info')
+	}
+
+	showStage = () => {
+		this.stage.show()
+		this.info.show()
+	}
+
+	hideStage = () => {
+		this.stage.hide()
+		this.info.hide()
 	}
 }
 
@@ -1263,23 +1282,23 @@ class Game {
 				this.state = 'initialize'
 				this.music.titleScreen.stop()
 			} else if (this.state === 'initialize') {
-				this.screen.stage.hide()
+				this.screen.hideStage()
 				this.initialize()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'pre-stage-start') {
 				this.screen.stageStart.show()
-				this.screen.stage.hide()
+				this.screen.hideStage()
 				this.state = 'stage-start'
 				this.music.stageStart.play()
 				prevTime = currTime
 			} else if (this.state === 'stage-start') {
 				if (currTime - prevTime >= this.music.stageStart.durationMS()) {
 					this.screen.stageStart.hide()
-					this.screen.stage.show()
+					this.screen.showStage()
 					this.state = 'pre-stage'
 				}
 			} else if (this.state === 'pre-stage') {
-				this.screen.stage.show()
+				this.screen.showStage()
 				this.music.stage.play()
 				this.stage.options.initializeTimerChange()
 				this.state = 'stage'
@@ -1312,7 +1331,7 @@ class Game {
 			} else if (this.state === 'over') {
 				this.music.stopStageMusic()
 				this.music.over.play()
-				this.screen.stage.hide()
+				this.screen.hideStage()
 				this.screen.gameOver.showDisplay()
 				this.state = 'game-over'
 			} else if (this.state === 'pre-pre-die') {
@@ -1356,7 +1375,8 @@ class Game {
 						this.state = 'ending'
 				}
 			} else if (this.state === 'ending') {
-				this.stage.board.remove()
+				this.screen.info.hide()
+				this.screen.stage.hideDisplay()
 				this.music.ending.play()
 				this.screen.ending.showDisplay()
 				this.state = 'END'
@@ -1369,8 +1389,8 @@ class Game {
 const game = new Game({
 	pixelSize: 2,
 	stages: [
-		{rows: 7, columns: 7, roundTime: 200, enemies: {ballom: 1}},
 		{rows: 7, columns: 7, roundTime: 200, enemies: {ballom: 1}}]
+	// {rows: 11, columns: 11, roundTime: 200, enemies: {ballom: 2, onil: 2}}]
 })
 game.run()
 
