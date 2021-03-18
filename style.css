@@ -5,6 +5,7 @@
     margin: 0;
     padding: 0;
     font-family: 'Press Start 2P', cursive;
+    color: white;
 }
 
 html {
@@ -159,6 +160,12 @@ img {
     to {
         transform: translate3d(-70%, -50%, 0);
     }
+}
+
+.enemy-xp {
+    position: absolute;
+    font-size: 8px;
+    z-index: 6;
 }
 
 .enemy {
@@ -371,7 +378,6 @@ img {
 
 #main-menu {
     font-size: 24px;
-    color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -419,7 +425,6 @@ img {
 #game-menu,
 #stage-start,
 #game-over {
-    color: white;
     width: 100%;
     height: 100%;
     top: 0;
@@ -444,7 +449,6 @@ img {
 #click-me,
 #incorrect-arguments {
     cursor: pointer;
-    color: white;
     width: 100%;
     height: 100%;
     top: 0;
@@ -483,7 +487,6 @@ img {
 #ending {
     display: flex;
     flex-direction: column;
-    color: white;
     text-align: center;
     position: relative;
     z-index: 6;
@@ -500,7 +503,6 @@ img {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: white;
 }
 
 #timer {

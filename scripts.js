@@ -116,6 +116,37 @@ class Entity {
 	}
 }
 
+class EnemyXP {
+	constructor({board, left, top, amount}) {
+		this.board = board
+		this.left = left
+		this.top = top
+		this.amount = amount
+
+		this.initialize()
+	}
+
+	initialize = () => {
+		this.createHTML()
+		this.deleteAfter()
+	}
+
+	createHTML = () => {
+		this.div = document.createElement('div')
+		this.div.className = 'enemy-xp'
+		this.div.innerText = this.amount
+		this.div.style.left = `${this.left}px`
+		this.div.style.top = `${this.top}px`
+		this.board.append(this.div)
+	}
+
+	deleteAfter = () => {
+		new Timer(() => {
+			this.div.remove()
+		}, 2000)
+	}
+}
+
 class Enemy extends Entity {
 	constructor({board, pixelSize, left, top, xp, type}) {
 		super({board, pixelSize, left, top})
@@ -186,6 +217,12 @@ class Enemy extends Entity {
 		this.timer = new Timer(() => {
 			this.img.className = 'enemy-dead'
 			this.div.remove()
+			new EnemyXP({
+				board: this.board,
+				left: parseInt(this.div.style.left),
+				top: parseInt(this.div.style.top),
+				amount: this.xp
+			})
 		}, 1100)
 	}
 }
@@ -1473,7 +1510,6 @@ game.run()
 // enemy types: ballom, onil, dahl, minvo
 
 // TODO:
-// show xp for the enemy after its death
 // stage change: when initializing game just pass array of stages; a stage is 2d array of 0's and 1's; 0-nothing, 1-rock
 // add enemies who can pass through wall
 // add different enemy logic
