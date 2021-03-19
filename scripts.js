@@ -36,6 +36,8 @@ const playPowerUpPicked = () => {
 	sound.play().then()
 }
 
+const createId = (x, y) => `${x}-${y}`
+
 class Timer {
 	constructor(callback, delay) {
 		this.callback = callback
@@ -343,6 +345,7 @@ class Block {
 class Rock extends Block {
 	constructor({board, x, y}) {
 		super({board, x, y})
+		this.id = createId(x, y)
 
 		this.addClass()
 	}
@@ -380,7 +383,7 @@ class PowerUp extends Block {
 class Wall extends Block {
 	constructor({board, x, y}) {
 		super({board, x, y})
-		this.id = `${x}-${y}`
+		this.id = createId(x, y)
 
 		this.addImage()
 	}
@@ -712,7 +715,7 @@ class Stage {
 			rows, columns, pixelSize, tileSize, enemies: data.enemies, bombCount, powerUps: data.powerUps,
 			explosionSize, explosionTime, chainExplosionTime, roundTime, score: 0
 		})
-		this.rocks = []
+		this.rocks = {}
 		this.walls = {}
 		this.enemies = []
 		this.bombs = []
@@ -792,16 +795,22 @@ class Stage {
 
 	createRocks = () => {
 		for (let i = 1; i <= this.options.columns; i++) {
-			this.rocks.push(new Rock({x: i, y: 1, board: this.board}))
-			this.rocks.push(new Rock({x: i, y: this.options.rows, board: this.board}))
+			const rock1 = new Rock({board: this.board, x: i, y: 1}),
+				rock2 = new Rock({board: this.board, x: i, y: this.options.rows})
+			this.rocks[rock1.id] = rock1
+			this.rocks[rock2.id] = rock2
 		}
 		for (let i = 2; i < this.options.rows; i++) {
-			this.rocks.push(new Rock({x: 1, y: i, board: this.board}))
-			this.rocks.push(new Rock({x: this.options.columns, y: i, board: this.board}))
+			const rock1 = new Rock({board: this.board, x: 1, y: i}),
+				rock2 = new Rock({board: this.board, x: this.options.columns, y: i})
+			this.rocks[rock1.id] = rock1
+			this.rocks[rock2.id] = rock2
 		}
 		for (let i = 3; i < this.options.columns; i += 2)
-			for (let j = 3; j < this.options.rows; j += 2)
-				this.rocks.push(new Rock({x: i, y: j, board: this.board}))
+			for (let j = 3; j < this.options.rows; j += 2) {
+				const rock = new Rock({board: this.board, x: i, y: j})
+				this.rocks[rock.id] = rock
+			}
 	}
 
 	createWalls = () => {
@@ -905,14 +914,12 @@ class Stage {
 	}
 
 	isRock = (x, y) => {
-		for (const rock of this.rocks)
-			if (rock.x === x && rock.y === y)
-				return true
-		return false
+		const id = createId(x, y)
+		return id in this.rocks
 	}
 
 	isWall = (x, y) => {
-		const id = `${x}-${y}`
+		const id = createId(x, y)
 		return id in this.walls
 	}
 
@@ -941,7 +948,7 @@ class Stage {
 	}
 
 	getWall = (x, y) => {
-		const id = `${x}-${y}`
+		const id = createId(x, y)
 		return this.walls[id]
 	}
 
@@ -958,7 +965,7 @@ class Stage {
 	}
 
 	deleteWall = (x, y) => {
-		const id = `${x}-${y}`
+		const id = createId(x, y)
 		this.walls[id].div.remove()
 		delete this.walls[id]
 	}
@@ -1574,8 +1581,8 @@ class Game {
 		const callback = (currTime) => {
 			requestAnimationFrame(callback)
 
-			if ((currTime - prevTime) / 1000 < 1 / 80)
-				return
+			// if ((currTime - prevTime) / 1000 < 1 / 80)
+			// 	return
 
 			if (this.error) {
 				document.querySelector('#incorrect-arguments').textContent = this.error
