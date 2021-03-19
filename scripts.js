@@ -2,6 +2,7 @@ const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo']
 const POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
 const AUDIO_VOLUME = 0.05
 const ENEMY_XP_SHOW_TIME = 2000
+const POWER_UP_SPEED_BOOST = 0.3
 
 
 const getRandomInt = (min, max) => {
@@ -939,11 +940,23 @@ class Stage {
 			(!wallPass && this.isWall(x, y)) || (!bombPass && this.isBomb(x, y)) || (enemy && this.isExitDoor(x, y))
 	}
 
-	getWall = (x, y) => this.walls.filter(wall => wall.x === x && wall.y === y)[0]
+	getWall = (x, y) => {
+		for (const wall of this.walls)
+			if (wall.x === x && wall.y === y)
+				return wall
+	}
 
-	getBomb = (x, y) => this.bombs.filter(bomb => bomb.x === x && bomb.y === y)[0]
+	getBomb = (x, y) => {
+		for (const bomb of this.bombs)
+			if (bomb.x === x && bomb.y === y)
+				return bomb
+	}
 
-	getPowerUp = (x, y) => this.powerUps.filter(powerUp => powerUp.x === x && powerUp.y === y)[0]
+	getPowerUp = (x, y) => {
+		for (const powerUp of this.powerUps)
+			if (powerUp.x === x && powerUp.y === y)
+				return powerUp
+	}
 
 	deleteWall = (x, y) => {
 		this.walls = this.walls.filter(wall => {
@@ -1264,7 +1277,7 @@ class Game {
 					this.stage.options.explosionSize++
 					break
 				case 'speed':
-					this.bomberman.speed += 0.1
+					this.bomberman.speed += POWER_UP_SPEED_BOOST
 					break
 				case 'wall-pass':
 					this.bomberman.wallPass = true
@@ -1699,7 +1712,7 @@ const game = new Game({
 	explosionTime: 2000,
 	stages: [
 		{
-			rows: 13, columns: 31,
+			rows: 13, columns: 13,
 			enemies: {ballom: 6},
 			powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, speed: 1, 'bomb-pass': 1}
 		}
