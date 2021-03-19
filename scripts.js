@@ -1,8 +1,16 @@
-const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo']
-const POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
-const AUDIO_VOLUME = 0.05
-const ENEMY_XP_SHOW_TIME = 2000
-const POWER_UP_SPEED_BOOST = 0.3
+const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
+	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery'],
+	AUDIO_VOLUME = 0.05,
+	ENEMY_XP_SHOW_TIME = 2000, POWER_UP_SPEED_BOOST = 0.3,
+	ENEMY_DYING_TIME = 1100,
+	BOMBERMAN_DYING_TIME = 600,
+	EXPLOSION_TIME = 2000,
+	CHAIN_EXPLOSION_TIME = 100,
+	PIXEL_SIZE = 2,
+	TILE_SIZE = PIXEL_SIZE * 16,
+	DEFAULT_ROWS = 13,
+	DEFAULT_COLUMNS = 31
+
 let ENEMY_ID = 0
 
 
@@ -64,13 +72,12 @@ class Timer {
 }
 
 class Entity {
-	constructor({board, pixelSize, left, top, speed}) {
+	constructor({board, left, top, speed}) {
 		this.board = board
-		this.pixelSize = pixelSize
-		this.speed = speed || pixelSize / 2
-		this.left = left || pixelSize * 2
-		this.top = top || pixelSize * 2
-		this.size = 16 * pixelSize * 0.75
+		this.speed = speed || PIXEL_SIZE / 2
+		this.left = left || PIXEL_SIZE * 2
+		this.top = top || PIXEL_SIZE * 2
+		this.size = 16 * PIXEL_SIZE * 0.75
 		this.wallPass = false
 
 		this.createHTML()
@@ -105,26 +112,26 @@ class Entity {
 	}
 
 	draw() {
-		this.div.style.transform = `translate3d(${16 * this.pixelSize + Math.floor(this.left)}px, ${16 * this.pixelSize + Math.floor(this.top)}px, 0)`
+		this.div.style.transform = `translate3d(${16 * PIXEL_SIZE + Math.floor(this.left)}px, ${16 * PIXEL_SIZE + Math.floor(this.top)}px, 0)`
 	}
 
-	getBorders(pixelSize, tileSize, {own = true, collideWithDoor = false, floorValues = false} = {}) {
+	getBorders({own = true, collideWithDoor = false, floorValues = false} = {}) {
 		let x = 0
 		if (!own)
 			x = 1
 		if (collideWithDoor)
-			x -= pixelSize * 8
+			x -= PIXEL_SIZE * 8
 		let left, right, top, bottom
 		if (this instanceof Bomberman) {
-			left = (this.left - x + (pixelSize + 1)) / tileSize + 2
-			right = (this.left + x + this.size - (pixelSize + 1)) / tileSize + 2
-			top = (this.top - x) / tileSize + 2
-			bottom = (this.top + x - 1 + this.size - (pixelSize - 1)) / tileSize + 2
+			left = (this.left - x + (PIXEL_SIZE + 1)) / TILE_SIZE + 2
+			right = (this.left + x + this.size - (PIXEL_SIZE + 1)) / TILE_SIZE + 2
+			top = (this.top - x) / TILE_SIZE + 2
+			bottom = (this.top + x - 1 + this.size - (PIXEL_SIZE - 1)) / TILE_SIZE + 2
 		} else {
-			left = (this.left - x) / tileSize + 2
-			right = (this.left + x + this.size) / tileSize + 2
-			top = (this.top - x) / tileSize + 2
-			bottom = (this.top + x + this.size) / tileSize + 2
+			left = (this.left - x) / TILE_SIZE + 2
+			right = (this.left + x + this.size) / TILE_SIZE + 2
+			top = (this.top - x) / TILE_SIZE + 2
+			bottom = (this.top + x + this.size) / TILE_SIZE + 2
 		}
 		if (floorValues) {
 			left = Math.floor(left)
@@ -137,12 +144,11 @@ class Entity {
 }
 
 class EnemyXP {
-	constructor({board, left, top, amount, pixelSize}) {
+	constructor({board, left, top, amount}) {
 		this.board = board
 		this.left = left
 		this.top = top
 		this.amount = amount
-		this.pixelSize = pixelSize
 
 		this.initialize()
 	}
@@ -156,7 +162,7 @@ class EnemyXP {
 		this.div = document.createElement('div')
 		this.div.className = 'enemy-xp'
 		this.div.innerText = this.amount
-		this.div.style.transform = `translate3d(${this.left}px, ${this.top + (3 * this.pixelSize)}px, 0)`
+		this.div.style.transform = `translate3d(${this.left}px, ${this.top + (3 * PIXEL_SIZE)}px, 0)`
 		this.board.append(this.div)
 	}
 
@@ -168,8 +174,8 @@ class EnemyXP {
 }
 
 class Enemy extends Entity {
-	constructor({board, pixelSize, left, top, xp, type}) {
-		super({board, pixelSize, left, top})
+	constructor({board, left, top, xp, type}) {
+		super({board, left, top})
 		this.id = ENEMY_ID
 		ENEMY_ID++
 		this.direction = getRandomDirection()
@@ -243,16 +249,15 @@ class Enemy extends Entity {
 				board: this.board,
 				left: this.left,
 				top: this.top,
-				amount: this.xp,
-				pixelSize: this.pixelSize
+				amount: this.xp
 			})
-		}, 1100)
+		}, ENEMY_DYING_TIME)
 	}
 }
 
 class Bomberman extends Entity {
-	constructor({board, pixelSize, liveCount}) {
-		super({board, pixelSize})
+	constructor({board, liveCount}) {
+		super({board})
 		this.direction = 'down'
 		this.liveCount = liveCount
 		this.bombPass = false
@@ -315,12 +320,12 @@ class Bomberman extends Entity {
 		this.liveCount--
 		this.timer = new Timer(() => {
 			this.img.className = 'bomberman-dead'
-		}, 600)
+		}, BOMBERMAN_DYING_TIME)
 	}
 
 	restart = () => {
-		this.left = this.pixelSize
-		this.top = this.pixelSize
+		this.left = PIXEL_SIZE
+		this.top = PIXEL_SIZE
 	}
 }
 
@@ -456,7 +461,7 @@ class Bomb {
 		this.timer = new Timer(() => {
 			this.createExplosions()
 			this.stage.deleteBomb(this.x, this.y)
-		}, this.stage.options.explosionTime)
+		}, EXPLOSION_TIME)
 	}
 }
 
@@ -606,19 +611,12 @@ class KeyListener {
 }
 
 class StageOptions {
-	constructor({
-		            rows, columns, pixelSize, tileSize, enemies, bombCount, explosionTime, explosionSize,
-		            chainExplosionTime, roundTime, score, powerUps
-	            }) {
+	constructor({rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps}) {
 		this.rows = rows
 		this.columns = columns
-		this.pixelSize = pixelSize
-		this.tileSize = tileSize
 		this.enemies = enemies
 		this.bombCount = bombCount
-		this.explosionTime = explosionTime
 		this.explosionSize = explosionSize
-		this.chainExplosionTime = chainExplosionTime
 		this.roundTime = roundTime
 		this.passedTime = 0
 		this.score = score
@@ -694,16 +692,14 @@ class StageOptions {
 }
 
 class Stage {
-	constructor({
-		            data, pixelSize, tileSize, bombCount, explosionTime, explosionSize, chainExplosionTime
-	            }) {
+	constructor({data, bombCount, explosionSize}) {
 		if (!(data instanceof Object)) {
 			this.error = 'incorrect type of stage'
 			return
 		}
 
-		const rows = data.rows || 13,
-			columns = data.columns || 31,
+		const rows = data.rows || DEFAULT_ROWS,
+			columns = data.columns || DEFAULT_COLUMNS,
 			roundTime = data.roundTime || 200,
 			enemies = data.enemies || {},
 			powerUps = data.powerUps || {}
@@ -717,8 +713,8 @@ class Stage {
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
 		this.options = new StageOptions({
-			rows, columns, pixelSize, tileSize, enemies: data.enemies, bombCount, powerUps: data.powerUps,
-			explosionSize, explosionTime, chainExplosionTime, roundTime, score: 0
+			rows, columns, enemies: data.enemies, bombCount, powerUps: data.powerUps,
+			explosionSize, roundTime, score: 0
 		})
 		this.rocks = {}
 		this.walls = {}
@@ -762,15 +758,14 @@ class Stage {
 
 	reinitialize = data => {
 		this.removeAllDivs()
-		const rows = data.rows || 13,
-			columns = data.columns || 31,
+		const rows = data.rows || DEFAULT_ROWS,
+			columns = data.columns || DEFAULT_COLUMNS,
 			roundTime = data.roundTime || 200,
 			enemies = data.enemies,
 			powerUps = data.powerUps || {}
-		const {pixelSize, tileSize, bombCount, explosionSize, explosionTime, chainExplosionTime, score} = this.options
+		const {bombCount, explosionSize, score} = this.options
 		this.options = new StageOptions({
-			rows, columns, pixelSize, tileSize, enemies, bombCount, explosionSize, explosionTime, chainExplosionTime,
-			roundTime, score, powerUps
+			rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps
 		})
 		this.createHTML()
 		this.changeStyles()
@@ -875,10 +870,10 @@ class Stage {
 					const x = getRandomInt(1, this.options.columns + 1),
 						y = getRandomInt(1, this.options.rows + 1)
 					if (!this.isBlock(x, y) && !(x < 5 && y < 5)) {
-						const left = this.options.tileSize * (x - 2),
-							top = this.options.tileSize * (y - 2)
+						const left = TILE_SIZE * (x - 2),
+							top = TILE_SIZE * (y - 2)
 						const enemy = new Enemy({
-							board: this.board, pixelSize: this.options.pixelSize, left, top, type: enemyType
+							board: this.board, left, top, type: enemyType
 						})
 						this.enemies[enemy.id] = enemy
 						count++
@@ -905,11 +900,11 @@ class Stage {
 		const style = document.querySelector('#board-style')
 		style.innerHTML = `
 			#board {
-				grid-template-rows: repeat(${this.options.rows}, ${this.options.tileSize}px);
-				grid-template-columns: repeat(${this.options.columns}, ${this.options.tileSize}px);
+				grid-template-rows: repeat(${this.options.rows}, ${TILE_SIZE}px);
+				grid-template-columns: repeat(${this.options.columns}, ${TILE_SIZE}px);
 			}`
-		this.board.style.width = `${this.options.tileSize * this.options.columns}px`
-		this.board.style.height = `${this.options.tileSize * this.options.rows}px`
+		this.board.style.width = `${TILE_SIZE * this.options.columns}px`
+		this.board.style.height = `${TILE_SIZE * this.options.rows}px`
 	}
 
 	initialize = () => {
@@ -1147,13 +1142,9 @@ class GameScreen {
 }
 
 class Game {
-	constructor({
-		            pixelSize = 3, explosionTime = 2000, explosionSize = 1,
-		            bombCount = 1, liveCount = 3, chainExplosionTime = 100, stages
-	            } = {}) {
+	constructor({explosionSize = 1, bombCount = 1, liveCount = 3, stages} = {}) {
 		this.screen = new GameScreen()
-		const error = this.checkArguments(pixelSize, explosionTime, explosionSize, bombCount, liveCount,
-			chainExplosionTime, stages)
+		const error = this.checkArguments(explosionSize, bombCount, liveCount, stages)
 		if (error) {
 			this.error = error
 			return
@@ -1161,15 +1152,15 @@ class Game {
 
 		this.stageNumber = 0
 		this.stages = stages
+		const stage = stages[this.stageNumber]
 		this.stage = new Stage({
-			data: stages[this.stageNumber], pixelSize, tileSize: 16 * pixelSize, bombCount, explosionTime,
-			explosionSize, chainExplosionTime
+			data: stage, bombCount, explosionSize
 		})
 		if (this.stage.error) {
 			this.error = this.stage.error
 			return
 		}
-		this.bomberman = new Bomberman({board: this.stage.board, pixelSize, liveCount})
+		this.bomberman = new Bomberman({board: this.stage.board, liveCount})
 		this.keyListener = new KeyListener()
 		this.gameMenu = new GameMenu()
 
@@ -1178,19 +1169,13 @@ class Game {
 		this.handleUserInteraction()
 	}
 
-	checkArguments = (pixelSize, explosionTime, explosionSize, bombCount, liveCount, chainExplosionTime, stages) => {
-		if (isNaN(pixelSize) || pixelSize < 1)
-			return 'incorrect pixelSize'
-		if (isNaN(explosionTime) || explosionTime < 500)
-			return 'incorrect explosionTime'
+	checkArguments = (explosionSize, bombCount, liveCount, stages) => {
 		if (isNaN(explosionSize) || explosionSize < 1)
 			return 'incorrect explosionSize'
 		if (isNaN(bombCount) || bombCount < 1)
 			return 'incorrect bombCount'
 		if (isNaN(liveCount) || liveCount < 1)
 			return 'incorrect liveCount'
-		if (isNaN(chainExplosionTime) || chainExplosionTime < 1)
-			return 'incorrect chainExplosionTime'
 		if (!(stages instanceof Array))
 			return 'incorrect type of stages'
 	}
@@ -1208,13 +1193,13 @@ class Game {
 	isBombermanCollidedWithEnemies() {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: true})
+		} = this.bomberman.getBorders({own: true})
 		for (let enemyId in this.stage.enemies) {
 			if (this.stage.enemies.hasOwnProperty(enemyId)) {
 				const enemy = this.stage.enemies[enemyId]
 				const {
 					left: eLeft, right: eRight, top: eTop, bottom: eBottom
-				} = enemy.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: true})
+				} = enemy.getBorders({own: true})
 				if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop))
 					return true
 			}
@@ -1224,7 +1209,7 @@ class Game {
 	isBombermanExploded() {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {
+		} = this.bomberman.getBorders({
 			own: true, floorValues: true
 		})
 		const flamePass = this.bomberman.flamePass
@@ -1242,10 +1227,11 @@ class Game {
 	isBombermanCollidedWithExitDoor = () => {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {
+		} = this.bomberman.getBorders({
 			own: true, collideWithDoor: true, floorValues: true
 		})
-		return this.stage.isExitDoor(left, top) || this.stage.isExitDoor(left, bottom) || this.stage.isExitDoor(right, top) || this.stage.isExitDoor(right, bottom)
+		return this.stage.isExitDoor(left, top) || this.stage.isExitDoor(left, bottom) ||
+			this.stage.isExitDoor(right, top) || this.stage.isExitDoor(right, bottom)
 	}
 
 	updateStage = () => {
@@ -1256,7 +1242,7 @@ class Game {
 	handleBombermanCollidedWithPowerUp = () => {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {
+		} = this.bomberman.getBorders({
 			own: true, floorValues: true
 		})
 		let powerUp
@@ -1309,7 +1295,7 @@ class Game {
 	handleBombermanMove = () => {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: false})
+		} = this.bomberman.getBorders({own: false})
 
 		this.handleBombermanSurroundedWithBombs(Math.floor(left), Math.floor(right), Math.floor(top), Math.floor(bottom))
 
@@ -1368,7 +1354,7 @@ class Game {
 		const enemy = this.stage.enemies[id]
 		const {
 			left, right, top, bottom
-		} = enemy.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {floorValues: true})
+		} = enemy.getBorders({floorValues: true})
 		if (this.stage.isExplosion(left, top) || this.stage.isExplosion(left, bottom) || this.stage.isExplosion(right, top) || this.stage.isExplosion(right, bottom)) {
 			this.stage.deleteEnemy(enemy.id)
 			enemy.die()
@@ -1392,7 +1378,7 @@ class Game {
 		if (!enemy.dead) {
 			const {
 				left, right, top, bottom
-			} = enemy.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: true})
+			} = enemy.getBorders({own: true})
 
 			const wallPass = enemy.wallPass
 			if (enemy.direction === 'left') {
@@ -1444,7 +1430,7 @@ class Game {
 					bomb.timer = new Timer(() => {
 						bomb.createExplosions()
 						this.stage.deleteBomb(bomb.x, bomb.y)
-					}, this.stage.options.chainExplosionTime)
+					}, CHAIN_EXPLOSION_TIME)
 					playExplosionSound()
 				}
 			}
@@ -1453,8 +1439,8 @@ class Game {
 
 	updateBombs() {
 		if (this.keyListener.isPressed('Space') && this.stage.options.bombCount) {
-			const x = Math.floor((this.bomberman.left - 1 + (this.stage.options.tileSize / 2)) / this.stage.options.tileSize + 2),
-				y = Math.floor((this.bomberman.top - 1 + (this.stage.options.tileSize / 2)) / this.stage.options.tileSize + 2)
+			const x = Math.floor((this.bomberman.left - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2),
+				y = Math.floor((this.bomberman.top - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2)
 			if (!this.stage.isBomb(x, y) && !this.stage.isExitDoor(x, y) && !this.stage.isWall(x, y)) {
 				const bomb = new Bomb({
 					board: this.stage.board, x, y, explosionSize: this.stage.options.explosionSize, stage: this.stage
@@ -1705,7 +1691,8 @@ class Game {
 				}
 			} else if (this.state === 'stage-completed') {
 				if (this.stageNumber < this.stages.length) {
-					this.stage.reinitialize(this.stages[this.stageNumber])
+					const stage = this.stages[this.stageNumber]
+					this.stage.reinitialize(stage)
 					this.bomberman.resetPosition()
 					this.state = 'pre-stage-start'
 				} else
@@ -1723,9 +1710,7 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 2,
 	bombCount: 1,
-	explosionTime: 2000,
 	stages: [
 		{
 			rows: 13, columns: 13,
