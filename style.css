@@ -163,7 +163,6 @@ img {
 }
 
 .enemy-xp {
-    position: absolute;
     font-size: 8px;
     z-index: 6;
 }

@@ -1,4 +1,8 @@
 const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo']
+const POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
+const AUDIO_VOLUME = 0.05
+const ENEMY_XP_SHOW_TIME = 2000
+
 
 const getRandomInt = (min, max) => {
 	min = Math.ceil(min)
@@ -13,15 +17,22 @@ const getRandomDirection = (directions = ['left', 'right', 'up', 'down']) => {
 const playExplosionSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/explosion.wav'
+	sound.volume = AUDIO_VOLUME
 	sound.play().then()
-	sound.volume = 0.05
 }
 
 const playBombLeaveSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/leave-bomb.wav'
+	sound.volume = AUDIO_VOLUME
 	sound.play().then()
-	sound.volume = 0.05
+}
+
+const playPowerUpPicked = () => {
+	const sound = document.createElement('audio')
+	sound.src = './sounds/power-up.wav'
+	sound.volume = AUDIO_VOLUME
+	sound.play().then()
 }
 
 class Timer {
@@ -56,6 +67,7 @@ class Entity {
 		this.left = left || pixelSize * 2
 		this.top = top || pixelSize * 2
 		this.size = 16 * pixelSize * 0.75
+		this.wallPass = false
 
 		this.createHTML()
 		this.draw()
@@ -89,12 +101,10 @@ class Entity {
 	}
 
 	draw() {
-		this.div.style.position = 'absolute'
-		this.div.style.left = `${16 * this.pixelSize + this.left}px`
-		this.div.style.top = `${16 * this.pixelSize + this.top}px`
+		this.div.style.transform = `translate3d(${16 * this.pixelSize + this.left}px, ${16 * this.pixelSize + this.top}px, 0)`
 	}
 
-	getBorders(pixelSize, tileSize, {own = true, collideWithDoor = false} = {}) {
+	getBorders(pixelSize, tileSize, {own = true, collideWithDoor = false, floorValues = false} = {}) {
 		let x = 0
 		if (!own)
 			x = 1
@@ -103,47 +113,53 @@ class Entity {
 		let left, right, top, bottom
 		if (this instanceof Bomberman) {
 			left = (this.left - x + (pixelSize + 1)) / tileSize + 2
-			right = (this.left - 1 + x + this.size - (pixelSize + 1)) / tileSize + 2
+			right = (this.left + x + this.size - (pixelSize + 1)) / tileSize + 2
 			top = (this.top - x) / tileSize + 2
-			bottom = (this.top + x + this.size - (pixelSize - 1)) / tileSize + 2
+			bottom = (this.top + x - 1 + this.size - (pixelSize - 1)) / tileSize + 2
 		} else {
 			left = (this.left - x) / tileSize + 2
-			right = (this.left - 1 + x + this.size) / tileSize + 2
+			right = (this.left + x + this.size) / tileSize + 2
 			top = (this.top - x) / tileSize + 2
 			bottom = (this.top + x + this.size) / tileSize + 2
+		}
+		if (floorValues) {
+			left = Math.floor(left)
+			right = Math.floor(right)
+			top = Math.floor(top)
+			bottom = Math.floor(bottom)
 		}
 		return {left, right, top, bottom}
 	}
 }
 
 class EnemyXP {
-	constructor({board, left, top, amount}) {
+	constructor({board, left, top, amount, pixelSize}) {
 		this.board = board
 		this.left = left
 		this.top = top
 		this.amount = amount
+		this.pixelSize = pixelSize
 
 		this.initialize()
 	}
 
-	initialize = () => {
+	initialize() {
 		this.createHTML()
 		this.deleteAfter()
 	}
 
-	createHTML = () => {
+	createHTML() {
 		this.div = document.createElement('div')
 		this.div.className = 'enemy-xp'
 		this.div.innerText = this.amount
-		this.div.style.left = `${this.left}px`
-		this.div.style.top = `${this.top}px`
+		this.div.style.transform = `translate3d(${this.left}px, ${this.top + (3 * this.pixelSize)}px, 0)`
 		this.board.append(this.div)
 	}
 
 	deleteAfter = () => {
 		new Timer(() => {
 			this.div.remove()
-		}, 2000)
+		}, ENEMY_XP_SHOW_TIME)
 	}
 }
 
@@ -219,9 +235,10 @@ class Enemy extends Entity {
 			this.div.remove()
 			new EnemyXP({
 				board: this.board,
-				left: parseInt(this.div.style.left),
-				top: parseInt(this.div.style.top),
-				amount: this.xp
+				left: this.left,
+				top: this.top,
+				amount: this.xp,
+				pixelSize: this.pixelSize
 			})
 		}, 1100)
 	}
@@ -232,6 +249,10 @@ class Bomberman extends Entity {
 		super({board, pixelSize})
 		this.direction = 'down'
 		this.liveCount = liveCount
+		this.bombPass = false
+		this.flamePass = false
+		this.detonator = false
+		this.isSurroundedWithBombs = false
 	}
 
 	resetPosition = () => {
@@ -342,6 +363,19 @@ class ExitDoor extends Block {
 	}
 }
 
+class PowerUp extends Block {
+	constructor({board, x, y, type}) {
+		super({board, x, y})
+		this.type = type
+
+		this.addClass()
+	}
+
+	addClass = () => {
+		this.div.classList.add('power-up', `power-up-${this.type}`)
+	}
+}
+
 class Wall extends Block {
 	constructor({board, x, y}) {
 		super({board, x, y})
@@ -368,12 +402,12 @@ class Wall extends Block {
 }
 
 class Bomb {
-	constructor({board, x, y, explosionSize, map}) {
+	constructor({board, x, y, explosionSize, stage}) {
 		this.board = board
 		this.x = x
 		this.y = y
 		this.explosionSize = explosionSize
-		this.map = map
+		this.stage = stage
 
 		this.initialize()
 	}
@@ -403,7 +437,7 @@ class Bomb {
 			x: this.x,
 			y: this.y,
 			size: this.explosionSize,
-			map: this.map
+			stage: this.stage
 		})
 		playExplosionSound()
 	}
@@ -411,18 +445,18 @@ class Bomb {
 	explodeAfter = () => {
 		this.timer = new Timer(() => {
 			this.createExplosions()
-			this.map.deleteBomb(this.x, this.y)
-		}, this.map.options.explosionTime)
+			this.stage.deleteBomb(this.x, this.y)
+		}, this.stage.options.explosionTime)
 	}
 }
 
 class Explosion {
-	constructor({board, x, y, size, map}) {
+	constructor({board, x, y, size, stage}) {
 		this.board = board
 		this.x = x
 		this.y = y
 		this.size = size
-		this.map = map
+		this.stage = stage
 		this.arr = []
 
 		this.createHTML()
@@ -445,25 +479,25 @@ class Explosion {
 	create = (x, y, className) => {
 		let created = true,
 			data
-		if (className !== 'explosion-center' && this.map.isBomb(x, y)) {
-			const bomb = this.map.getBomb(x, y)
+		if (className !== 'explosion-center' && this.stage.isBomb(x, y)) {
+			const bomb = this.stage.getBomb(x, y)
 			bomb.instant = true
 			created = false
-		} else if (!this.map.isBlock(x, y, true)) {
+		} else if (!this.stage.isBlock(x, y, {bombPass: true})) {
 			data = this.createHTMLForOne(x, y, className)
-			this.map.explosions.push(data)
+			this.stage.explosions.push({data, x, y})
 			new Timer(() => {
-				this.map.deleteExplosion(data)
+				this.stage.deleteExplosion(x, y)
 			}, 500)
 			created = true
-		} else if (this.map.isWall(x, y)) {
-			const wall = this.map.getWall(x, y)
+		} else if (this.stage.isWall(x, y)) {
+			const wall = this.stage.getWall(x, y)
 			wall.explode()
 			new Timer(() => {
-				this.map.deleteWall(x, y)
+				this.stage.deleteWall(x, y)
 			}, 500)
 			created = false
-		} else if (this.map.isRock(x, y))
+		} else if (this.stage.isRock(x, y))
 			created = false
 		return {created, data}
 	}
@@ -564,7 +598,7 @@ class KeyListener {
 class StageOptions {
 	constructor({
 		            rows, columns, pixelSize, tileSize, enemies, bombCount, explosionTime, explosionSize,
-		            chainExplosionTime, roundTime, score
+		            chainExplosionTime, roundTime, score, powerUps
 	            }) {
 		this.rows = rows
 		this.columns = columns
@@ -579,6 +613,7 @@ class StageOptions {
 		this.passedTime = 0
 		this.score = score
 		this.initialScore = score
+		this.powerUps = powerUps
 
 		this.initialize()
 	}
@@ -659,9 +694,11 @@ class Stage {
 
 		const rows = data.rows || 13,
 			columns = data.columns || 31,
-			roundTime = data.roundTime || 200
+			roundTime = data.roundTime || 200,
+			enemies = data.enemies || {},
+			powerUps = data.powerUps || {}
 
-		const error = this.checkArguments(rows, columns, roundTime, data.enemies)
+		const error = this.checkArguments(rows, columns, roundTime, enemies, powerUps)
 		if (error) {
 			this.error = error
 			return
@@ -670,7 +707,7 @@ class Stage {
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
 		this.options = new StageOptions({
-			rows, columns, pixelSize, tileSize, enemies: data.enemies, bombCount,
+			rows, columns, pixelSize, tileSize, enemies: data.enemies, bombCount, powerUps: data.powerUps,
 			explosionSize, explosionTime, chainExplosionTime, roundTime, score: 0
 		})
 		this.rocks = []
@@ -678,9 +715,15 @@ class Stage {
 		this.enemies = []
 		this.bombs = []
 		this.explosions = []
+		this.powerUps = []
 	}
 
-	checkArguments = (rows, columns, roundTime, enemies) => {
+	increaseBombCount = () => {
+		this.bombCount++
+		this.options.bombCount++
+	}
+
+	checkArguments = (rows, columns, roundTime, enemies, powerUps) => {
 		if (isNaN(rows) || rows < 7)
 			return 'incorrect number of rows'
 		if (isNaN(columns) || columns < 7)
@@ -689,40 +732,53 @@ class Stage {
 			return 'incorrect roundTime'
 		if (!(enemies instanceof Object))
 			return 'incorrect enemies'
-		for (const enemyType of Object.keys(enemies)) {
-			if (!ENEMY_TYPES.includes(enemyType))
-				return `incorrect type of enemy: ${enemyType}`
-			if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1)
-				return `incorrect number of enemies: ${enemyType}`
-		}
+		if (enemies)
+			for (const enemyType of Object.keys(enemies)) {
+				if (!ENEMY_TYPES.includes(enemyType))
+					return `incorrect type of enemy: ${enemyType}`
+				if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1)
+					return `incorrect number of enemies: ${enemyType}`
+			}
+		if (powerUps !== undefined && !(powerUps instanceof Object))
+			return 'incorrect type of powerUps'
+		if (powerUps)
+			for (const powerUpType of Object.keys(powerUps)) {
+				if (!POWER_UP_TYPES.includes(powerUpType))
+					return `incorrect type of powerUp: ${powerUpType}`
+				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1)
+					return `incorrect number of enemies: ${powerUpType}`
+			}
 	}
 
-	reinitialize = (data) => {
+	reinitialize = data => {
 		this.removeAllDivs()
 		const rows = data.rows || 13,
 			columns = data.columns || 31,
 			roundTime = data.roundTime || 200,
-			enemies = data.enemies
+			enemies = data.enemies,
+			powerUps = data.powerUps || {}
 		const {pixelSize, tileSize, bombCount, explosionSize, explosionTime, chainExplosionTime, score} = this.options
 		this.options = new StageOptions({
 			rows, columns, pixelSize, tileSize, enemies, bombCount, explosionSize, explosionTime, chainExplosionTime,
-			roundTime, score
+			roundTime, score, powerUps
 		})
 		this.createHTML()
 		this.changeStyles()
 	}
 
+	removeArrayElements = prop => {
+		this[prop] = this[prop].filter(item => {
+			item.div.remove()
+			return false
+		})
+	}
+
 	removeAllDivs = () => {
-		this.rocks = []
-		this.walls = []
-		this.enemies = []
-		this.bombs = []
-		this.explosions = []
-		document.querySelectorAll('.rock').forEach(div => div.remove())
-		document.querySelectorAll('.wall').forEach(div => div.remove())
-		document.querySelectorAll('.enemy').forEach(div => div.remove())
-		document.querySelectorAll('.bomb').forEach(div => div.remove())
-		document.querySelectorAll('.explosion').forEach(div => div.remove())
+		this.removeArrayElements('rocks')
+		this.removeArrayElements('walls')
+		this.removeArrayElements('enemies')
+		this.removeArrayElements('explosions')
+		this.removeArrayElements('powerUps')
 		this.exitDoor.div.remove()
 	}
 
@@ -751,13 +807,30 @@ class Stage {
 		const wallsCount = getRandomInt(count * 0.9, count * 1.1)
 		let sum = 0
 		while (sum < wallsCount) {
-			const x = getRandomInt(1, this.options.columns),
-				y = getRandomInt(1, this.options.rows)
+			const x = getRandomInt(1, this.options.columns + 1),
+				y = getRandomInt(1, this.options.rows + 1)
 			if (!this.isBlock(x, y) && !(x <= 3 && y <= 3)) {
 				this.walls.push(new Wall({x, y, board: this.board}))
 				sum++
 			}
 		}
+	}
+
+	createPowerUps = () => {
+		if (this.options.powerUps)
+			for (const powerUpType of Object.keys(this.options.powerUps)) {
+				let count = 0
+				while (count < this.options.powerUps[powerUpType]) {
+					const x = getRandomInt(1, this.options.columns + 1),
+						y = getRandomInt(1, this.options.rows + 1)
+					if (!this.isPowerUp(x, y) && this.isWall(x, y) && !this.isExitDoor(x, y)) {
+						this.powerUps.push(new PowerUp({
+							board: this.board, x, y, type: powerUpType
+						}))
+						count++
+					}
+				}
+			}
 	}
 
 	createExitDoor = () => {
@@ -772,21 +845,22 @@ class Stage {
 	}
 
 	createEnemies = () => {
-		for (const enemyType of Object.keys(this.options.enemies)) {
-			let count = 0
-			while (count < this.options.enemies[enemyType]) {
-				const x = getRandomInt(1, this.options.columns + 1),
-					y = getRandomInt(1, this.options.rows + 1)
-				if (!this.isBlock(x, y) && !(x < 5 && y < 5)) {
-					const left = this.options.tileSize * (x - 2),
-						top = this.options.tileSize * (y - 2)
-					this.enemies.push(new Enemy({
-						board: this.board, pixelSize: this.options.pixelSize, left, top, type: enemyType
-					}))
-					count++
+		if (this.options.enemies)
+			for (const enemyType of Object.keys(this.options.enemies)) {
+				let count = 0
+				while (count < this.options.enemies[enemyType]) {
+					const x = getRandomInt(1, this.options.columns + 1),
+						y = getRandomInt(1, this.options.rows + 1)
+					if (!this.isBlock(x, y) && !(x < 5 && y < 5)) {
+						const left = this.options.tileSize * (x - 2),
+							top = this.options.tileSize * (y - 2)
+						this.enemies.push(new Enemy({
+							board: this.board, pixelSize: this.options.pixelSize, left, top, type: enemyType
+						}))
+						count++
+					}
 				}
 			}
-		}
 	}
 
 	createHTML = () => {
@@ -794,6 +868,7 @@ class Stage {
 		this.createWalls()
 		this.createExitDoor()
 		this.createEnemies()
+		this.createPowerUps()
 	}
 
 	addStyles = () => {
@@ -819,39 +894,46 @@ class Stage {
 		this.changeStyles()
 	}
 
+	isPowerUp = (x, y) => this.powerUps.some(powerUp => powerUp.x === x && powerUp.y === y)
+
 	isRock = (x, y) => this.rocks.some(rock => rock.x === x && rock.y === y)
 
 	isWall = (x, y) => this.walls.some(wall => wall.x === x && wall.y === y)
 
-	isBomb = (x, y) => this.bombs.some(bomb => bomb.x === x && bomb.y === y)
+	isBomb = (x, y) => this.bombs.some(bomb => bomb.x === Math.floor(x) && bomb.y === Math.floor(y))
 
-	isExplosion = (x, y) => {
+	isExplosion = (x, y, {flamePass = false} = {}) =>
+		!flamePass && this.explosions.some(explosion => explosion.x === x && explosion.y === y)
+
+	isBlock = (x, y, {bombPass = false, wallPass = false, enemy = false} = {}) => {
 		x = Math.floor(x)
 		y = Math.floor(y)
-		return this.explosions.some(explosion => parseInt(explosion.style.gridColumnStart) === x && parseInt(explosion.style.gridRowStart) === y)
+		return x < 1 || y < 1 || x > this.options.columns || y > this.options.rows || this.isRock(x, y) ||
+			(!wallPass && this.isWall(x, y)) || (!bombPass && this.isBomb(x, y)) || (enemy && this.isExitDoor(x, y))
 	}
 
-	isBlock = (x, y, withoutBombs = false) => {
-		x = Math.floor(x)
-		y = Math.floor(y)
-		return x < 1 || y < 1 || x > this.options.columns || y > this.options.rows || this.isRock(x, y) || this.isWall(x, y) ||
-			(!withoutBombs && this.isBomb(x, y))
-	}
-
-	isExitDoor = (x, y) => {
-		x = Math.floor(x)
-		y = Math.floor(y)
-		return parseInt(this.exitDoor.div.style.gridColumnStart) === x && parseInt(this.exitDoor.div.style.gridRowStart) === y
-	}
+	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y
 
 	getWall = (x, y) => this.walls.filter(wall => wall.x === x && wall.y === y)[0]
 
 	getBomb = (x, y) => this.bombs.filter(bomb => bomb.x === x && bomb.y === y)[0]
 
+	getPowerUp = (x, y) => this.powerUps.filter(powerUp => powerUp.x === x && powerUp.y === y)[0]
+
 	deleteWall = (x, y) => {
 		this.walls = this.walls.filter(wall => {
 			if (wall.x === x && wall.y === y) {
 				wall.div.remove()
+				return false
+			}
+			return true
+		})
+	}
+
+	deletePowerUp = (x, y) => {
+		this.powerUps = this.powerUps.filter(powerUp => {
+			if (powerUp.x === x && powerUp.y === y) {
+				powerUp.div.remove()
 				return false
 			}
 			return true
@@ -870,10 +952,14 @@ class Stage {
 		this.options.bombCount++
 	}
 
-	deleteExplosion = div => {
-		this.explosions = this.explosions.filter(explosion =>
-			!(explosion.style.gridRowStart === div.style.gridRowStart && explosion.style.gridColumnStart === div.style.gridColumnStart))
-		div.remove()
+	deleteExplosion = (x, y) => {
+		this.explosions = this.explosions.filter(explosion => {
+			if (explosion.x === x && explosion.y === y) {
+				explosion.data.remove()
+				return false
+			}
+			return true
+		})
 	}
 
 	deleteEnemy = enemy => {
@@ -926,7 +1012,7 @@ class GameMenu {
 class Music {
 	constructor(id) {
 		this.audio = document.getElementById(id)
-		this.audio.volume = 0.03
+		this.audio.volume = AUDIO_VOLUME
 	}
 
 	play = () => {
@@ -1098,8 +1184,14 @@ class Game {
 	isBombermanExploded() {
 		const {
 			left, right, top, bottom
-		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: true})
-		return this.stage.isExplosion(left, top) || this.stage.isExplosion(left, bottom) || this.stage.isExplosion(right, top) || this.stage.isExplosion(right, bottom)
+		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {
+			own: true, floorValues: true
+		})
+		const flamePass = this.bomberman.flamePass
+		return this.stage.isExplosion(left, top, {flamePass}) ||
+			this.stage.isExplosion(left, bottom, {flamePass}) ||
+			this.stage.isExplosion(right, top, {flamePass}) ||
+			this.stage.isExplosion(right, bottom, {flamePass})
 	}
 
 	handleBombermanDeath() {
@@ -1111,8 +1203,7 @@ class Game {
 		const {
 			left, right, top, bottom
 		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {
-			own: true,
-			collideWithDoor: true
+			own: true, collideWithDoor: true, floorValues: true
 		})
 		return this.stage.isExitDoor(left, top) || this.stage.isExitDoor(left, bottom) || this.stage.isExitDoor(right, top) || this.stage.isExitDoor(right, bottom)
 	}
@@ -1122,45 +1213,92 @@ class Game {
 		document.querySelector('#stage-start span').innerText = `${this.stageNumber + 1}`
 	}
 
-	updateBomberman() {
-		if (this.isBombermanCollidedWithEnemies()) {
-			this.handleBombermanDeath()
-			return
+	handleBombermanCollidedWithPowerUp = () => {
+		const {
+			left, right, top, bottom
+		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {
+			own: true, floorValues: true
+		})
+		let powerUp
+		if (this.stage.isPowerUp(left, top) && !this.stage.isWall(left, top)) {
+			powerUp = this.stage.getPowerUp(left, top)
+		} else if (this.stage.isPowerUp(left, bottom) && !this.stage.isWall(left, bottom)) {
+			powerUp = this.stage.getPowerUp(left, bottom)
+		} else if (this.stage.isPowerUp(right, top) && !this.stage.isWall(right, top)) {
+			powerUp = this.stage.getPowerUp(right, top)
+		} else if (this.stage.isPowerUp(right, bottom) && !this.stage.isWall(right, bottom)) {
+			powerUp = this.stage.getPowerUp(right, bottom)
 		}
-
-		if (this.isBombermanExploded()) {
-			this.handleBombermanDeath()
-			return
+		if (powerUp) {
+			playPowerUpPicked()
+			switch (powerUp.type) {
+				case 'bombs':
+					this.stage.increaseBombCount()
+					break
+				case 'flames':
+					this.stage.options.explosionSize++
+					break
+				case 'speed':
+					this.bomberman.speed += 0.1
+					break
+				case 'wall-pass':
+					this.bomberman.wallPass = true
+					break
+				case 'detonator':
+					this.bomberman.detonator = true
+					break
+				case 'bomb-pass':
+					this.bomberman.bombPass = true
+					break
+				case 'flame-pass':
+					this.bomberman.flamePass = true
+					break
+				case 'mystery':
+					break
+			}
+			this.stage.deletePowerUp(powerUp.x, powerUp.y)
 		}
+	}
 
-		if (!this.stage.enemies.length && this.isBombermanCollidedWithExitDoor()) {
-			this.updateStage()
-			this.state = 'stage-completed'
-			return
-		}
+	handleBombermanSurroundedWithBombs = (left, right, top, bottom) => {
+		if (!this.stage.isBomb(left, top) && !this.stage.isBomb(left, bottom) && !this.stage.isBomb(right, top) &&
+			!this.stage.isBomb(right, bottom))
+			this.bomberman.isSurroundedWithBombs = false
+	}
 
+	handleBombermanMove = () => {
 		const {
 			left, right, top, bottom
 		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: false})
 
+		this.handleBombermanSurroundedWithBombs(left, right, top, bottom)
+
 		let moved = false
+		const isSurrounded = this.bomberman.isSurroundedWithBombs
+		const bombPass = this.bomberman.bombPass || isSurrounded,
+			wallPass = this.bomberman.wallPass
+
 		if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD'))
-			if (!this.stage.isBlock(left, top + 0.05, true) && !this.stage.isBlock(left, bottom - 0.05, true)) {
+			if (!this.stage.isBlock(left, top + 0.05, {bombPass, wallPass}) &&
+				!this.stage.isBlock(left, bottom - 0.05, {bombPass, wallPass})) {
 				this.bomberman.moveLeft()
 				moved = true
 			}
 		if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA'))
-			if (!this.stage.isBlock(right, top + 0.05, true) && !this.stage.isBlock(right, bottom - 0.05, true)) {
+			if (!this.stage.isBlock(right, top + 0.05, {bombPass, wallPass}) &&
+				!this.stage.isBlock(right, bottom - 0.05, {bombPass, wallPass})) {
 				this.bomberman.moveRight()
 				moved = true
 			}
 		if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS'))
-			if (!this.stage.isBlock(left + 0.05, top, true) && !this.stage.isBlock(right - 0.05, top, true)) {
+			if (!this.stage.isBlock(left + 0.05, top, {bombPass, wallPass}) &&
+				!this.stage.isBlock(right - 0.05, top, {bombPass, wallPass})) {
 				this.bomberman.moveUp()
 				moved = true
 			}
 		if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW'))
-			if (!this.stage.isBlock(left + 0.05, bottom, true) && !this.stage.isBlock(right - 0.05, bottom, true)) {
+			if (!this.stage.isBlock(left + 0.05, bottom, {bombPass, wallPass}) &&
+				!this.stage.isBlock(right - 0.05, bottom, {bombPass, wallPass})) {
 				this.bomberman.moveDown()
 				moved = true
 			}
@@ -1168,10 +1306,28 @@ class Game {
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
 	}
 
+	updateBomberman() {
+		if (this.isBombermanCollidedWithEnemies()) {
+			this.handleBombermanDeath()
+			return
+		}
+		if (this.isBombermanExploded()) {
+			this.handleBombermanDeath()
+			return
+		}
+		if (!this.stage.enemies.length && this.isBombermanCollidedWithExitDoor()) {
+			this.updateStage()
+			this.state = 'pre-pre-stage-completed'
+			return
+		}
+		this.handleBombermanCollidedWithPowerUp()
+		this.handleBombermanMove()
+	}
+
 	handleEnemyExplosion(enemy) {
 		const {
 			left, right, top, bottom
-		} = enemy.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize)
+		} = enemy.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {floorValues: true})
 		if (this.stage.isExplosion(left, top) || this.stage.isExplosion(left, bottom) || this.stage.isExplosion(right, top) || this.stage.isExplosion(right, bottom)) {
 			this.stage.deleteEnemy(enemy)
 			enemy.die()
@@ -1194,29 +1350,34 @@ class Game {
 				left, right, top, bottom
 			} = enemy.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: true})
 
+			const wallPass = enemy.wallPass
 			if (enemy.direction === 'left') {
-				if (!this.stage.isBlock(left, top + 0.05) && !this.stage.isBlock(left, bottom - 0.05))
+				if (!this.stage.isBlock(left, top + 0.05, {wallPass, enemy: true}) &&
+					!this.stage.isBlock(left, bottom - 0.05, {wallPass, enemy: true}))
 					enemy.moveLeft()
 				else
 					enemy.direction = getRandomDirection(['right', 'up', 'down'])
 				return
 			}
 			if (enemy.direction === 'right') {
-				if (!this.stage.isBlock(right, top + 0.05) && !this.stage.isBlock(right, bottom - 0.05))
+				if (!this.stage.isBlock(right, top + 0.05, {wallPass, enemy: true}) &&
+					!this.stage.isBlock(right, bottom - 0.05, {wallPass, enemy: true}))
 					enemy.moveRight()
 				else
 					enemy.direction = getRandomDirection(['left', 'up', 'down'])
 				return
 			}
 			if (enemy.direction === 'up') {
-				if (!this.stage.isBlock(left + 0.05, top) && !this.stage.isBlock(right - 0.05, top))
+				if (!this.stage.isBlock(left + 0.05, top, {wallPass, enemy: true}) &&
+					!this.stage.isBlock(right - 0.05, top, {wallPass, enemy: true}))
 					enemy.moveUp()
 				else
 					enemy.direction = getRandomDirection(['left', 'right', 'down'])
 				return
 			}
 			if (enemy.direction === 'down') {
-				if (!this.stage.isBlock(left + 0.05, bottom) && !this.stage.isBlock(right - 0.05, bottom))
+				if (!this.stage.isBlock(left + 0.05, bottom, {wallPass, enemy: true}) &&
+					!this.stage.isBlock(right - 0.05, bottom, {wallPass, enemy: true}))
 					enemy.moveDown()
 				else
 					enemy.direction = getRandomDirection(['left', 'right', 'up'])
@@ -1247,10 +1408,11 @@ class Game {
 		if (this.keyListener.isPressed('Space') && this.stage.options.bombCount) {
 			const x = Math.floor((this.bomberman.left - 1 + (this.stage.options.tileSize / 2)) / this.stage.options.tileSize + 2),
 				y = Math.floor((this.bomberman.top - 1 + (this.stage.options.tileSize / 2)) / this.stage.options.tileSize + 2)
-			if (!this.stage.isBomb(x, y)) {
+			if (!this.stage.isBomb(x, y) && !this.stage.isExitDoor(x, y) && !this.stage.isWall(x, y)) {
 				const bomb = new Bomb({
-					board: this.stage.board, x, y, explosionSize: this.stage.options.explosionSize, map: this.stage
+					board: this.stage.board, x, y, explosionSize: this.stage.options.explosionSize, stage: this.stage
 				})
+				this.bomberman.isSurroundedWithBombs = true
 				this.stage.addBomb(bomb)
 				playBombLeaveSound()
 			}
@@ -1473,18 +1635,24 @@ class Game {
 				this.music.stage.stop()
 				this.music.findExit.play()
 				this.state = 'stage'
-			} else if (this.state === 'stage-completed') {
+			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
 				this.music.stopStageMusic()
 				this.music.complete.play()
+				this.state = 'pre-stage-completed'
+				prevTime = currTime
+			} else if (this.state === 'pre-stage-completed') {
 				if (currTime - prevTime >= this.music.complete.durationMS()) {
-					if (this.stageNumber < this.stages.length) {
-						this.stage.reinitialize(this.stages[this.stageNumber])
-						this.bomberman.resetPosition()
-						this.state = 'pre-stage-start'
-					} else
-						this.state = 'ending'
+					this.screen.hideStage()
+					this.state = 'stage-completed'
 				}
+			} else if (this.state === 'stage-completed') {
+				if (this.stageNumber < this.stages.length) {
+					this.stage.reinitialize(this.stages[this.stageNumber])
+					this.bomberman.resetPosition()
+					this.state = 'pre-stage-start'
+				} else
+					this.state = 'ending'
 			} else if (this.state === 'ending') {
 				this.screen.info.hide()
 				this.screen.stage.hideDisplay()
@@ -1499,9 +1667,12 @@ class Game {
 
 const game = new Game({
 	pixelSize: 2,
+	bombCount: 1,
+	explosionTime: 2000,
 	stages: [
-		{rows: 11, columns: 11, enemies: {ballom: 3}}
-		// {enemies: {ballom: 3, onil: 3}},
+		{rows: 11, columns: 11, powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1}, enemies: {ballom: 3}}
+		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
+		// {enemies: {ballom: 3, onil: 3}}
 		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
 	]
 })
@@ -1514,13 +1685,7 @@ game.run()
 // add enemies who can pass through wall
 // add different enemy logic
 // powerUps: 
-//          bombs: increase max bomb count (max 10)
-//          flames: increase bomb explosion size
-//          speed: increase movement speed
-//          wallPass: pass through walls
 //          detonator: detonate the oldest bomb
-//          bombPass: pass through bombs (first, remove this ability from bomberman)
-//          flamePass: immunity to explosions
 //          mystery: temporary invincibility
 // fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
 // add bomberman walk sounds
@@ -1534,3 +1699,10 @@ game.run()
 // add responsive design: just resize if the gameBoard is smaller than the device screen
 // change document title depending on the state of the game
 
+// add transition to the start state after game-completed or game-over states
+// add helper, which shows the keys to play the game
+
+// if entity is in the wall and that wall is being exploded, then entity must die
+// add constants to game options
+
+// OPTIMIZE, REMOVE FPS DROPS
