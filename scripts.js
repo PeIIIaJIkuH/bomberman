@@ -412,6 +412,7 @@ class Bomb {
 		this.board = board
 		this.x = x
 		this.y = y
+		this.id = createId(x, y)
 		this.explosionSize = explosionSize
 		this.stage = stage
 
@@ -718,10 +719,10 @@ class Stage {
 		})
 		this.rocks = {}
 		this.walls = {}
-		this.enemies = []
-		this.bombs = []
-		this.explosions = []
+		this.bombs = {}
 		this.powerUps = {}
+		this.enemies = []
+		this.explosions = []
 	}
 
 	increaseBombCount = () => {
@@ -779,12 +780,19 @@ class Stage {
 		})
 	}
 
+	removeObjectElements = prop => {
+		for (const itemId of Object.keys(this[prop])) {
+			this[prop][itemId].div.remove()
+			delete this[prop][itemId]
+		}
+	}
+
 	removeAllDivs = () => {
-		this.removeArrayElements('rocks')
-		this.removeArrayElements('walls')
+		this.removeObjectElements('rocks')
+		this.removeObjectElements('walls')
+		this.removeObjectElements('powerUps')
 		this.removeArrayElements('enemies')
 		this.removeArrayElements('explosions')
-		this.removeArrayElements('powerUps')
 		this.exitDoor.div.remove()
 	}
 
@@ -922,10 +930,8 @@ class Stage {
 	}
 
 	isBomb = (x, y) => {
-		for (const bomb of this.bombs)
-			if (bomb.x === Math.floor(x) && bomb.y === Math.floor(y))
-				return true
-		return false
+		const id = createId(x, y)
+		return id in this.bombs
 	}
 
 	isExplosion = (x, y, {flamePass = false} = {}) => {
@@ -951,9 +957,8 @@ class Stage {
 	}
 
 	getBomb = (x, y) => {
-		for (const bomb of this.bombs)
-			if (bomb.x === x && bomb.y === y)
-				return bomb
+		const id = createId(x, y)
+		return this.bombs[id]
 	}
 
 	getPowerUp = (x, y) => {
@@ -974,14 +979,9 @@ class Stage {
 	}
 
 	deleteBomb = (x, y) => {
-		this.bombs = this.bombs.filter(bomb => {
-			if (bomb.x === x && bomb.y === y) {
-				bomb.div.remove()
-				clearTimeout(bomb.timeout)
-				return false
-			}
-			return true
-		})
+		const id = createId(x, y)
+		this.bombs[id].div.remove()
+		delete this.bombs[id]
 		this.options.bombCount++
 	}
 
@@ -999,8 +999,8 @@ class Stage {
 		this.enemies = this.enemies.filter(e => e !== enemy)
 	}
 
-	addBomb = bomb => {
-		this.bombs.push(bomb)
+	addBomb(bomb) {
+		this.bombs[bomb.id] = bomb
 		this.options.bombCount--
 	}
 }
@@ -1304,7 +1304,7 @@ class Game {
 			left, right, top, bottom
 		} = this.bomberman.getBorders(this.stage.options.pixelSize, this.stage.options.tileSize, {own: false})
 
-		this.handleBombermanSurroundedWithBombs(left, right, top, bottom)
+		this.handleBombermanSurroundedWithBombs(Math.floor(left), Math.floor(right), Math.floor(top), Math.floor(bottom))
 
 		let moved = false
 		const isSurrounded = this.bomberman.isSurroundedWithBombs
@@ -1424,20 +1424,23 @@ class Game {
 	}
 
 	updateInstantBombs = () => {
-		this.stage.bombs.forEach(bomb => {
-			if (bomb.instant) {
-				bomb.instant = false
-				bomb.timer.clear()
-				bomb.timer = new Timer(() => {
-					bomb.createExplosions()
-					this.stage.deleteBomb(bomb.x, bomb.y)
-				}, this.stage.options.chainExplosionTime)
-				playExplosionSound()
+		for (const bombId in this.stage.bombs) {
+			if (this.stage.bombs.hasOwnProperty(bombId)) {
+				const bomb = this.stage.bombs[bombId]
+				if (bomb.instant) {
+					bomb.instant = false
+					bomb.timer.clear()
+					bomb.timer = new Timer(() => {
+						bomb.createExplosions()
+						this.stage.deleteBomb(bomb.x, bomb.y)
+					}, this.stage.options.chainExplosionTime)
+					playExplosionSound()
+				}
 			}
-		})
+		}
 	}
 
-	updateBombs = () => {
+	updateBombs() {
 		if (this.keyListener.isPressed('Space') && this.stage.options.bombCount) {
 			const x = Math.floor((this.bomberman.left - 1 + (this.stage.options.tileSize / 2)) / this.stage.options.tileSize + 2),
 				y = Math.floor((this.bomberman.top - 1 + (this.stage.options.tileSize / 2)) / this.stage.options.tileSize + 2)
@@ -1520,17 +1523,23 @@ class Game {
 	}
 
 	pauseBombs = () => {
-		this.stage.bombs.forEach(bomb => {
-			bomb.timer && bomb.timer.pause()
-			bomb.img.className = 'bomb-paused'
-		})
+		for (const bombId in this.stage.bombs) {
+			if (this.stage.bombs.hasOwnProperty(bombId)) {
+				const bomb = this.stage.bombs[bombId]
+				bomb.timer && bomb.timer.pause()
+				bomb.img.className = 'bomb-paused'
+			}
+		}
 	}
 
 	resumeBombs = () => {
-		this.stage.bombs.forEach(bomb => {
-			bomb.timer && bomb.timer.resume()
-			bomb.img.className = 'bomb-exploding'
-		})
+		for (const bombId in this.stage.bombs) {
+			if (this.stage.bombs.hasOwnProperty(bombId)) {
+				const bomb = this.stage.bombs[bombId]
+				bomb.timer && bomb.timer.resume()
+				bomb.img.className = 'bomb-exploding'
+			}
+		}
 	}
 
 	restart = () => {
@@ -1573,9 +1582,6 @@ class Game {
 		let prevTime = 0
 		const callback = (currTime) => {
 			requestAnimationFrame(callback)
-
-			// if ((currTime - prevTime) / 1000 < 1 / 80)
-			// 	return
 
 			if (this.error) {
 				document.querySelector('#incorrect-arguments').textContent = this.error
@@ -1702,7 +1708,7 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 2,
+	pixelSize: 3,
 	bombCount: 1,
 	explosionTime: 2000,
 	stages: [
