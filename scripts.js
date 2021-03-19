@@ -1670,7 +1670,11 @@ const game = new Game({
 	bombCount: 1,
 	explosionTime: 2000,
 	stages: [
-		{rows: 11, columns: 11, powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1}, enemies: {ballom: 3}}
+		{
+			rows: 13, columns: 31,
+			enemies: {ballom: 6},
+			powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, speed: 1, 'bomb-pass': 1}
+		}
 		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
 		// {enemies: {ballom: 3, onil: 3}}
 		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
@@ -1679,6 +1683,8 @@ const game = new Game({
 game.run()
 
 // enemy types: ballom, onil, dahl, minvo
+// power-ups: bombs, flames, speed, wall-pass, detonator, bomb-pass, flame-pass, mystery
+
 
 // TODO:
 // stage change: when initializing game just pass array of stages; a stage is 2d array of 0's and 1's; 0-nothing, 1-rock
