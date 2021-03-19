@@ -380,6 +380,7 @@ class PowerUp extends Block {
 class Wall extends Block {
 	constructor({board, x, y}) {
 		super({board, x, y})
+		this.id = `${x}-${y}`
 
 		this.addImage()
 	}
@@ -712,7 +713,7 @@ class Stage {
 			explosionSize, explosionTime, chainExplosionTime, roundTime, score: 0
 		})
 		this.rocks = []
-		this.walls = []
+		this.walls = {}
 		this.enemies = []
 		this.bombs = []
 		this.explosions = []
@@ -811,7 +812,8 @@ class Stage {
 			const x = getRandomInt(1, this.options.columns + 1),
 				y = getRandomInt(1, this.options.rows + 1)
 			if (!this.isBlock(x, y) && !(x <= 3 && y <= 3)) {
-				this.walls.push(new Wall({x, y, board: this.board}))
+				const wall = new Wall({x, y, board: this.board})
+				this.walls[wall.id] = wall
 				sum++
 			}
 		}
@@ -910,10 +912,8 @@ class Stage {
 	}
 
 	isWall = (x, y) => {
-		for (const wall of this.walls)
-			if (wall.x === x && wall.y === y)
-				return true
-		return false
+		const id = `${x}-${y}`
+		return id in this.walls
 	}
 
 	isBomb = (x, y) => {
@@ -941,9 +941,8 @@ class Stage {
 	}
 
 	getWall = (x, y) => {
-		for (const wall of this.walls)
-			if (wall.x === x && wall.y === y)
-				return wall
+		const id = `${x}-${y}`
+		return this.walls[id]
 	}
 
 	getBomb = (x, y) => {
@@ -959,13 +958,9 @@ class Stage {
 	}
 
 	deleteWall = (x, y) => {
-		this.walls = this.walls.filter(wall => {
-			if (wall.x === x && wall.y === y) {
-				wall.div.remove()
-				return false
-			}
-			return true
-		})
+		const id = `${x}-${y}`
+		this.walls[id].div.remove()
+		delete this.walls[id]
 	}
 
 	deletePowerUp = (x, y) => {
