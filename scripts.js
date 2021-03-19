@@ -63,7 +63,7 @@ class Entity {
 	constructor({board, pixelSize, left, top, speed}) {
 		this.board = board
 		this.pixelSize = pixelSize
-		this.speed = speed || pixelSize / 3
+		this.speed = speed || pixelSize / 2
 		this.left = left || pixelSize * 2
 		this.top = top || pixelSize * 2
 		this.size = 16 * pixelSize * 0.75
@@ -101,7 +101,7 @@ class Entity {
 	}
 
 	draw() {
-		this.div.style.transform = `translate3d(${16 * this.pixelSize + this.left}px, ${16 * this.pixelSize + this.top}px, 0)`
+		this.div.style.transform = `translate3d(${16 * this.pixelSize + Math.floor(this.left)}px, ${16 * this.pixelSize + Math.floor(this.top)}px, 0)`
 	}
 
 	getBorders(pixelSize, tileSize, {own = true, collideWithDoor = false, floorValues = false} = {}) {
@@ -894,16 +894,43 @@ class Stage {
 		this.changeStyles()
 	}
 
-	isPowerUp = (x, y) => this.powerUps.some(powerUp => powerUp.x === x && powerUp.y === y)
+	isPowerUp = (x, y) => {
+		for (const powerUp of this.powerUps)
+			if (powerUp.x === x && powerUp.y === y)
+				return true
+		return false
+	}
 
-	isRock = (x, y) => this.rocks.some(rock => rock.x === x && rock.y === y)
+	isRock = (x, y) => {
+		for (const rock of this.rocks)
+			if (rock.x === x && rock.y === y)
+				return true
+		return false
+	}
 
-	isWall = (x, y) => this.walls.some(wall => wall.x === x && wall.y === y)
+	isWall = (x, y) => {
+		for (const wall of this.walls)
+			if (wall.x === x && wall.y === y)
+				return true
+		return false
+	}
 
-	isBomb = (x, y) => this.bombs.some(bomb => bomb.x === Math.floor(x) && bomb.y === Math.floor(y))
+	isBomb = (x, y) => {
+		for (const bomb of this.bombs)
+			if (bomb.x === Math.floor(x) && bomb.y === Math.floor(y))
+				return true
+		return false
+	}
 
-	isExplosion = (x, y, {flamePass = false} = {}) =>
-		!flamePass && this.explosions.some(explosion => explosion.x === x && explosion.y === y)
+	isExplosion = (x, y, {flamePass = false} = {}) => {
+		if (!flamePass)
+			for (const explosion of this.explosions)
+				if (explosion.x === x && explosion.y === y)
+					return true
+		return false
+	}
+
+	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y
 
 	isBlock = (x, y, {bombPass = false, wallPass = false, enemy = false} = {}) => {
 		x = Math.floor(x)
@@ -911,8 +938,6 @@ class Stage {
 		return x < 1 || y < 1 || x > this.options.columns || y > this.options.rows || this.isRock(x, y) ||
 			(!wallPass && this.isWall(x, y)) || (!bombPass && this.isBomb(x, y)) || (enemy && this.isExitDoor(x, y))
 	}
-
-	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y
 
 	getWall = (x, y) => this.walls.filter(wall => wall.x === x && wall.y === y)[0]
 
@@ -1540,6 +1565,9 @@ class Game {
 		let prevTime = 0
 		const callback = (currTime) => {
 			requestAnimationFrame(callback)
+
+			if ((currTime - prevTime) / 1000 < 1 / 80)
+				return
 
 			if (this.error) {
 				document.querySelector('#incorrect-arguments').textContent = this.error
