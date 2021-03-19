@@ -370,6 +370,7 @@ class ExitDoor extends Block {
 class PowerUp extends Block {
 	constructor({board, x, y, type}) {
 		super({board, x, y})
+		this.id = createId(x, y)
 		this.type = type
 
 		this.addClass()
@@ -720,7 +721,7 @@ class Stage {
 		this.enemies = []
 		this.bombs = []
 		this.explosions = []
-		this.powerUps = []
+		this.powerUps = {}
 	}
 
 	increaseBombCount = () => {
@@ -836,9 +837,8 @@ class Stage {
 					const x = getRandomInt(1, this.options.columns + 1),
 						y = getRandomInt(1, this.options.rows + 1)
 					if (!this.isPowerUp(x, y) && this.isWall(x, y) && !this.isExitDoor(x, y)) {
-						this.powerUps.push(new PowerUp({
-							board: this.board, x, y, type: powerUpType
-						}))
+						const powerUp = new PowerUp({board: this.board, x, y, type: powerUpType})
+						this.powerUps[powerUp.id] = powerUp
 						count++
 					}
 				}
@@ -907,10 +907,8 @@ class Stage {
 	}
 
 	isPowerUp = (x, y) => {
-		for (const powerUp of this.powerUps)
-			if (powerUp.x === x && powerUp.y === y)
-				return true
-		return false
+		const id = createId(x, y)
+		return id in this.powerUps
 	}
 
 	isRock = (x, y) => {
@@ -959,9 +957,8 @@ class Stage {
 	}
 
 	getPowerUp = (x, y) => {
-		for (const powerUp of this.powerUps)
-			if (powerUp.x === x && powerUp.y === y)
-				return powerUp
+		const id = createId(x, y)
+		return this.powerUps[id]
 	}
 
 	deleteWall = (x, y) => {
@@ -971,13 +968,9 @@ class Stage {
 	}
 
 	deletePowerUp = (x, y) => {
-		this.powerUps = this.powerUps.filter(powerUp => {
-			if (powerUp.x === x && powerUp.y === y) {
-				powerUp.div.remove()
-				return false
-			}
-			return true
-		})
+		const id = createId(x, y)
+		this.powerUps[id].div.remove()
+		delete this.powerUps[id]
 	}
 
 	deleteBomb = (x, y) => {
