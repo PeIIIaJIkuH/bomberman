@@ -946,7 +946,7 @@ class Stage {
 		return false
 	}
 
-	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y
+	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y && !this.isWall(x, y)
 
 	isBlock = (x, y, {bombPass = false, wallPass = false, enemy = false} = {}) => {
 		x = Math.floor(x)
@@ -1723,7 +1723,7 @@ class Game {
 }
 
 const game = new Game({
-	pixelSize: 3,
+	pixelSize: 2,
 	bombCount: 1,
 	explosionTime: 2000,
 	stages: [
