@@ -262,7 +262,7 @@ class Bomberman extends Entity {
 		this.liveCount = liveCount
 		this.bombPass = false
 		this.flamePass = false
-		this.detonator = false
+		this.detonator = true
 		this.isSurroundedWithBombs = false
 	}
 
@@ -462,6 +462,12 @@ class Bomb {
 			this.createExplosions()
 			this.stage.deleteBomb(this.x, this.y)
 		}, EXPLOSION_TIME)
+	}
+
+	explodeImmediately = () => {
+		this.timer.clear()
+		this.div.remove()
+		this.createExplosions()
 	}
 }
 
@@ -974,7 +980,7 @@ class Stage {
 	deleteWall = (x, y) => {
 		const id = createId(x, y)
 		const wall = this.getWall(x, y)
-		wall.div.remove()
+		wall.div && wall.div.remove()
 		this.walls.delete(id)
 	}
 
@@ -987,7 +993,9 @@ class Stage {
 
 	deleteBomb = (x, y) => {
 		const id = createId(x, y)
-		this.bombs.get(id).div.remove()
+		const bomb = this.bombs.get(id)
+		bomb.timer.clear()
+		bomb.div.remove()
 		this.bombs.delete(id)
 		this.options.bombCount++
 	}
@@ -1500,7 +1508,11 @@ class Game {
 					this.state = 'pre-pre-resume'
 				}
 			} else if (e.code === 'KeyE' && this.bomberman.detonator) {
-				console.log('detonate')
+				if (this.stage.bombs.size > 0) {
+					const bomb = this.stage.bombs.values().next().value
+					this.stage.deleteBomb(bomb.x, bomb.y)
+					bomb.createExplosions()
+				}
 			}
 		})
 	}
@@ -1714,7 +1726,7 @@ class Game {
 }
 
 const game = new Game({
-	bombCount: 1,
+	bombCount: 5,
 	stages: [
 		{
 			rows: 11, columns: 11,
