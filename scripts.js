@@ -718,7 +718,7 @@ class Stage {
 		})
 		this.rocks = {}
 		this.walls = new Map()
-		this.bombs = {}
+		this.bombs = new Map()
 		this.powerUps = {}
 		this.enemies = {}
 		this.explosions = []
@@ -930,7 +930,7 @@ class Stage {
 
 	isBomb = (x, y) => {
 		const id = createId(x, y)
-		return id in this.bombs
+		return this.bombs.has(id)
 	}
 
 	isExplosion = (x, y, {flamePass = false} = {}) => {
@@ -957,7 +957,7 @@ class Stage {
 
 	getBomb = (x, y) => {
 		const id = createId(x, y)
-		return this.bombs[id]
+		return this.bombs.get(id)
 	}
 
 	getPowerUp = (x, y) => {
@@ -980,8 +980,8 @@ class Stage {
 
 	deleteBomb = (x, y) => {
 		const id = createId(x, y)
-		this.bombs[id].div.remove()
-		delete this.bombs[id]
+		this.bombs.get(id).div.remove()
+		this.bombs.delete(id)
 		this.options.bombCount++
 	}
 
@@ -1000,7 +1000,7 @@ class Stage {
 	}
 
 	addBomb(bomb) {
-		this.bombs[bomb.id] = bomb
+		this.bombs.set(bomb.id, bomb)
 		this.options.bombCount--
 	}
 }
@@ -1422,18 +1422,16 @@ class Game {
 	}
 
 	updateInstantBombs = () => {
-		for (const bombId in this.stage.bombs) {
-			if (this.stage.bombs.hasOwnProperty(bombId)) {
-				const bomb = this.stage.bombs[bombId]
-				if (bomb.instant) {
-					bomb.instant = false
-					bomb.timer.clear()
-					bomb.timer = new Timer(() => {
-						bomb.createExplosions()
-						this.stage.deleteBomb(bomb.x, bomb.y)
-					}, CHAIN_EXPLOSION_TIME)
-					playExplosionSound()
-				}
+		for (const bombId of this.stage.bombs.keys()) {
+			const bomb = this.stage.bombs.get(bombId)
+			if (bomb.instant) {
+				bomb.instant = false
+				bomb.timer.clear()
+				bomb.timer = new Timer(() => {
+					bomb.createExplosions()
+					this.stage.deleteBomb(bomb.x, bomb.y)
+				}, CHAIN_EXPLOSION_TIME)
+				playExplosionSound()
 			}
 		}
 	}
@@ -1527,22 +1525,18 @@ class Game {
 	}
 
 	pauseBombs = () => {
-		for (const bombId in this.stage.bombs) {
-			if (this.stage.bombs.hasOwnProperty(bombId)) {
-				const bomb = this.stage.bombs[bombId]
-				bomb.timer && bomb.timer.pause()
-				bomb.img.className = 'bomb-paused'
-			}
+		for (const bombId of this.stage.bombs.keys()) {
+			const bomb = this.stage.bombs.get(bombId)
+			bomb.timer && bomb.timer.pause()
+			bomb.img.className = 'bomb-paused'
 		}
 	}
 
 	resumeBombs = () => {
-		for (const bombId in this.stage.bombs) {
-			if (this.stage.bombs.hasOwnProperty(bombId)) {
-				const bomb = this.stage.bombs[bombId]
-				bomb.timer && bomb.timer.resume()
-				bomb.img.className = 'bomb-exploding'
-			}
+		for (const bombId of this.stage.bombs.keys()) {
+			const bomb = this.stage.bombs.get(bombId)
+			bomb.timer && bomb.timer.resume()
+			bomb.img.className = 'bomb-exploding'
 		}
 	}
 
