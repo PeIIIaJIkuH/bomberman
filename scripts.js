@@ -717,7 +717,7 @@ class Stage {
 			explosionSize, roundTime, score: 0
 		})
 		this.rocks = {}
-		this.walls = {}
+		this.walls = new Map()
 		this.bombs = {}
 		this.powerUps = {}
 		this.enemies = {}
@@ -829,7 +829,7 @@ class Stage {
 				y = getRandomInt(1, this.options.rows + 1)
 			if (!this.isBlock(x, y) && !(x <= 3 && y <= 3)) {
 				const wall = new Wall({x, y, board: this.board})
-				this.walls[wall.id] = wall
+				this.walls.set(wall.id, wall)
 				sum++
 			}
 		}
@@ -925,7 +925,7 @@ class Stage {
 
 	isWall = (x, y) => {
 		const id = createId(x, y)
-		return id in this.walls
+		return this.walls.has(id)
 	}
 
 	isBomb = (x, y) => {
@@ -952,7 +952,7 @@ class Stage {
 
 	getWall = (x, y) => {
 		const id = createId(x, y)
-		return this.walls[id]
+		return this.walls.get(id)
 	}
 
 	getBomb = (x, y) => {
@@ -967,8 +967,9 @@ class Stage {
 
 	deleteWall = (x, y) => {
 		const id = createId(x, y)
-		this.walls[id].div && this.walls[id].div.remove()
-		delete this.walls[id]
+		const wall = this.getWall(x, y)
+		wall.div && wall.div.remove()
+		this.walls.delete(id)
 	}
 
 	deletePowerUp = (x, y) => {
@@ -1482,10 +1483,10 @@ class Game {
 		this.stage.initialize()
 		this.bomberman.initialize()
 
-		this.addPauseHandler()
+		this.addEventListeners()
 	}
 
-	addPauseHandler = () => {
+	addEventListeners = () => {
 		document.addEventListener('keyup', e => {
 			if (e.code === 'Escape') {
 				if (this.state === 'stage') {
@@ -1493,6 +1494,8 @@ class Game {
 				} else if (this.state === 'pause') {
 					this.state = 'pre-pre-resume'
 				}
+			} else if (e.code === 'KeyE' && this.bomberman.detonator) {
+				console.log('detonate')
 			}
 		})
 	}
@@ -1713,9 +1716,13 @@ const game = new Game({
 	bombCount: 1,
 	stages: [
 		{
-			rows: 13, columns: 13,
-			enemies: {ballom: 6},
-			powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, speed: 1, 'bomb-pass': 1}
+			rows: 11, columns: 11,
+			enemies: {ballom: 2},
+			powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, 'bomb-pass': 1}
+		},
+		{
+			rows: 11, columns: 11,
+			enemies: {onil: 2}
 		}
 		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
 		// {enemies: {ballom: 3, onil: 3}}
@@ -1751,6 +1758,7 @@ game.run()
 // add helper, which shows the keys to play the game
 
 // if entity is in the wall and that wall is being exploded, then entity must die
-// add constants to game options
 
 // OPTIMIZE, REMOVE FPS DROPS
+
+// add change sfx volume, music volume in the menu
