@@ -719,7 +719,7 @@ class Stage {
 		this.rocks = {}
 		this.walls = new Map()
 		this.bombs = new Map()
-		this.powerUps = {}
+		this.powerUps = new Map()
 		this.enemies = {}
 		this.explosions = []
 	}
@@ -785,10 +785,16 @@ class Stage {
 		}
 	}
 
+	removeMapElements = prop => {
+		for (const itemId of this[prop].keys())
+			this[prop].get(itemId).div.remove()
+		this[prop].clear()
+	}
+
 	removeAllDivs = () => {
 		this.removeObjectElements('rocks')
-		this.removeObjectElements('walls')
-		this.removeObjectElements('powerUps')
+		this.removeMapElements('walls')
+		this.removeMapElements('powerUps')
 		this.removeObjectElements('enemies')
 		this.removeArrayElements('explosions')
 		this.exitDoor.div.remove()
@@ -844,7 +850,7 @@ class Stage {
 						y = getRandomInt(1, this.options.rows + 1)
 					if (!this.isPowerUp(x, y) && this.isWall(x, y) && !this.isExitDoor(x, y)) {
 						const powerUp = new PowerUp({board: this.board, x, y, type: powerUpType})
-						this.powerUps[powerUp.id] = powerUp
+						this.powerUps.set(powerUp.id, powerUp)
 						count++
 					}
 				}
@@ -915,7 +921,7 @@ class Stage {
 
 	isPowerUp = (x, y) => {
 		const id = createId(x, y)
-		return id in this.powerUps
+		return this.powerUps.has(id)
 	}
 
 	isRock = (x, y) => {
@@ -962,20 +968,21 @@ class Stage {
 
 	getPowerUp = (x, y) => {
 		const id = createId(x, y)
-		return this.powerUps[id]
+		return this.powerUps.get(id)
 	}
 
 	deleteWall = (x, y) => {
 		const id = createId(x, y)
 		const wall = this.getWall(x, y)
-		wall.div && wall.div.remove()
+		wall.div.remove()
 		this.walls.delete(id)
 	}
 
 	deletePowerUp = (x, y) => {
 		const id = createId(x, y)
-		this.powerUps[id].div.remove()
-		delete this.powerUps[id]
+		const powerUp = this.getPowerUp(x, y)
+		powerUp.div.remove()
+		this.powerUps.delete(id)
 	}
 
 	deleteBomb = (x, y) => {
