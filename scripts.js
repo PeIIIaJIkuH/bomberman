@@ -717,7 +717,7 @@ class Stage {
 			rows, columns, enemies: data.enemies, bombCount, powerUps: data.powerUps,
 			explosionSize, roundTime, score: 0
 		})
-		this.rocks = {}
+		this.rocks = new Map()
 		this.walls = new Map()
 		this.bombs = new Map()
 		this.powerUps = new Map()
@@ -811,19 +811,19 @@ class Stage {
 		for (let i = 1; i <= this.options.columns; i++) {
 			const rock1 = new Rock({board: this.board, x: i, y: 1}),
 				rock2 = new Rock({board: this.board, x: i, y: this.options.rows})
-			this.rocks[rock1.id] = rock1
-			this.rocks[rock2.id] = rock2
+			this.rocks.set(rock1.id, rock1)
+			this.rocks.set(rock2.id, rock2)
 		}
 		for (let i = 2; i < this.options.rows; i++) {
 			const rock1 = new Rock({board: this.board, x: 1, y: i}),
 				rock2 = new Rock({board: this.board, x: this.options.columns, y: i})
-			this.rocks[rock1.id] = rock1
-			this.rocks[rock2.id] = rock2
+			this.rocks.set(rock1.id, rock1)
+			this.rocks.set(rock2.id, rock2)
 		}
 		for (let i = 3; i < this.options.columns; i += 2)
 			for (let j = 3; j < this.options.rows; j += 2) {
 				const rock = new Rock({board: this.board, x: i, y: j})
-				this.rocks[rock.id] = rock
+				this.rocks.set(rock.id, rock)
 			}
 	}
 
@@ -927,7 +927,7 @@ class Stage {
 
 	isRock = (x, y) => {
 		const id = createId(x, y)
-		return id in this.rocks
+		return this.rocks.has(id)
 	}
 
 	isWall = (x, y) => {
@@ -1761,3 +1761,5 @@ game
 // OPTIMIZE, REMOVE FPS DROPS
 
 // add change sfx volume, music volume in the menu
+
+// delete all the powerups if the round it over, create some initialPowerUps like initialTime
