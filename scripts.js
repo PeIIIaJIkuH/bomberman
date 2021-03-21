@@ -6,7 +6,7 @@ const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
 	BOMBERMAN_DYING_TIME = 600,
 	EXPLOSION_TIME = 2000,
 	CHAIN_EXPLOSION_TIME = 100,
-	PIXEL_SIZE = 2,
+	PIXEL_SIZE = 3,
 	TILE_SIZE = PIXEL_SIZE * 16,
 	DEFAULT_ROWS = 13,
 	DEFAULT_COLUMNS = 31,
@@ -483,9 +483,11 @@ class Explosion {
 		this.createHTML()
 	}
 
-	createHTMLForOne = (x, y, className) => {
+	createHTMLForOne = (x, y, className, hidden = false) => {
 		const div = document.createElement('div')
 		const img = document.createElement('img')
+		if (hidden)
+			div.style.opacity = '0'
 		div.classList.add('explosion')
 		img.classList.add(className)
 		img.src = './img/explosion.png'
@@ -512,6 +514,12 @@ class Explosion {
 			}, 500)
 			created = true
 		} else if (this.stage.isWall(x, y)) {
+			data = this.createHTMLForOne(x, y, className, true)
+			this.stage.explosions.push({data, x, y})
+			new Timer(() => {
+				this.stage.deleteExplosion(x, y)
+			}, 500)
+			created = true
 			const wall = this.stage.getWall(x, y)
 			wall.explode()
 			new Timer(() => {
@@ -1795,10 +1803,6 @@ game
 // add transition to the start state after game-completed or game-over states
 // add helper, which shows the keys to play the game
 
-// if entity is in the wall and that wall is being exploded, then entity must die
-
 // OPTIMIZE, REMOVE FPS DROPS
 
 // add change sfx volume, music volume in the menu
-
-// delete all the power-ups if the round it over, create some initialPowerUps like initialTime
