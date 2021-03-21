@@ -263,6 +263,7 @@ class Bomberman extends Entity {
 		this.bombPass = false
 		this.flamePass = false
 		this.detonator = true
+		this.invincible = false
 		this.isSurroundedWithBombs = false
 	}
 
@@ -462,12 +463,6 @@ class Bomb {
 			this.createExplosions()
 			this.stage.deleteBomb(this.x, this.y)
 		}, EXPLOSION_TIME)
-	}
-
-	explodeImmediately = () => {
-		this.timer.clear()
-		this.div.remove()
-		this.createExplosions()
 	}
 }
 
@@ -726,7 +721,7 @@ class Stage {
 		this.walls = new Map()
 		this.bombs = new Map()
 		this.powerUps = new Map()
-		this.enemies = {}
+		this.enemies = new Map()
 		this.explosions = []
 	}
 
@@ -801,7 +796,7 @@ class Stage {
 		this.removeObjectElements('rocks')
 		this.removeMapElements('walls')
 		this.removeMapElements('powerUps')
-		this.removeObjectElements('enemies')
+		this.removeMapElements('enemies')
 		this.removeArrayElements('explosions')
 		this.exitDoor.div.remove()
 	}
@@ -887,7 +882,7 @@ class Stage {
 						const enemy = new Enemy({
 							board: this.board, left, top, type: enemyType
 						})
-						this.enemies[enemy.id] = enemy
+						this.enemies.set(enemy.id, enemy)
 						count++
 					}
 				}
@@ -980,7 +975,7 @@ class Stage {
 	deleteWall = (x, y) => {
 		const id = createId(x, y)
 		const wall = this.getWall(x, y)
-		wall.div && wall.div.remove()
+		wall && wall.div && wall.div.remove()
 		this.walls.delete(id)
 	}
 
@@ -1011,7 +1006,7 @@ class Stage {
 	}
 
 	deleteEnemy = id => {
-		delete this.enemies[id]
+		this.enemies.delete(id)
 	}
 
 	addBomb(bomb) {
@@ -1210,15 +1205,12 @@ class Game {
 		const {
 			left, right, top, bottom
 		} = this.bomberman.getBorders({own: true})
-		for (let enemyId in this.stage.enemies) {
-			if (this.stage.enemies.hasOwnProperty(enemyId)) {
-				const enemy = this.stage.enemies[enemyId]
-				const {
-					left: eLeft, right: eRight, top: eTop, bottom: eBottom
-				} = enemy.getBorders({own: true})
-				if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop))
-					return true
-			}
+		for (const [, enemy] of this.stage.enemies) {
+			const {
+				left: eLeft, right: eRight, top: eTop, bottom: eBottom
+			} = enemy.getBorders({own: true})
+			if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop))
+				return true
 		}
 	}
 
@@ -1357,7 +1349,7 @@ class Game {
 			this.handleBombermanDeath()
 			return
 		}
-		if (!Object.keys(this.stage.enemies).length && this.isBombermanCollidedWithExitDoor()) {
+		if (this.stage.enemies.size <= 0 && this.isBombermanCollidedWithExitDoor()) {
 			this.updateStage()
 			this.state = 'pre-pre-stage-completed'
 			return
@@ -1367,7 +1359,7 @@ class Game {
 	}
 
 	isEnemyExploded(id) {
-		const enemy = this.stage.enemies[id]
+		const enemy = this.stage.enemies.get(id)
 		const {
 			left, right, top, bottom
 		} = enemy.getBorders({floorValues: true})
@@ -1375,7 +1367,7 @@ class Game {
 			this.stage.deleteEnemy(enemy.id)
 			enemy.die()
 			this.stage.options.score += enemy.xp
-			if (!Object.keys(this.stage.enemies).length) {
+			if (this.stage.enemies.size <= 0) {
 				this.state = 'find-exit'
 			}
 			return true
@@ -1384,13 +1376,12 @@ class Game {
 	}
 
 	updateEnemies = () => {
-		for (const enemyId in this.stage.enemies)
-			if (this.stage.enemies.hasOwnProperty(enemyId))
-				this.updateEnemy(enemyId)
+		for (const [enemyId] of this.stage.enemies)
+			this.updateEnemy(enemyId)
 	}
 
 	moveEnemyRandomly(id) {
-		const enemy = this.stage.enemies[id]
+		const enemy = this.stage.enemies.get(id)
 		if (!enemy.dead) {
 			const {
 				left, right, top, bottom
@@ -1479,9 +1470,8 @@ class Game {
 	}
 
 	drawEnemies = () => {
-		for (const enemyId in this.stage.enemies)
-			if (this.stage.enemies.hasOwnProperty(enemyId))
-				this.stage.enemies[enemyId].draw()
+		for (const [, enemy] of this.stage.enemies)
+			enemy.draw()
 	}
 
 	draw = () => {
@@ -1527,20 +1517,15 @@ class Game {
 	}
 
 	pauseEnemies = () => {
-		for (const enemyId in this.stage.enemies)
-			if (this.stage.enemies.hasOwnProperty(enemyId)) {
-				const enemy = this.stage.enemies[enemyId]
-				enemy.img.className = `enemy-look-${enemy.direction}`
-				enemy.timer && enemy.timer.pause()
-			}
+		for (const [, enemy] of this.stage.enemies) {
+			enemy.img.className = `enemy-look-${enemy.direction}`
+			enemy.timer && enemy.timer.pause()
+		}
 	}
 
 	resumeEnemies = () => {
-		for (const enemyId in this.stage.enemies)
-			if (this.stage.enemies.hasOwnProperty(enemyId)) {
-				const enemy = this.stage.enemies[enemyId]
-				enemy.timer && enemy.timer.resume()
-			}
+		for (const [, enemy] of this.stage.enemies)
+			enemy.timer && enemy.timer.resume()
 	}
 
 	pauseBombs = () => {
@@ -1725,24 +1710,26 @@ class Game {
 	}
 }
 
-const game = new Game({
-	bombCount: 5,
-	stages: [
-		{
-			rows: 11, columns: 11,
-			enemies: {ballom: 2},
-			powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, 'bomb-pass': 1}
-		},
-		{
-			rows: 11, columns: 11,
-			enemies: {onil: 2}
-		}
-		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
-		// {enemies: {ballom: 3, onil: 3}}
-		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
-	]
-})
-game.run()
+const
+	game = new Game({
+		bombCount: 5,
+		stages: [
+			{
+				rows: 11, columns: 11,
+				enemies: {ballom: 2},
+				powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, 'bomb-pass': 1}
+			},
+			{
+				rows: 11, columns: 11,
+				enemies: {onil: 2}
+			}
+			// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
+			// {enemies: {ballom: 3, onil: 3}}
+			// {enemies: {ballom: 2, onil: 2, dahl: 2}}
+		]
+	})
+game
+	.run()
 
 // enemy types: ballom, onil, dahl, minvo
 // power-ups: bombs, flames, speed, wall-pass, detonator, bomb-pass, flame-pass, mystery
@@ -1753,7 +1740,6 @@ game.run()
 // add enemies who can pass through wall
 // add different enemy logic
 // powerUps: 
-//          detonator: detonate the oldest bomb
 //          mystery: temporary invincibility
 // fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
 // add bomberman walk sounds
