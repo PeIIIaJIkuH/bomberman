@@ -726,13 +726,14 @@ class Stage {
 		this.walls = new Map()
 		this.bombs = new Map()
 		this.powerUps = new Map()
+		this.consumedPowerUps = new Map()
 		this.enemies = new Map()
 		this.explosions = []
 	}
 
-	increaseBombCount = () => {
-		this.bombCount++
-		this.options.bombCount++
+	updateBombCountBy = val => {
+		this.bombCount += val
+		this.options.bombCount += val
 	}
 
 	checkArguments = (rows, columns, roundTime, enemies, powerUps) => {
@@ -1245,6 +1246,39 @@ class Game {
 		document.querySelector('#stage-start span').innerText = `${this.stageNumber + 1}`
 	}
 
+	cancelPowerUps = () => {
+		for (const [, powerUp] of this.stage.consumedPowerUps) {
+			switch (powerUp.type) {
+				case 'bombs':
+					this.stage.updateBombCountBy(-1)
+					break
+				case 'flames':
+					this.stage.options.explosionSize--
+					break
+				case 'speed':
+					this.bomberman.speed -= POWER_UP_SPEED_BOOST
+					break
+				case 'wall-pass':
+					this.bomberman.wallPass = false
+					break
+				case 'detonator':
+					this.bomberman.detonator = false
+					break
+				case 'bomb-pass':
+					this.bomberman.bombPass = false
+					break
+				case 'flame-pass':
+					this.bomberman.flamePass = false
+					break
+				case 'mystery':
+					this.bomberman.invincibleTimer && this.bomberman.invincibleTimer.clear()
+					this.bomberman.invincible = false
+					break
+			}
+		}
+		this.stage.consumedPowerUps.clear()
+	}
+
 	handleBombermanCollidedWithPowerUp = () => {
 		const {
 			left, right, top, bottom
@@ -1265,7 +1299,7 @@ class Game {
 			playPowerUpPicked()
 			switch (powerUp.type) {
 				case 'bombs':
-					this.stage.increaseBombCount()
+					this.stage.updateBombCountBy(1)
 					break
 				case 'flames':
 					this.stage.options.explosionSize++
@@ -1293,6 +1327,8 @@ class Game {
 					}, POWER_UP_INVINCIBLE_TIME)
 					break
 			}
+			const id = createId(powerUp.x, powerUp.y)
+			this.stage.consumedPowerUps.set(id, powerUp)
 			this.stage.deletePowerUp(powerUp.x, powerUp.y)
 		}
 	}
@@ -1655,6 +1691,7 @@ class Game {
 				this.screen.gameOver.showDisplay()
 				this.state = 'game-over'
 			} else if (this.state === 'pre-pre-die') {
+				this.cancelPowerUps()
 				this.music.stopStageMusic()
 				this.pauseEnemies()
 				this.music.die.play()
@@ -1684,6 +1721,7 @@ class Game {
 				this.state = 'stage'
 			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
+				this.stage.consumedPowerUps.clear()
 				this.music.stopStageMusic()
 				this.music.complete.play()
 				this.state = 'pre-stage-completed'
@@ -1715,12 +1753,12 @@ class Game {
 
 const
 	game = new Game({
-		bombCount: 5,
+		bombCount: 1,
 		stages: [
 			{
 				rows: 11, columns: 11,
 				enemies: {ballom: 2},
-				powerUps: {mystery: 1}
+				powerUps: {mystery: 1, bombs: 8}
 			},
 			{
 				rows: 11, columns: 11,
