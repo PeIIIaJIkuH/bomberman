@@ -48,6 +48,10 @@ const playPowerUpPicked = () => {
 
 const createId = (x, y) => `${x}-${y}`
 
+const changeTitle = title => {
+	document.title = title
+}
+
 class Timer {
 	constructor(callback, delay) {
 		this.callback = callback
