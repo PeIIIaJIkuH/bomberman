@@ -9,7 +9,8 @@ const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
 	PIXEL_SIZE = 2,
 	TILE_SIZE = PIXEL_SIZE * 16,
 	DEFAULT_ROWS = 13,
-	DEFAULT_COLUMNS = 31
+	DEFAULT_COLUMNS = 31,
+	POWER_UP_INVINCIBLE_TIME = 30000
 
 let ENEMY_ID = 0
 
@@ -262,7 +263,7 @@ class Bomberman extends Entity {
 		this.liveCount = liveCount
 		this.bombPass = false
 		this.flamePass = false
-		this.detonator = true
+		this.detonator = false
 		this.invincible = false
 		this.isSurroundedWithBombs = false
 	}
@@ -1281,6 +1282,11 @@ class Game {
 					this.bomberman.flamePass = true
 					break
 				case 'mystery':
+					this.bomberman.invincibleTimer && this.bomberman.invincibleTimer.clear()
+					this.bomberman.invincible = true
+					this.bomberman.invincibleTimer = new Timer(() => {
+						this.bomberman.invincible = false
+					}, POWER_UP_INVINCIBLE_TIME)
 					break
 			}
 			this.stage.deletePowerUp(powerUp.x, powerUp.y)
@@ -1334,11 +1340,11 @@ class Game {
 	}
 
 	updateBomberman() {
-		if (this.isBombermanCollidedWithEnemies()) {
+		if (!this.bomberman.invincible && this.isBombermanCollidedWithEnemies()) {
 			this.handleBombermanDeath()
 			return
 		}
-		if (this.isBombermanExploded()) {
+		if (!this.bomberman.invincible && this.isBombermanExploded()) {
 			this.handleBombermanDeath()
 			return
 		}
@@ -1710,7 +1716,7 @@ const
 			{
 				rows: 11, columns: 11,
 				enemies: {ballom: 2},
-				powerUps: {bombs: 1, flames: 1, 'wall-pass': 1, 'flame-pass': 1, 'bomb-pass': 1}
+				powerUps: {mystery: 1}
 			},
 			{
 				rows: 11, columns: 11,
@@ -1732,8 +1738,6 @@ game
 // stage change: when initializing game just pass array of stages; a stage is 2d array of 0's and 1's; 0-nothing, 1-rock
 // add enemies who can pass through wall
 // add different enemy logic
-// powerUps: 
-//          mystery: temporary invincibility
 // fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
 // add bomberman walk sounds
 // pause game when user looses focus
