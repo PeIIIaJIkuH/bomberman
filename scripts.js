@@ -779,13 +779,6 @@ class Stage {
 		})
 	}
 
-	removeObjectElements = prop => {
-		for (const itemId of Object.keys(this[prop])) {
-			this[prop][itemId].div.remove()
-			delete this[prop][itemId]
-		}
-	}
-
 	removeMapElements = prop => {
 		for (const [itemId] of this[prop])
 			this[prop].get(itemId).div.remove()
