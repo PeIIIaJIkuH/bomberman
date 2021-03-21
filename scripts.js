@@ -787,13 +787,13 @@ class Stage {
 	}
 
 	removeMapElements = prop => {
-		for (const itemId of this[prop].keys())
+		for (const [itemId] of this[prop])
 			this[prop].get(itemId).div.remove()
 		this[prop].clear()
 	}
 
 	removeAllDivs = () => {
-		this.removeObjectElements('rocks')
+		this.removeMapElements('rocks')
 		this.removeMapElements('walls')
 		this.removeMapElements('powerUps')
 		this.removeMapElements('enemies')
@@ -1762,4 +1762,4 @@ game
 
 // add change sfx volume, music volume in the menu
 
-// delete all the powerups if the round it over, create some initialPowerUps like initialTime
+// delete all the power-ups if the round it over, create some initialPowerUps like initialTime
