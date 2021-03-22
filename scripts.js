@@ -1,17 +1,21 @@
-const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
-	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery'],
-	AUDIO_VOLUME = 0.5,
-	ENEMY_XP_SHOW_TIME = 2000, POWER_UP_SPEED_BOOST = 0.3,
-	ENEMY_DYING_TIME = 1100,
-	BOMBERMAN_DYING_TIME = 600,
-	EXPLOSION_TIME = 2000,
-	CHAIN_EXPLOSION_TIME = 100,
-	PIXEL_SIZE = 3,
+const PIXEL_SIZE = 2,
 	TILE_SIZE = PIXEL_SIZE * 16,
 	DEFAULT_ROWS = 13,
 	DEFAULT_COLUMNS = 31,
-	POWER_UP_INVINCIBLE_TIME = 30000,
+	EXPLOSION_TIME = 2000,
 	WALL_EXPLOSION_TIME = 500
+
+const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
+	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
+
+const POWER_UP_SPEED_BOOST = 0.3,
+	POWER_UP_INVINCIBLE_TIME = 30000
+
+const AUDIO_VOLUME = 0.5,
+	ENEMY_XP_SHOW_TIME = 2000,
+	ENEMY_DYING_TIME = 1100,
+	BOMBERMAN_DYING_TIME = 600,
+	CHAIN_EXPLOSION_TIME = 100
 
 let ENEMY_ID = 0
 
@@ -452,13 +456,14 @@ class Bomb {
 
 	createExplosions = () => {
 		this.div.remove()
-		this.explosion = new Explosion({
+		const explosion = new Explosion({
 			board: this.board,
 			x: this.x,
 			y: this.y,
 			size: this.explosionSize,
 			stage: this.stage
 		})
+		this.stage.explosions.set(explosion.id, explosion)
 		playExplosionSound()
 	}
 
@@ -475,11 +480,17 @@ class Explosion {
 		this.board = board
 		this.x = x
 		this.y = y
+		this.id = createId(x, y)
 		this.size = size
 		this.stage = stage
-		this.arr = []
+		this.divs = new Map()
 
 		this.createHTML()
+	}
+
+	deleteDivs = () => {
+		for (const [, div] of this.divs)
+			div.remove()
 	}
 
 	createHTMLForOne = (x, y, className, hidden = false) => {
@@ -500,21 +511,19 @@ class Explosion {
 
 	create = (x, y, className) => {
 		let created = true,
-			data
+			div
 		if (className !== 'explosion-center' && this.stage.isBomb(x, y)) {
 			const bomb = this.stage.getBomb(x, y)
 			bomb.instant = true
 			created = false
 		} else if (!this.stage.isBlock(x, y, {bombPass: true})) {
-			data = this.createHTMLForOne(x, y, className)
-			this.stage.explosions.push({data, x, y})
+			div = this.createHTMLForOne(x, y, className)
 			new Timer(() => {
 				this.stage.deleteExplosion(x, y)
 			}, WALL_EXPLOSION_TIME)
 			created = true
 		} else if (this.stage.isWall(x, y)) {
-			data = this.createHTMLForOne(x, y, className, true)
-			this.stage.explosions.push({data, x, y})
+			div = this.createHTMLForOne(x, y, className, true)
 			new Timer(() => {
 				this.stage.deleteExplosion(x, y)
 			}, WALL_EXPLOSION_TIME)
@@ -527,34 +536,40 @@ class Explosion {
 			created = false
 		} else if (this.stage.isRock(x, y))
 			created = false
-		return {created, data}
+		const id = createId(x, y)
+		return {id, created, div}
 	}
 
 	createCenter = () => {
-		const {data} = this.create(this.x, this.y, 'explosion-center')
-		this.arr.push(data)
+		const {id, div, created} = this.create(this.x, this.y, 'explosion-center')
+		if (created)
+			this.divs.set(id, div)
 	}
 	createLeft = () => {
-		const {data} = this.create(this.x - this.size, this.y, 'explosion-left')
-		this.arr.push(data)
+		const {id, div, created} = this.create(this.x - this.size, this.y, 'explosion-left')
+		if (created)
+			this.divs.set(id, div)
 	}
 	createRight = () => {
-		const {data} = this.create(this.x + this.size, this.y, 'explosion-right')
-		this.arr.push(data)
+		const {id, div, created} = this.create(this.x + this.size, this.y, 'explosion-right')
+		if (created)
+			this.divs.set(id, div)
 	}
 	createTop = () => {
-		const {data} = this.create(this.x, this.y - this.size, 'explosion-top')
-		this.arr.push(data)
+		const {id, div, created} = this.create(this.x, this.y - this.size, 'explosion-top')
+		if (created)
+			this.divs.set(id, div)
 	}
 	createBottom = () => {
-		const {data} = this.create(this.x, this.y + this.size, 'explosion-bottom')
-		this.arr.push(data)
+		const {id, div, created} = this.create(this.x, this.y + this.size, 'explosion-bottom')
+		if (created)
+			this.divs.set(id, div)
 	}
 	createLeftHorizontals = () => {
 		for (let i = this.x - 1; i >= this.x - this.size + 1; i--) {
-			const {created, data} = this.create(i, this.y, 'explosion-horizontal')
+			const {id, created, div} = this.create(i, this.y, 'explosion-horizontal')
 			if (created)
-				this.arr.push(data)
+				this.divs.set(id, div)
 			else
 				return false
 		}
@@ -562,9 +577,9 @@ class Explosion {
 	}
 	createRightHorizontals = () => {
 		for (let i = this.x + 1; i < this.x + this.size; i++) {
-			const {created, data} = this.create(i, this.y, 'explosion-horizontal')
+			const {id, created, div} = this.create(i, this.y, 'explosion-horizontal')
 			if (created)
-				this.arr.push(data)
+				this.divs.set(id, div)
 			else
 				return false
 		}
@@ -572,9 +587,9 @@ class Explosion {
 	}
 	createTopVerticals = () => {
 		for (let i = this.y - 1; i >= this.y - this.size + 1; i--) {
-			const {created, data} = this.create(this.x, i, 'explosion-vertical')
+			const {id, created, div} = this.create(this.x, i, 'explosion-vertical')
 			if (created)
-				this.arr.push(data)
+				this.divs.set(id, div)
 			else
 				return false
 		}
@@ -582,9 +597,9 @@ class Explosion {
 	}
 	createBottomVerticals = () => {
 		for (let i = this.y + 1; i < this.y + this.size; i++) {
-			const {created, data} = this.create(this.x, i, 'explosion-vertical')
+			const {id, created, div} = this.create(this.x, i, 'explosion-vertical')
 			if (created)
-				this.arr.push(data)
+				this.divs.set(id, div)
 			else
 				return false
 		}
@@ -735,7 +750,7 @@ class Stage {
 		this.powerUps = new Map()
 		this.consumedPowerUps = new Map()
 		this.enemies = new Map()
-		this.explosions = []
+		this.explosions = new Map()
 	}
 
 	updateBombCountBy = val => {
@@ -785,17 +800,18 @@ class Stage {
 		this.changeStyles()
 	}
 
-	removeArrayElements = prop => {
-		this[prop] = this[prop].filter(item => {
-			item.div.remove()
-			return false
-		})
-	}
-
 	removeMapElements = prop => {
 		for (const [itemId] of this[prop])
 			this[prop].get(itemId).div.remove()
 		this[prop].clear()
+	}
+
+	removeExplosions = () => {
+		for (const [, explosion] of this.explosions) {
+			for (const [, div] of explosion.divs)
+				div.remove()
+		}
+		this.explosions.clear()
 	}
 
 	removeAllDivs = () => {
@@ -803,7 +819,7 @@ class Stage {
 		this.removeMapElements('walls')
 		this.removeMapElements('powerUps')
 		this.removeMapElements('enemies')
-		this.removeArrayElements('explosions')
+		this.removeExplosions()
 		this.exitDoor.div.remove()
 	}
 
@@ -947,10 +963,12 @@ class Stage {
 	}
 
 	isExplosion = (x, y, {flamePass = false} = {}) => {
+		const id = createId(x, y)
 		if (!flamePass)
-			for (const explosion of this.explosions)
-				if (explosion.x === x && explosion.y === y)
-					return true
+			for (const [, explosion] of this.explosions)
+				for (const [divId] of explosion.divs)
+					if (divId === id)
+						return true
 		return false
 	}
 
@@ -1002,13 +1020,16 @@ class Stage {
 	}
 
 	deleteExplosion = (x, y) => {
-		this.explosions = this.explosions.filter(explosion => {
-			if (explosion.x === x && explosion.y === y) {
-				explosion.data.remove()
-				return false
+		const id = createId(x, y)
+		for (const [, explosion] of this.explosions) {
+			for (const [divId] of explosion.divs) {
+				if (divId === id) {
+					explosion.deleteDivs()
+					this.explosions.delete(id)
+					return
+				}
 			}
-			return true
-		})
+		}
 	}
 
 	deleteEnemy = id => {
@@ -1760,20 +1781,14 @@ class Game {
 
 const
 	game = new Game({
-		bombCount: 1,
+		bombCount: 100,
 		stages: [
 			{
-				rows: 13, columns: 31,
-				enemies: {ballom: 2, onil: 2, dahl: 2, minvo: 2},
+				rows: 13, columns: 13,
+				enemies: {ballom: 1},
 				powerUps: {
 					bombs: 1,
-					flames: 1,
-					speed: 1,
-					'wall-pass': 1,
-					detonator: 1,
-					'bomb-pass': 1,
-					'flame-pass': 1,
-					mystery: 1
+					flames: 1
 				}
 			},
 			{
@@ -1815,5 +1830,3 @@ game
 // OPTIMIZE, REMOVE FPS DROPS
 
 // add change sfx volume, music volume in the menu
-
-// change Stage explosions to Map, to optimize
