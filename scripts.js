@@ -1753,6 +1753,7 @@ class Game {
 				this.music.stopStageMusic()
 				this.music.complete.play()
 				this.state = 'pre-stage-completed'
+				ENEMY_ID = 0
 				prevTime = currTime
 			} else if (this.state === 'pre-stage-completed') {
 				if (currTime - prevTime >= this.music.complete.durationMS()) {
@@ -1779,30 +1780,28 @@ class Game {
 	}
 }
 
-const
-	game = new Game({
-		bombCount: 100,
-		stages: [
-			{
-				rows: 13, columns: 13,
-				enemies: {ballom: 1},
-				powerUps: {
-					bombs: 1,
-					flames: 1
-				}
-			},
-			{
-				rows: 13, columns: 31,
-				enemies: {ballom: 4, onil: 4},
-				powerUps: {flames: 1}
+const game = new Game({
+	bombCount: 100,
+	stages: [
+		{
+			rows: 13, columns: 13,
+			enemies: {ballom: 1},
+			powerUps: {
+				bombs: 1,
+				flames: 1
 			}
-			// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
-			// {enemies: {ballom: 3, onil: 3}}
-			// {enemies: {ballom: 2, onil: 2, dahl: 2}}
-		]
-	})
-game
-	.run()
+		},
+		{
+			rows: 13, columns: 31,
+			enemies: {ballom: 4, onil: 4},
+			powerUps: {flames: 1}
+		}
+		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
+		// {enemies: {ballom: 3, onil: 3}}
+		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
+	]
+})
+game.run()
 
 // enemy types: ballom, onil, dahl, minvo
 // power-ups: bombs, flames, speed, wall-pass, detonator, bomb-pass, flame-pass, mystery
