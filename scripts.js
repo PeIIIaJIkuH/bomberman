@@ -1,6 +1,6 @@
 const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
 	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery'],
-	AUDIO_VOLUME = 0.05,
+	AUDIO_VOLUME = 0.5,
 	ENEMY_XP_SHOW_TIME = 2000, POWER_UP_SPEED_BOOST = 0.3,
 	ENEMY_DYING_TIME = 1100,
 	BOMBERMAN_DYING_TIME = 600,
@@ -10,7 +10,8 @@ const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
 	TILE_SIZE = PIXEL_SIZE * 16,
 	DEFAULT_ROWS = 13,
 	DEFAULT_COLUMNS = 31,
-	POWER_UP_INVINCIBLE_TIME = 30000
+	POWER_UP_INVINCIBLE_TIME = 30000,
+	WALL_EXPLOSION_TIME = 500
 
 let ENEMY_ID = 0
 
@@ -120,12 +121,10 @@ class Entity {
 		this.div.style.transform = `translate3d(${16 * PIXEL_SIZE + Math.floor(this.left)}px, ${16 * PIXEL_SIZE + Math.floor(this.top)}px, 0)`
 	}
 
-	getBorders({own = true, collideWithDoor = false, floorValues = false} = {}) {
+	getBorders({own = true, floorValues = false} = {}) {
 		let x = 0
 		if (!own)
 			x = 1
-		if (collideWithDoor)
-			x -= PIXEL_SIZE * 8
 		let left, right, top, bottom
 		if (this instanceof Bomberman) {
 			left = (this.left - x + (PIXEL_SIZE + 1)) / TILE_SIZE + 2
@@ -511,20 +510,20 @@ class Explosion {
 			this.stage.explosions.push({data, x, y})
 			new Timer(() => {
 				this.stage.deleteExplosion(x, y)
-			}, 500)
+			}, WALL_EXPLOSION_TIME)
 			created = true
 		} else if (this.stage.isWall(x, y)) {
 			data = this.createHTMLForOne(x, y, className, true)
 			this.stage.explosions.push({data, x, y})
 			new Timer(() => {
 				this.stage.deleteExplosion(x, y)
-			}, 500)
+			}, WALL_EXPLOSION_TIME)
 			created = true
 			const wall = this.stage.getWall(x, y)
 			wall.explode()
 			new Timer(() => {
 				this.stage.deleteWall(x, y)
-			}, 500)
+			}, WALL_EXPLOSION_TIME)
 			created = false
 		} else if (this.stage.isRock(x, y))
 			created = false
@@ -607,21 +606,21 @@ class Explosion {
 
 class KeyListener {
 	constructor() {
-		this.keysPressed = {}
+		this.keysPressed = new Map()
 
 		this.initialize()
 	}
 
 	initialize = () => {
 		document.addEventListener('keydown', e => {
-			this.keysPressed[e.code] = true
+			this.keysPressed.set(e.code, true)
 		})
 		document.addEventListener('keyup', e => {
-			this.keysPressed[e.code] = false
+			this.keysPressed.set(e.code, false)
 		})
 	}
 
-	isPressed = code => this.keysPressed[code]
+	isPressed = code => this.keysPressed.get(code)
 }
 
 class StageOptions {
@@ -1243,7 +1242,7 @@ class Game {
 		const {
 			left, right, top, bottom
 		} = this.bomberman.getBorders({
-			own: true, collideWithDoor: true, floorValues: true
+			own: true, floorValues: true
 		})
 		return this.stage.isExitDoor(left, top) || this.stage.isExitDoor(left, bottom) ||
 			this.stage.isExitDoor(right, top) || this.stage.isExitDoor(right, bottom)
@@ -1764,13 +1763,23 @@ const
 		bombCount: 1,
 		stages: [
 			{
-				rows: 11, columns: 11,
-				enemies: {ballom: 2},
-				powerUps: {mystery: 1, bombs: 8}
+				rows: 13, columns: 31,
+				enemies: {ballom: 2, onil: 2, dahl: 2, minvo: 2},
+				powerUps: {
+					bombs: 1,
+					flames: 1,
+					speed: 1,
+					'wall-pass': 1,
+					detonator: 1,
+					'bomb-pass': 1,
+					'flame-pass': 1,
+					mystery: 1
+				}
 			},
 			{
-				rows: 11, columns: 11,
-				enemies: {onil: 2}
+				rows: 13, columns: 31,
+				enemies: {ballom: 4, onil: 4},
+				powerUps: {flames: 1}
 			}
 			// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
 			// {enemies: {ballom: 3, onil: 3}}
@@ -1806,3 +1815,5 @@ game
 // OPTIMIZE, REMOVE FPS DROPS
 
 // add change sfx volume, music volume in the menu
+
+// change Stage explosions to Map, to optimize
