@@ -463,6 +463,9 @@ class Bomb {
 			size: this.explosionSize,
 			stage: this.stage
 		})
+		new Timer(() => {
+			this.stage.deleteExplosion(this.x, this.y)
+		}, WALL_EXPLOSION_TIME)
 		this.stage.explosions.set(explosion.id, explosion)
 		playExplosionSound()
 	}
@@ -518,15 +521,9 @@ class Explosion {
 			created = false
 		} else if (!this.stage.isBlock(x, y, {bombPass: true})) {
 			div = this.createHTMLForOne(x, y, className)
-			new Timer(() => {
-				this.stage.deleteExplosion(x, y)
-			}, WALL_EXPLOSION_TIME)
 			created = true
 		} else if (this.stage.isWall(x, y)) {
 			div = this.createHTMLForOne(x, y, className, true)
-			new Timer(() => {
-				this.stage.deleteExplosion(x, y)
-			}, WALL_EXPLOSION_TIME)
 			created = true
 			const wall = this.stage.getWall(x, y)
 			wall.explode()
@@ -1020,6 +1017,7 @@ class Stage {
 	}
 
 	deleteExplosion = (x, y) => {
+		console.log(x, y)
 		const id = createId(x, y)
 		for (const [, explosion] of this.explosions) {
 			for (const [divId] of explosion.divs) {
@@ -1379,30 +1377,30 @@ class Game {
 		const bombPass = this.bomberman.bombPass || isSurrounded,
 			wallPass = this.bomberman.wallPass
 
-		if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD'))
-			if (!this.stage.isBlock(left, top + 0.05, {bombPass, wallPass}) &&
-				!this.stage.isBlock(left, bottom - 0.05, {bombPass, wallPass})) {
-				this.bomberman.moveLeft()
-				moved = true
-			}
-		if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA'))
-			if (!this.stage.isBlock(right, top + 0.05, {bombPass, wallPass}) &&
-				!this.stage.isBlock(right, bottom - 0.05, {bombPass, wallPass})) {
-				this.bomberman.moveRight()
-				moved = true
-			}
-		if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS'))
-			if (!this.stage.isBlock(left + 0.05, top, {bombPass, wallPass}) &&
-				!this.stage.isBlock(right - 0.05, top, {bombPass, wallPass})) {
-				this.bomberman.moveUp()
-				moved = true
-			}
-		if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW'))
-			if (!this.stage.isBlock(left + 0.05, bottom, {bombPass, wallPass}) &&
-				!this.stage.isBlock(right - 0.05, bottom, {bombPass, wallPass})) {
-				this.bomberman.moveDown()
-				moved = true
-			}
+		if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
+			!this.stage.isBlock(left, top + 0.05, {bombPass, wallPass}) &&
+			!this.stage.isBlock(left, bottom - 0.05, {bombPass, wallPass})) {
+			this.bomberman.moveLeft()
+			moved = true
+		}
+		if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
+			!this.stage.isBlock(right, top + 0.05, {bombPass, wallPass}) &&
+			!this.stage.isBlock(right, bottom - 0.05, {bombPass, wallPass})) {
+			this.bomberman.moveRight()
+			moved = true
+		}
+		if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
+			!this.stage.isBlock(left + 0.05, top, {bombPass, wallPass}) &&
+			!this.stage.isBlock(right - 0.05, top, {bombPass, wallPass})) {
+			this.bomberman.moveUp()
+			moved = true
+		}
+		if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
+			!this.stage.isBlock(left + 0.05, bottom, {bombPass, wallPass}) &&
+			!this.stage.isBlock(right - 0.05, bottom, {bombPass, wallPass})) {
+			this.bomberman.moveDown()
+			moved = true
+		}
 		if (!moved)
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
 	}
