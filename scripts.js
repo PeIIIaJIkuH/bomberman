@@ -752,10 +752,9 @@ class Stage {
 			columns = data.columns || DEFAULT_COLUMNS,
 			roundTime = data.roundTime || 200,
 			enemies = data.enemies || {},
-			powerUps = data.powerUps || {},
-			map = data.map || []
+			powerUps = data.powerUps || {}
 
-		const error = this.checkArguments(rows, columns, roundTime, enemies, powerUps, map)
+		const error = this.checkArguments(rows, columns, roundTime, enemies, powerUps)
 		if (error) {
 			this.error = error
 			return
@@ -781,7 +780,7 @@ class Stage {
 		this.options.bombCount += val
 	}
 
-	checkArguments = (rowCount, columnCount, roundTime, enemies, powerUps, map) => {
+	checkArguments = (rowCount, columnCount, roundTime, enemies, powerUps) => {
 		if (isNaN(rowCount) || rowCount < 7)
 			return 'incorrect number of rows'
 		if (isNaN(columnCount) || columnCount < 7)
@@ -806,22 +805,6 @@ class Stage {
 				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1)
 					return `incorrect number of enemies: ${powerUpType}`
 			}
-		if ((map !== undefined && !(map instanceof Array)) || map === null)
-			return 'incorrect type of map'
-		if (map.length !== 0 && map.length !== rowCount - 2)
-			return 'incorrect row count for map'
-		for (let i = 0; i < map.length; i++) {
-			const row = map[i]
-			if (!(row instanceof Array))
-				return `incorrect type of map(${i}) row: ${i}`
-			if (row.length !== 0 && row.length !== columnCount - 2)
-				return 'incorrect column count for map'
-			for (let j = 0; j < row.length; j++) {
-				const square = row[j]
-				if (isNaN(square) || (square !== 0 && square !== 1))
-					return `incorrect map(${i}) square: ${i}, ${j}`
-			}
-		}
 	}
 
 	reinitialize = data => {
@@ -1908,8 +1891,7 @@ const game = new Game({
 			powerUps: {
 				bombs: 1,
 				flames: 1
-			},
-			roundTime: 10
+			}
 		},
 		{
 			rows: 13, columns: 31,
@@ -1928,7 +1910,6 @@ game.run()
 
 
 // TODO:
-// stage change: when initializing game just pass array of stages; a stage is 2d array of 0's and 1's; 0-nothing, 1-rock
 // add enemies who can pass through wall
 // add different enemy logic
 // fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
