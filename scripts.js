@@ -763,7 +763,7 @@ class Stage {
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
 		this.options = new StageOptions({
-			rows, columns, enemies: data.enemies, bombCount, powerUps: data.powerUps,
+			rows, columns, enemies, bombCount, powerUps,
 			explosionSize, roundTime, score: 0
 		})
 		this.rocks = new Map()
@@ -1299,6 +1299,7 @@ class Game {
 		this.bomberman = new Bomberman({board: this.stage.board, liveCount})
 		this.keyListener = new KeyListener()
 
+		changeTitle('Activate the Game | Bomberman')
 		this.state = 'click-me'
 
 		this.handleUserInteraction()
@@ -1753,10 +1754,12 @@ class Game {
 			if (this.error) {
 				document.querySelector('#incorrect-arguments').textContent = this.error
 				this.screen.incorrectArguments.showDisplay()
+				changeTitle('Incorrect arguments | Bomberman')
 				this.state = 'INCORRECT-ARGUMENTS'
 			}
 
 			if (this.state === 'pre-main-menu') {
+				changeTitle('Main Menu | Bomberman')
 				this.screen.mainMenu.showDisplay()
 				this.sounds.titleScreen.play()
 				this.state = 'main-menu'
@@ -1768,6 +1771,7 @@ class Game {
 				this.initialize()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'pre-stage-start') {
+				changeTitle(`Stage ${this.stageNumber + 1} Start | Bomberman`)
 				this.screen.stageStart.show()
 				this.screen.hideStage()
 				this.state = 'stage-start'
@@ -1783,6 +1787,7 @@ class Game {
 				this.stage.options.initializeTimerChange()
 				this.state = 'pre-stage'
 			} else if (this.state === 'pre-stage') {
+				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
 				this.screen.showStage()
 				this.sounds.stage.play()
 				this.state = 'stage'
@@ -1791,6 +1796,7 @@ class Game {
 				this.update()
 				this.draw()
 			} else if (this.state === 'pre-pause') {
+				changeTitle('Paused | Bomberman')
 				this.stage.options.interval.clear()
 				this.sounds.stopStageMusic()
 				this.sounds.pause.stop()
@@ -1811,6 +1817,7 @@ class Game {
 				this.state = 'resume'
 			} else if (this.state === 'resume') {
 				if (currTime - prevTime >= this.sounds.pause.durationMS() / 2) {
+					changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
 					this.resume()
 					this.state = 'pre-stage'
 				}
@@ -1819,6 +1826,7 @@ class Game {
 				this.sounds.over.play()
 				this.screen.hideStage()
 				this.screen.gameOver.showDisplay()
+				changeTitle('Game Over | Bomberman')
 				this.state = 'game-over'
 			} else if (this.state === 'pre-pre-die') {
 				this.cancelPowerUps()
@@ -1860,6 +1868,7 @@ class Game {
 			} else if (this.state === 'pre-stage-completed') {
 				if (currTime - prevTime >= this.sounds.complete.durationMS()) {
 					this.screen.hideStage()
+					changeTitle(`Stage ${this.stageNumber + 1} Completed | Bomberman`)
 					this.state = 'stage-completed'
 				}
 			} else if (this.state === 'stage-completed') {
@@ -1871,6 +1880,7 @@ class Game {
 				} else
 					this.state = 'ending'
 			} else if (this.state === 'ending') {
+				changeTitle('Game End | Bomberman')
 				this.screen.info.hide()
 				this.screen.stage.hideDisplay()
 				this.sounds.ending.play()
@@ -1915,15 +1925,16 @@ game.run()
 // fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
 // add bomberman walk sounds
 // pause game when user looses focus
-// show score at end of the game
 // add backend:
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest
-// add animation to the last page
 // add responsive design: just resize if the gameBoard is smaller than the device screen
 // change document title depending on the state of the game
 
+// show score at end of the game
+// add animation to the last page
 // add transition to the start state after game-completed or game-over states
+
 // add helper, which shows the keys to play the game
 
 // OPTIMIZE, REMOVE FPS DROPS
