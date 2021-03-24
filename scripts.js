@@ -11,8 +11,10 @@ const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
 const POWER_UP_SPEED_BOOST = 0.3,
 	POWER_UP_INVINCIBLE_TIME = 30000
 
-const AUDIO_VOLUME = 0.5,
-	ENEMY_XP_SHOW_TIME = 2000,
+let SFX_VOLUME = 0.2,
+	MUSIC_VOLUME = 0.2
+
+const ENEMY_XP_SHOW_TIME = 2000,
 	ENEMY_DYING_TIME = 1100,
 	BOMBERMAN_DYING_TIME = 600,
 	CHAIN_EXPLOSION_TIME = 100
@@ -33,21 +35,28 @@ const getRandomDirection = (directions = ['left', 'right', 'up', 'down']) => {
 const playExplosionSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/explosion.wav'
-	sound.volume = AUDIO_VOLUME
+	sound.volume = SFX_VOLUME
 	sound.play().then()
 }
 
 const playBombLeaveSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/leave-bomb.wav'
-	sound.volume = AUDIO_VOLUME
+	sound.volume = SFX_VOLUME
 	sound.play().then()
 }
 
-const playPowerUpPicked = () => {
+const playPowerUpPickedSound = () => {
 	const sound = document.createElement('audio')
 	sound.src = './sounds/power-up.wav'
-	sound.volume = AUDIO_VOLUME
+	sound.volume = SFX_VOLUME
+	sound.play().then()
+}
+
+const playChangeVolumeSound = volume => {
+	const sound = document.createElement('audio')
+	sound.src = './sounds/volume-change.wav'
+	sound.volume = volume
 	sound.play().then()
 }
 
@@ -666,22 +675,22 @@ class StageOptions {
 	}
 
 	drawTimer = () => {
-		this.timer.querySelector('span').innerText = `${this.roundTime}`
+		this.timerDiv.querySelector('span').innerText = `${this.roundTime}`
 	}
 
 	initializeTimer = () => {
-		const timer = document.querySelector('#timer')
-		timer && timer.remove()
-		this.timer = document.createElement('div')
-		this.timer.id = 'timer'
+		const timerDiv = document.querySelector('#timer')
+		timerDiv && timerDiv.remove()
+		this.timerDiv = document.createElement('div')
+		this.timerDiv.id = 'timer'
 		const img = document.createElement('img')
 		img.src = './img/game-info/clock.png'
 		img.alt = 'clock'
 		const span = document.createElement('span')
 		span.innerText = `${this.roundTime}`
-		this.timer.append(img)
-		this.timer.append(span)
-		document.querySelector('#game-info').append(this.timer)
+		this.timerDiv.append(img)
+		this.timerDiv.append(span)
+		document.querySelector('#game-info').append(this.timerDiv)
 	}
 
 	initializeScore = () => {
@@ -701,12 +710,12 @@ class StageOptions {
 
 	initializeTimerChange = () => {
 		this.resetRoundTime()
-		clearInterval(this.interval)
-		this.interval = setInterval(() => {
+		this.timer && this.timer.clear()
+		this.timer = new Timer(() => {
 			this.roundTime--
 			this.passedTime++
 			if (this.roundTime <= 0)
-				clearInterval(this.interval)
+				this.timer.clear()
 		}, 1000)
 	}
 
@@ -1017,7 +1026,6 @@ class Stage {
 	}
 
 	deleteExplosion = (x, y) => {
-		console.log(x, y)
 		const id = createId(x, y)
 		for (const [, explosion] of this.explosions) {
 			for (const [divId] of explosion.divs) {
@@ -1041,10 +1049,15 @@ class Stage {
 }
 
 class GameMenu {
-	constructor() {
+	constructor(gameMusic) {
 		this.div = document.querySelector('#game-menu')
 		this.items = document.querySelectorAll('.game-menu-item')
+		this.ranges = document.querySelectorAll('.game-menu-item input[type="range"]')
 		this.selected = 0
+
+		this.sounds = gameMusic
+
+		this.initializeInputs()
 	}
 
 	show = () => {
@@ -1059,11 +1072,65 @@ class GameMenu {
 	}
 
 	draw = () => {
+		if (this.selected === 2) {
+			this.ranges[0].disabled = false
+			this.ranges[1].disabled = true
+			this.ranges[0].focus()
+		}
+		if (this.selected === 3) {
+			this.ranges[0].disabled = true
+			this.ranges[1].disabled = false
+			this.ranges[1].focus()
+		}
+		if (this.selected !== 2 && this.selected !== 3) {
+			this.unFocusAll()
+		}
 		this.items.forEach((item, i) => {
 			item.className = 'game-menu-item'
 			if (this.selected === i)
 				item.classList.add('game-menu-item-selected')
 		})
+	}
+
+	changeVolume = index => {
+		if (index === 0) {
+			SFX_VOLUME = this.ranges[0].value
+			playChangeVolumeSound(SFX_VOLUME)
+		} else if (index === 1) {
+			MUSIC_VOLUME = this.ranges[1].value
+			playChangeVolumeSound(MUSIC_VOLUME)
+		}
+		this.sounds.changeSFXVolume(SFX_VOLUME)
+		this.sounds.changeMusicVolume(MUSIC_VOLUME)
+	}
+
+	initializeInputs = () => {
+		const callback = e => {
+			const i = this.selected - 2
+			if (e.code === 'ArrowLeft') {
+				this.ranges[i].stepDown()
+				this.changeVolume(i)
+				this.ranges[i].stepUp()
+			} else if (e.code === 'ArrowRight') {
+				this.ranges[i].stepUp()
+				this.changeVolume(i)
+				this.ranges[i].stepDown()
+			} else if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+				e.preventDefault()
+			}
+		}
+
+		for (const range of this.ranges) {
+			range.addEventListener('keydown', callback)
+			range.addEventListener('click', e => e.preventDefault())
+		}
+	}
+
+	unFocusAll = () => {
+		for (const range of this.ranges) {
+			range.blur()
+			range.disabled = true
+		}
 	}
 
 	listener = e => {
@@ -1078,9 +1145,11 @@ class GameMenu {
 }
 
 class Music {
-	constructor(id) {
+	constructor(id, music) {
 		this.audio = document.getElementById(id)
-		this.audio.volume = AUDIO_VOLUME
+		this.audio.volume = SFX_VOLUME
+		if (music)
+			this.audio.volume = MUSIC_VOLUME
 	}
 
 	play = () => {
@@ -1107,14 +1176,14 @@ class Music {
 
 class GameMusic {
 	constructor() {
-		this.titleScreen = new Music('title-screen-music')
-		this.stageStart = new Music('stage-start-music')
-		this.stage = new Music('stage-music')
-		this.lifeLost = new Music('life-lost-music')
-		this.ending = new Music('ending-music')
-		this.over = new Music('over-music')
-		this.complete = new Music('stage-complete-music')
-		this.findExit = new Music('find-exit-music')
+		this.titleScreen = new Music('title-screen-music', true)
+		this.stageStart = new Music('stage-start-music', true)
+		this.stage = new Music('stage-music', true)
+		this.lifeLost = new Music('life-lost-music', true)
+		this.ending = new Music('ending-music', true)
+		this.over = new Music('over-music', true)
+		this.complete = new Music('stage-complete-music', true)
+		this.findExit = new Music('find-exit-music', true)
 		this.pause = new Music('pause-music')
 		this.die = new Music('die-music')
 	}
@@ -1122,6 +1191,22 @@ class GameMusic {
 	stopStageMusic = () => {
 		this.stage.stop()
 		this.findExit.stop()
+	}
+
+	changeSFXVolume = val => {
+		this.pause.audio.volume = val
+		this.die.audio.volume = val
+	}
+
+	changeMusicVolume = val => {
+		this.titleScreen.audio.volume = val
+		this.stageStart.audio.volume = val
+		this.stage.audio.volume = val
+		this.lifeLost.audio.volume = val
+		this.ending.audio.volume = val
+		this.over.audio.volume = val
+		this.complete.audio.volume = val
+		this.findExit.audio.volume = val
 	}
 }
 
@@ -1198,7 +1283,6 @@ class Game {
 		}
 		this.bomberman = new Bomberman({board: this.stage.board, liveCount})
 		this.keyListener = new KeyListener()
-		this.gameMenu = new GameMenu()
 
 		this.state = 'click-me'
 
@@ -1218,7 +1302,8 @@ class Game {
 
 	handleUserInteraction = () => {
 		const clickListener = () => {
-			this.music = new GameMusic()
+			this.sounds = new GameMusic()
+			this.gameMenu = new GameMenu(this.sounds)
 			this.state = 'pre-main-menu'
 			document.querySelector('#click-me').remove()
 			document.removeEventListener('click', clickListener)
@@ -1322,7 +1407,7 @@ class Game {
 			powerUp = this.stage.getPowerUp(right, bottom)
 		}
 		if (powerUp) {
-			playPowerUpPicked()
+			playPowerUpPickedSound()
 			switch (powerUp.type) {
 				case 'bombs':
 					this.stage.updateBombCountBy(1)
@@ -1658,11 +1743,11 @@ class Game {
 
 			if (this.state === 'pre-main-menu') {
 				this.screen.mainMenu.showDisplay()
-				this.music.titleScreen.play()
+				this.sounds.titleScreen.play()
 				this.state = 'main-menu'
 			} else if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
 				this.state = 'initialize'
-				this.music.titleScreen.stop()
+				this.sounds.titleScreen.stop()
 			} else if (this.state === 'initialize') {
 				this.screen.hideStage()
 				this.initialize()
@@ -1671,66 +1756,68 @@ class Game {
 				this.screen.stageStart.show()
 				this.screen.hideStage()
 				this.state = 'stage-start'
-				this.music.stageStart.play()
+				this.sounds.stageStart.play()
 				prevTime = currTime
 			} else if (this.state === 'stage-start') {
-				if (currTime - prevTime >= this.music.stageStart.durationMS()) {
+				if (currTime - prevTime >= this.sounds.stageStart.durationMS()) {
 					this.screen.stageStart.hide()
 					this.screen.showStage()
 					this.state = 'pre-stage'
 				}
 			} else if (this.state === 'pre-stage') {
 				this.screen.showStage()
-				this.music.stage.play()
+				this.sounds.stage.play()
 				this.stage.options.initializeTimerChange()
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
+				// console.log(this.stage.options.roundTime)
 				prevTime = currTime
+				console.log(this.sounds.stage.audio.volume)
 				this.update()
 				this.draw()
 			} else if (this.state === 'pre-pause') {
-				this.music.stopStageMusic()
-				this.music.pause.stop()
-				this.music.pause.play()
+				this.sounds.stopStageMusic()
+				this.sounds.pause.stop()
+				this.sounds.pause.play()
 				this.pause()
 				this.state = 'pause'
 			} else if (this.state === 'pause') {
 				this.gameMenu.draw()
 			} else if (this.state === 'pre-pre-resume') {
 				prevTime = currTime
-				this.music.pause.clear()
+				this.sounds.pause.clear()
 				this.state = 'pre-resume'
 			} else if (this.state === 'pre-resume') {
-				this.music.pause.stop()
-				this.music.pause.play()
+				this.sounds.pause.stop()
+				this.sounds.pause.play()
 				this.gameMenu.hide()
 				this.state = 'resume'
 			} else if (this.state === 'resume') {
-				if (currTime - prevTime >= this.music.pause.durationMS() / 2) {
+				if (currTime - prevTime >= this.sounds.pause.durationMS() / 2) {
 					this.resume()
 					this.state = 'pre-stage'
 				}
 			} else if (this.state === 'over') {
-				this.music.stopStageMusic()
-				this.music.over.play()
+				this.sounds.stopStageMusic()
+				this.sounds.over.play()
 				this.screen.hideStage()
 				this.screen.gameOver.showDisplay()
 				this.state = 'game-over'
 			} else if (this.state === 'pre-pre-die') {
 				this.cancelPowerUps()
-				this.music.stopStageMusic()
+				this.sounds.stopStageMusic()
 				this.pauseEnemies()
-				this.music.die.play()
+				this.sounds.die.play()
 				this.state = 'pre-die'
 			} else if (this.state === 'pre-die') {
-				if (currTime - prevTime >= this.music.die.durationMS()) {
-					this.music.die.stop()
-					this.music.lifeLost.play()
+				if (currTime - prevTime >= this.sounds.die.durationMS()) {
+					this.sounds.die.stop()
+					this.sounds.lifeLost.play()
 					this.stage.options.score = this.stage.options.initialScore
 					this.state = 'die'
 				}
 			} else if (this.state === 'die') {
-				if (currTime - prevTime >= (this.music.die.durationMS() + this.music.lifeLost.durationMS())) {
+				if (currTime - prevTime >= (this.sounds.die.durationMS() + this.sounds.lifeLost.durationMS())) {
 					prevTime = currTime
 					if (this.bomberman.liveCount) {
 						this.state = 'restart'
@@ -1742,19 +1829,19 @@ class Game {
 				this.restart()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'find-exit') {
-				this.music.stage.stop()
-				this.music.findExit.play()
+				this.sounds.stage.stop()
+				this.sounds.findExit.play()
 				this.state = 'stage'
 			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
 				this.stage.consumedPowerUps.clear()
-				this.music.stopStageMusic()
-				this.music.complete.play()
+				this.sounds.stopStageMusic()
+				this.sounds.complete.play()
 				this.state = 'pre-stage-completed'
 				ENEMY_ID = 0
 				prevTime = currTime
 			} else if (this.state === 'pre-stage-completed') {
-				if (currTime - prevTime >= this.music.complete.durationMS()) {
+				if (currTime - prevTime >= this.sounds.complete.durationMS()) {
 					this.screen.hideStage()
 					this.state = 'stage-completed'
 				}
@@ -1769,7 +1856,7 @@ class Game {
 			} else if (this.state === 'ending') {
 				this.screen.info.hide()
 				this.screen.stage.hideDisplay()
-				this.music.ending.play()
+				this.sounds.ending.play()
 				this.screen.ending.showDisplay()
 				this.state = 'END'
 			}
@@ -1825,5 +1912,3 @@ game.run()
 // add helper, which shows the keys to play the game
 
 // OPTIMIZE, REMOVE FPS DROPS
-
-// add change sfx volume, music volume in the menu

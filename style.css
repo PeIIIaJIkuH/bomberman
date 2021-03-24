@@ -479,7 +479,23 @@ img {
     color: #a6a6a6;
 }
 
+.game-menu-item-label {
+    color: #a6a6a6;
+}
+
+.game-menu-item-range {
+    pointer-events: none;
+}
+
+.game-menu-item-range:focus {
+    outline: none;
+}
+
 .game-menu-item-selected {
+    color: white;
+}
+
+.game-menu-item-selected .game-menu-item-label {
     color: white;
 }
 
