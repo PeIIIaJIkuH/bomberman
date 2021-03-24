@@ -75,7 +75,7 @@ class Timer {
 	}
 
 	pause() {
-		clearTimeout(this.timerID)
+		this.clear()
 		this.remaining -= new Date().getTime() - this.start
 	}
 
@@ -87,6 +87,22 @@ class Timer {
 
 	clear() {
 		clearTimeout(this.timerID)
+	}
+}
+
+class IntervalTimer {
+	constructor(callback) {
+		this.callback = callback
+		this.resume()
+	}
+
+	resume() {
+		this.clear()
+		this.timerId = setInterval(this.callback, 1000)
+	}
+
+	clear() {
+		clearInterval(this.timerId)
 	}
 }
 
@@ -710,13 +726,13 @@ class StageOptions {
 
 	initializeTimerChange = () => {
 		this.resetRoundTime()
-		this.timer && this.timer.clear()
-		this.timer = new Timer(() => {
+		this.interval && this.interval.clear()
+		this.interval = new IntervalTimer(() => {
 			this.roundTime--
 			this.passedTime++
 			if (this.roundTime <= 0)
-				this.timer.clear()
-		}, 1000)
+				this.interval.clear()
+		})
 	}
 
 	resetRoundTime = () => {
@@ -736,9 +752,10 @@ class Stage {
 			columns = data.columns || DEFAULT_COLUMNS,
 			roundTime = data.roundTime || 200,
 			enemies = data.enemies || {},
-			powerUps = data.powerUps || {}
+			powerUps = data.powerUps || {},
+			map = data.map || []
 
-		const error = this.checkArguments(rows, columns, roundTime, enemies, powerUps)
+		const error = this.checkArguments(rows, columns, roundTime, enemies, powerUps, map)
 		if (error) {
 			this.error = error
 			return
@@ -764,10 +781,10 @@ class Stage {
 		this.options.bombCount += val
 	}
 
-	checkArguments = (rows, columns, roundTime, enemies, powerUps) => {
-		if (isNaN(rows) || rows < 7)
+	checkArguments = (rowCount, columnCount, roundTime, enemies, powerUps, map) => {
+		if (isNaN(rowCount) || rowCount < 7)
 			return 'incorrect number of rows'
-		if (isNaN(columns) || columns < 7)
+		if (isNaN(columnCount) || columnCount < 7)
 			return 'incorrect number of columns'
 		if (isNaN(roundTime) || roundTime < 10)
 			return 'incorrect roundTime'
@@ -789,6 +806,22 @@ class Stage {
 				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1)
 					return `incorrect number of enemies: ${powerUpType}`
 			}
+		if ((map !== undefined && !(map instanceof Array)) || map === null)
+			return 'incorrect type of map'
+		if (map.length !== 0 && map.length !== rowCount - 2)
+			return 'incorrect row count for map'
+		for (let i = 0; i < map.length; i++) {
+			const row = map[i]
+			if (!(row instanceof Array))
+				return `incorrect type of map(${i}) row: ${i}`
+			if (row.length !== 0 && row.length !== columnCount - 2)
+				return 'incorrect column count for map'
+			for (let j = 0; j < row.length; j++) {
+				const square = row[j]
+				if (isNaN(square) || (square !== 0 && square !== 1))
+					return `incorrect map(${i}) square: ${i}, ${j}`
+			}
+		}
 	}
 
 	reinitialize = data => {
@@ -1273,9 +1306,8 @@ class Game {
 
 		this.stageNumber = 0
 		this.stages = stages
-		const stage = stages[this.stageNumber]
 		this.stage = new Stage({
-			data: stage, bombCount, explosionSize
+			data: stages[this.stageNumber], bombCount, explosionSize
 		})
 		if (this.stage.error) {
 			this.error = this.stage.error
@@ -1762,20 +1794,21 @@ class Game {
 				if (currTime - prevTime >= this.sounds.stageStart.durationMS()) {
 					this.screen.stageStart.hide()
 					this.screen.showStage()
-					this.state = 'pre-stage'
+					this.state = 'initialize-timer'
 				}
+			} else if (this.state === 'initialize-timer') {
+				this.stage.options.initializeTimerChange()
+				this.state = 'pre-stage'
 			} else if (this.state === 'pre-stage') {
 				this.screen.showStage()
 				this.sounds.stage.play()
-				this.stage.options.initializeTimerChange()
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
-				// console.log(this.stage.options.roundTime)
 				prevTime = currTime
-				console.log(this.sounds.stage.audio.volume)
 				this.update()
 				this.draw()
 			} else if (this.state === 'pre-pause') {
+				this.stage.options.interval.clear()
 				this.sounds.stopStageMusic()
 				this.sounds.pause.stop()
 				this.sounds.pause.play()
@@ -1791,6 +1824,7 @@ class Game {
 				this.sounds.pause.stop()
 				this.sounds.pause.play()
 				this.gameMenu.hide()
+				this.stage.options.interval.resume()
 				this.state = 'resume'
 			} else if (this.state === 'resume') {
 				if (currTime - prevTime >= this.sounds.pause.durationMS() / 2) {
@@ -1874,7 +1908,8 @@ const game = new Game({
 			powerUps: {
 				bombs: 1,
 				flames: 1
-			}
+			},
+			roundTime: 10
 		},
 		{
 			rows: 13, columns: 31,
@@ -1899,7 +1934,6 @@ game.run()
 // fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
 // add bomberman walk sounds
 // pause game when user looses focus
-// update collision with door
 // show score at end of the game
 // add backend:
 //          add page, where user can write his nickname and send his score to the backend
