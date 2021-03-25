@@ -423,7 +423,8 @@ img {
 
 #game-menu,
 #stage-start,
-#game-over {
+#game-over,
+#game-score {
     width: 100%;
     height: 100%;
     top: 0;
@@ -437,11 +438,13 @@ img {
     justify-content: center;
 }
 
-#stage-start {
+#stage-start,
+#game-score {
     flex-direction: row;
 }
 
-#stage-start span {
+#stage-start span,
+#game-score span {
     margin-left: 8px;
 }
 

@@ -1275,6 +1275,7 @@ class GameScreen {
 		this.incorrectArguments = new Screen('incorrect-arguments')
 		this.incorrectArguments.show()
 		this.incorrectArguments.hideDisplay()
+		this.gameScore = new Screen('game-score')
 	}
 
 	showStage = () => {
@@ -1285,6 +1286,10 @@ class GameScreen {
 	hideStage = () => {
 		this.stage.hide()
 		this.info.hide()
+	}
+
+	setGameScore = score => {
+		this.gameScore.div.querySelector('span').innerText = String(score)
 	}
 }
 
@@ -1911,7 +1916,7 @@ class Game {
 				this.screen.hideStage()
 				this.screen.gameOver.showDisplay()
 				changeTitle('Game Over | Bomberman')
-				this.state = 'game-over'
+				this.state = 'GAME-OVER'
 			} else if (this.state === 'pre-pre-die') {
 				this.cancelPowerUps()
 				this.sounds.stopStageMusic()
@@ -1962,7 +1967,20 @@ class Game {
 					this.bomberman.resetPosition()
 					this.state = 'pre-stage-start'
 				} else
+					this.state = 'pre-game-score'
+			} else if (this.state === 'pre-game-score') {
+				changeTitle(`Stage ${this.stageNumber + 1} Start | Bomberman`)
+				this.screen.hideStage()
+				this.screen.setGameScore(this.stage.options.score)
+				this.screen.gameScore.show()
+				prevTime = currTime
+				changeTitle('Final Score | Bomberman')
+				this.state = 'game-score'
+			} else if (this.state === 'game-score') {
+				if (currTime - prevTime >= 5000) {
+					this.screen.gameScore.hide()
 					this.state = 'ending'
+				}
 			} else if (this.state === 'ending') {
 				changeTitle('Game End | Bomberman')
 				this.screen.info.hide()
@@ -2023,7 +2041,11 @@ const defaultStages = {
 }
 
 const game = new Game({
-	stages: defaultStages.easy
+	stages: [{
+		rows: 11,
+		columns: 11,
+		enemies: {balloom: 1}
+	}]
 })
 game.run()
 
@@ -2040,7 +2062,5 @@ game.run()
 // add transition to the start state after game-completed or game-over states
 
 // add helper, which shows the keys to play the game
-
-// make entity movement independent of FPS
 
 // OPTIMIZE, REMOVE FPS DROPS
