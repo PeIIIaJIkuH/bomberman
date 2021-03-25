@@ -1532,32 +1532,32 @@ class Game {
 
 		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
-				!this.stage.isBlock(left - (i / TILE_SIZE), top, {bombPass, wallPass}) &&
-				!this.stage.isBlock(left - (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
+				!this.stage.isBlock(left - (i * fix / TILE_SIZE), top, {bombPass, wallPass}) &&
+				!this.stage.isBlock(left - (i * fix / TILE_SIZE), bottom, {bombPass, wallPass})) {
 				this.bomberman.moveLeft(i * fix)
 				moved = true
 				break
 			}
 		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
-				!this.stage.isBlock(right + (i / TILE_SIZE), top, {bombPass, wallPass}) &&
-				!this.stage.isBlock(right + (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
+				!this.stage.isBlock(right + (i * fix / TILE_SIZE), top, {bombPass, wallPass}) &&
+				!this.stage.isBlock(right + (i * fix / TILE_SIZE), bottom, {bombPass, wallPass})) {
 				this.bomberman.moveRight(i * fix)
 				moved = true
 				break
 			}
 		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
-				!this.stage.isBlock(left, top - (i / TILE_SIZE), {bombPass, wallPass}) &&
-				!this.stage.isBlock(right, top - (i / TILE_SIZE), {bombPass, wallPass})) {
+				!this.stage.isBlock(left, top - (i * fix / TILE_SIZE), {bombPass, wallPass}) &&
+				!this.stage.isBlock(right, top - (i * fix / TILE_SIZE), {bombPass, wallPass})) {
 				this.bomberman.moveUp(i * fix)
 				moved = true
 				break
 			}
 		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
-				!this.stage.isBlock(left, bottom + (i / TILE_SIZE), {bombPass, wallPass}) &&
-				!this.stage.isBlock(right, bottom + (i / TILE_SIZE), {bombPass, wallPass})) {
+				!this.stage.isBlock(left, bottom + (i * fix / TILE_SIZE), {bombPass, wallPass}) &&
+				!this.stage.isBlock(right, bottom + (i * fix / TILE_SIZE), {bombPass, wallPass})) {
 				this.bomberman.moveDown(i * fix)
 				moved = true
 				break
