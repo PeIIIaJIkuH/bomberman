@@ -130,20 +130,32 @@ class Entity {
 		this.div.style.width = `${this.size}px`
 	}
 
-	moveLeft() {
-		this.left -= this.speed
+	moveLeft(speed) {
+		if (speed)
+			this.left -= speed
+		else
+			this.left -= this.speed
 	}
 
-	moveRight() {
-		this.left += this.speed
+	moveRight(speed) {
+		if (speed)
+			this.left += speed
+		else
+			this.left += this.speed
 	}
 
-	moveUp() {
-		this.top -= this.speed
+	moveUp(speed) {
+		if (speed)
+			this.top -= speed
+		else
+			this.top -= this.speed
 	}
 
-	moveDown() {
-		this.top += this.speed
+	moveDown(speed) {
+		if (speed)
+			this.top += speed
+		else
+			this.top += this.speed
 	}
 
 	draw() {
@@ -325,26 +337,26 @@ class Bomberman extends Entity {
 		document.querySelector('#game-info').append(this.liveCountDiv)
 	}
 
-	moveLeft() {
-		super.moveLeft()
+	moveLeft(speed) {
+		super.moveLeft(speed)
 		this.img.className = 'bomberman-walk-left'
 		this.direction = 'left'
 	}
 
-	moveRight() {
-		super.moveRight()
+	moveRight(speed) {
+		super.moveRight(speed)
 		this.img.className = 'bomberman-walk-right'
 		this.direction = 'right'
 	}
 
-	moveUp() {
-		super.moveUp()
+	moveUp(speed) {
+		super.moveUp(speed)
 		this.img.className = 'bomberman-walk-up'
 		this.direction = 'up'
 	}
 
-	moveDown() {
-		super.moveDown()
+	moveDown(speed) {
+		super.moveDown(speed)
 		this.img.className = 'bomberman-walk-down'
 		this.direction = 'down'
 	}
@@ -1478,30 +1490,38 @@ class Game {
 		const bombPass = this.bomberman.bombPass || isSurrounded,
 			wallPass = this.bomberman.wallPass
 
-		if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
-			!this.stage.isBlock(left, top + 0.05, {bombPass, wallPass}) &&
-			!this.stage.isBlock(left, bottom - 0.05, {bombPass, wallPass})) {
-			this.bomberman.moveLeft()
-			moved = true
-		}
-		if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
-			!this.stage.isBlock(right, top + 0.05, {bombPass, wallPass}) &&
-			!this.stage.isBlock(right, bottom - 0.05, {bombPass, wallPass})) {
-			this.bomberman.moveRight()
-			moved = true
-		}
-		if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
-			!this.stage.isBlock(left + 0.05, top, {bombPass, wallPass}) &&
-			!this.stage.isBlock(right - 0.05, top, {bombPass, wallPass})) {
-			this.bomberman.moveUp()
-			moved = true
-		}
-		if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
-			!this.stage.isBlock(left + 0.05, bottom, {bombPass, wallPass}) &&
-			!this.stage.isBlock(right - 0.05, bottom, {bombPass, wallPass})) {
-			this.bomberman.moveDown()
-			moved = true
-		}
+		for (let i = this.bomberman.speed; i >= 1; i--)
+			if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
+				!this.stage.isBlock(left - (i / TILE_SIZE), top, {bombPass, wallPass}) &&
+				!this.stage.isBlock(left - (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
+				this.bomberman.moveLeft(i)
+				moved = true
+				break
+			}
+		for (let i = this.bomberman.speed; i >= 1; i--)
+			if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
+				!this.stage.isBlock(right + (i / TILE_SIZE), top, {bombPass, wallPass}) &&
+				!this.stage.isBlock(right + (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
+				this.bomberman.moveRight(i)
+				moved = true
+				break
+			}
+		for (let i = this.bomberman.speed; i >= 1; i--)
+			if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
+				!this.stage.isBlock(left, top - (i / TILE_SIZE), {bombPass, wallPass}) &&
+				!this.stage.isBlock(right, top - (i / TILE_SIZE), {bombPass, wallPass})) {
+				this.bomberman.moveUp(i)
+				moved = true
+				break
+			}
+		for (let i = this.bomberman.speed; i >= 1; i--)
+			if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
+				!this.stage.isBlock(left, bottom + (i / TILE_SIZE), {bombPass, wallPass}) &&
+				!this.stage.isBlock(right, bottom + (i / TILE_SIZE), {bombPass, wallPass})) {
+				this.bomberman.moveDown(i)
+				moved = true
+				break
+			}
 		if (!moved)
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
 	}
