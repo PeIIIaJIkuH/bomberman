@@ -235,21 +235,22 @@ class Enemy extends Entity {
 		switch (this.type) {
 			case 'ballom':
 				this.xp = 100
-				this.speed /= 3
+				this.speed = 0.25
 				this.createHTML('./img/enemies/ballom.png')
 				break
 			case 'onil':
 				this.xp = 200
-				this.speed /= 2
+				this.speed = 0.5
 				this.createHTML('./img/enemies/onil.png')
 				break
 			case 'dahl':
 				this.xp = 400
+				this.speed = 1
 				this.createHTML('./img/enemies/dahl.png')
 				break
 			case 'minvo':
 				this.xp = 800
-				this.speed *= 1.5
+				this.speed = 1.5
 				this.createHTML('./img/enemies/minvo.png')
 				break
 		}
@@ -260,8 +261,8 @@ class Enemy extends Entity {
 		this.img.src = src
 	}
 
-	moveLeft() {
-		super.moveLeft()
+	moveLeft(speed) {
+		super.moveLeft(speed)
 		this.img.className = 'enemy-walk-left'
 		this.direction = 'left'
 	}
@@ -1490,7 +1491,7 @@ class Game {
 		const bombPass = this.bomberman.bombPass || isSurrounded,
 			wallPass = this.bomberman.wallPass
 
-		for (let i = this.bomberman.speed; i >= 1; i--)
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
 				!this.stage.isBlock(left - (i / TILE_SIZE), top, {bombPass, wallPass}) &&
 				!this.stage.isBlock(left - (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
@@ -1498,7 +1499,7 @@ class Game {
 				moved = true
 				break
 			}
-		for (let i = this.bomberman.speed; i >= 1; i--)
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
 				!this.stage.isBlock(right + (i / TILE_SIZE), top, {bombPass, wallPass}) &&
 				!this.stage.isBlock(right + (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
@@ -1506,7 +1507,7 @@ class Game {
 				moved = true
 				break
 			}
-		for (let i = this.bomberman.speed; i >= 1; i--)
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
 				!this.stage.isBlock(left, top - (i / TILE_SIZE), {bombPass, wallPass}) &&
 				!this.stage.isBlock(right, top - (i / TILE_SIZE), {bombPass, wallPass})) {
@@ -1514,7 +1515,7 @@ class Game {
 				moved = true
 				break
 			}
-		for (let i = this.bomberman.speed; i >= 1; i--)
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
 			if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
 				!this.stage.isBlock(left, bottom + (i / TILE_SIZE), {bombPass, wallPass}) &&
 				!this.stage.isBlock(right, bottom + (i / TILE_SIZE), {bombPass, wallPass})) {
@@ -1524,6 +1525,68 @@ class Game {
 			}
 		if (!moved)
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
+	}
+
+	moveEnemyRandomly(id) {
+		const enemy = this.stage.enemies.get(id)
+		if (!enemy.dead) {
+			const {
+				left, right, top, bottom
+			} = enemy.getBorders({own: true})
+
+			const wallPass = enemy.wallPass
+			if (enemy.direction === 'left') {
+				let moved = false
+				for (let i = enemy.speed; i > 0; i -= 0.25)
+					if (!this.stage.isBlock(left - (i / TILE_SIZE), top, {wallPass, enemy: true}) &&
+						!this.stage.isBlock(left - (i / TILE_SIZE), bottom, {wallPass, enemy: true})) {
+						enemy.moveLeft(i)
+						moved = true
+						break
+					}
+				if (!moved)
+					enemy.direction = getRandomDirection(['right', 'up', 'down'])
+				return
+			}
+			if (enemy.direction === 'right') {
+				let moved = false
+				for (let i = enemy.speed; i > 0; i -= 0.25)
+					if (!this.stage.isBlock(right + (i / TILE_SIZE), top, {wallPass, enemy: true}) &&
+						!this.stage.isBlock(right + (i / TILE_SIZE), bottom, {wallPass, enemy: true})) {
+						enemy.moveRight(i)
+						moved = true
+						break
+					}
+				if (!moved)
+					enemy.direction = getRandomDirection(['left', 'up', 'down'])
+				return
+			}
+			if (enemy.direction === 'up') {
+				let moved = false
+				for (let i = enemy.speed; i > 0; i -= 0.25)
+					if (!this.stage.isBlock(left, top - (i / TILE_SIZE), {wallPass, enemy: true}) &&
+						!this.stage.isBlock(right, top - (i / TILE_SIZE), {wallPass, enemy: true})) {
+						enemy.moveUp(i)
+						moved = true
+						break
+					}
+				if (!moved)
+					enemy.direction = getRandomDirection(['left', 'right', 'down'])
+				return
+			}
+			if (enemy.direction === 'down') {
+				let moved = false
+				for (let i = enemy.speed; i > 0; i -= 0.25)
+					if (!this.stage.isBlock(left, bottom + (i / TILE_SIZE), {wallPass, enemy: true}) &&
+						!this.stage.isBlock(right, bottom + (i / TILE_SIZE), {wallPass, enemy: true})) {
+						enemy.moveDown(i)
+						moved = true
+						break
+					}
+				if (!moved)
+					enemy.direction = getRandomDirection(['left', 'right', 'up'])
+			}
+		}
 	}
 
 	updateBomberman() {
@@ -1564,48 +1627,6 @@ class Game {
 	updateEnemies = () => {
 		for (const [enemyId] of this.stage.enemies)
 			this.updateEnemy(enemyId)
-	}
-
-	moveEnemyRandomly(id) {
-		const enemy = this.stage.enemies.get(id)
-		if (!enemy.dead) {
-			const {
-				left, right, top, bottom
-			} = enemy.getBorders({own: true})
-
-			const wallPass = enemy.wallPass
-			if (enemy.direction === 'left') {
-				if (!this.stage.isBlock(left, top + 0.05, {wallPass, enemy: true}) &&
-					!this.stage.isBlock(left, bottom - 0.05, {wallPass, enemy: true}))
-					enemy.moveLeft()
-				else
-					enemy.direction = getRandomDirection(['right', 'up', 'down'])
-				return
-			}
-			if (enemy.direction === 'right') {
-				if (!this.stage.isBlock(right, top + 0.05, {wallPass, enemy: true}) &&
-					!this.stage.isBlock(right, bottom - 0.05, {wallPass, enemy: true}))
-					enemy.moveRight()
-				else
-					enemy.direction = getRandomDirection(['left', 'up', 'down'])
-				return
-			}
-			if (enemy.direction === 'up') {
-				if (!this.stage.isBlock(left + 0.05, top, {wallPass, enemy: true}) &&
-					!this.stage.isBlock(right - 0.05, top, {wallPass, enemy: true}))
-					enemy.moveUp()
-				else
-					enemy.direction = getRandomDirection(['left', 'right', 'down'])
-				return
-			}
-			if (enemy.direction === 'down') {
-				if (!this.stage.isBlock(left + 0.05, bottom, {wallPass, enemy: true}) &&
-					!this.stage.isBlock(right - 0.05, bottom, {wallPass, enemy: true}))
-					enemy.moveDown()
-				else
-					enemy.direction = getRandomDirection(['left', 'right', 'up'])
-			}
-		}
 	}
 
 	updateEnemy = id => {
@@ -1916,8 +1937,8 @@ const game = new Game({
 	bombCount: 100,
 	stages: [
 		{
-			rows: 13, columns: 13,
-			enemies: {ballom: 1},
+			rows: 13, columns: 31,
+			enemies: {ballom: 6},
 			powerUps: {
 				bombs: 1,
 				flames: 1
