@@ -816,7 +816,7 @@ class Stage {
 		this.bombCount += val
 		this.options.bombCount += val
 	}
-	
+
 	reinitialize = data => {
 		this.removeAllDivs()
 		const rows = data.rows || DEFAULT_ROWS,
@@ -1516,10 +1516,12 @@ class Game {
 			this.bomberman.isSurroundedWithBombs = false
 	}
 
-	handleBombermanMove = () => {
+	handleBombermanMove = (diff) => {
 		const {
 			left, right, top, bottom
 		} = this.bomberman.getBorders({own: false})
+
+		const fix = diff * 100
 
 		this.handleBombermanSurroundedWithBombs(Math.floor(left), Math.floor(right), Math.floor(top), Math.floor(bottom))
 
@@ -1532,7 +1534,7 @@ class Game {
 			if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
 				!this.stage.isBlock(left - (i / TILE_SIZE), top, {bombPass, wallPass}) &&
 				!this.stage.isBlock(left - (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
-				this.bomberman.moveLeft(i)
+				this.bomberman.moveLeft(i * fix)
 				moved = true
 				break
 			}
@@ -1540,7 +1542,7 @@ class Game {
 			if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
 				!this.stage.isBlock(right + (i / TILE_SIZE), top, {bombPass, wallPass}) &&
 				!this.stage.isBlock(right + (i / TILE_SIZE), bottom, {bombPass, wallPass})) {
-				this.bomberman.moveRight(i)
+				this.bomberman.moveRight(i * fix)
 				moved = true
 				break
 			}
@@ -1548,7 +1550,7 @@ class Game {
 			if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
 				!this.stage.isBlock(left, top - (i / TILE_SIZE), {bombPass, wallPass}) &&
 				!this.stage.isBlock(right, top - (i / TILE_SIZE), {bombPass, wallPass})) {
-				this.bomberman.moveUp(i)
+				this.bomberman.moveUp(i * fix)
 				moved = true
 				break
 			}
@@ -1556,7 +1558,7 @@ class Game {
 			if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
 				!this.stage.isBlock(left, bottom + (i / TILE_SIZE), {bombPass, wallPass}) &&
 				!this.stage.isBlock(right, bottom + (i / TILE_SIZE), {bombPass, wallPass})) {
-				this.bomberman.moveDown(i)
+				this.bomberman.moveDown(i * fix)
 				moved = true
 				break
 			}
@@ -1626,7 +1628,7 @@ class Game {
 		}
 	}
 
-	updateBomberman() {
+	updateBomberman(diff) {
 		if (!this.bomberman.invincible && this.isBombermanCollidedWithEnemies()) {
 			this.handleBombermanDeath()
 			return
@@ -1641,7 +1643,7 @@ class Game {
 			return
 		}
 		this.handleBombermanCollidedWithPowerUp()
-		this.handleBombermanMove()
+		this.handleBombermanMove(diff)
 	}
 
 	isEnemyExploded(id) {
@@ -1702,10 +1704,10 @@ class Game {
 		this.updateInstantBombs()
 	}
 
-	update() {
+	update(diff) {
 		this.updateBombs()
-		this.updateBomberman()
-		this.updateEnemies()
+		this.updateBomberman(diff)
+		this.updateEnemies(diff)
 
 		if (this.stage.options.roundTime === 0) {
 			this.handleBombermanDeath()
@@ -1825,7 +1827,8 @@ class Game {
 	}
 
 	run() {
-		let prevTime = 0
+		let prevTime = 0,
+			prevFPSTime = 0
 		const callback = (currTime) => {
 			requestAnimationFrame(callback)
 
@@ -1871,7 +1874,8 @@ class Game {
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
 				prevTime = currTime
-				this.update()
+				const diff = (currTime - prevFPSTime) / 1000
+				this.update(diff)
 				this.draw()
 			} else if (this.state === 'pre-pause') {
 				changeTitle('Paused | Bomberman')
@@ -1965,6 +1969,7 @@ class Game {
 				this.screen.ending.showDisplay()
 				this.state = 'END'
 			}
+			prevFPSTime = currTime
 		}
 		requestAnimationFrame(callback)
 	}
@@ -2034,6 +2039,6 @@ game.run()
 
 // add helper, which shows the keys to play the game
 
-// OPTIMIZE, REMOVE FPS DROPS
+// make entity movement independent of FPS
 
-// checkArguments in Game constructor, not in Stage
+// OPTIMIZE, REMOVE FPS DROPS
