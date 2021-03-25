@@ -327,6 +327,8 @@ class Enemy extends Entity {
 class Bomberman extends Entity {
 	constructor({board, liveCount}) {
 		super({board})
+		this.left = 2 * PIXEL_SIZE
+		this.top = 2 * PIXEL_SIZE
 		this.direction = 'down'
 		this.liveCount = liveCount
 		this.bombPass = false
@@ -334,7 +336,6 @@ class Bomberman extends Entity {
 		this.detonator = false
 		this.invincible = false
 		this.isSurroundedWithBombs = false
-		this.wallPass = true
 	}
 
 	resetPosition = () => {
@@ -815,7 +816,7 @@ class Stage {
 		this.bombCount += val
 		this.options.bombCount += val
 	}
-
+	
 	reinitialize = data => {
 		this.removeAllDivs()
 		const rows = data.rows || DEFAULT_ROWS,
@@ -1169,7 +1170,7 @@ class GameMenu {
 	}
 }
 
-class Music {
+class Sound {
 	constructor(id, music) {
 		this.audio = document.getElementById(id)
 		this.audio.volume = SFX_VOLUME
@@ -1199,18 +1200,18 @@ class Music {
 	}
 }
 
-class GameMusic {
+class GameSounds {
 	constructor() {
-		this.titleScreen = new Music('title-screen-music', true)
-		this.stageStart = new Music('stage-start-music', true)
-		this.stage = new Music('stage-music', true)
-		this.lifeLost = new Music('life-lost-music', true)
-		this.ending = new Music('ending-music', true)
-		this.over = new Music('over-music', true)
-		this.complete = new Music('stage-complete-music', true)
-		this.findExit = new Music('find-exit-music', true)
-		this.pause = new Music('pause-music')
-		this.die = new Music('die-music')
+		this.titleScreen = new Sound('title-screen-music', true)
+		this.stageStart = new Sound('stage-start-music', true)
+		this.stage = new Sound('stage-music', true)
+		this.lifeLost = new Sound('life-lost-music', true)
+		this.ending = new Sound('ending-music', true)
+		this.over = new Sound('over-music', true)
+		this.complete = new Sound('stage-complete-music', true)
+		this.findExit = new Sound('find-exit-music', true)
+		this.pause = new Sound('pause-sound')
+		this.die = new Sound('die-sound')
 	}
 
 	stopStageMusic = () => {
@@ -1367,7 +1368,7 @@ class Game {
 
 	handleUserInteraction = () => {
 		const clickListener = () => {
-			this.sounds = new GameMusic()
+			this.sounds = new GameSounds()
 			this.gameMenu = new GameMenu(this.sounds)
 			this.state = 'pre-main-menu'
 			document.querySelector('#click-me').remove()
@@ -1969,38 +1970,59 @@ class Game {
 	}
 }
 
-const game = new Game({
-	bombCount: 100,
-	explosionSize: 2,
-	stages: [
+
+// enemy types: balloom, oneal, doll, minvo, kondoria, ovapi, pass, pontan
+// power-ups: bombs, flames, speed, wall-pass, detonator, bomb-pass, flame-pass, mystery
+
+const defaultStages = {
+	easy: [
 		{
-			rows: 13, columns: 31,
-			enemies: {kondoria: 6},
+			rows: 15, columns: 15,
+			enemies: {balloom: 4},
 			powerUps: {
 				bombs: 1,
 				flames: 1
 			}
-		},
-		{
-			rows: 13, columns: 31,
-			enemies: {balloom: 4, oneal: 4},
-			powerUps: {flames: 1}
+		}, {
+			rows: 15, columns: 15,
+			enemies: {balloom: 2, oneal: 2},
+			powerUps: {
+				bombs: 1,
+				'bomb-pass': 1
+			}
+		}, {
+			rows: 15, columns: 15,
+			enemies: {balloom: 1, oneal: 2, doll: 2},
+			powerUps: {
+				'wall-pass': 1,
+				speed: 1
+			}
+		}, {
+			rows: 15, columns: 15,
+			enemies: {oneal: 1, doll: 2, minvo: 2},
+			powerUps: {
+				'flame-pass': 1,
+				detonator: 1
+			}
+		}, {
+			rows: 15, columns: 15,
+			enemies: {doll: 1, minvo: 2, kondoria: 2},
+			powerUps: {
+				'bomb-pass': 1,
+				mystery: 1
+			}
 		}
-		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
-		// {enemies: {ballom: 3, onil: 3}}
-		// {enemies: {ballom: 2, onil: 2, dahl: 2}}
 	]
+}
+
+const game = new Game({
+	stages: defaultStages.easy
 })
 game.run()
 
-// enemy types: ballom, onil, dahl, minvo
-// power-ups: bombs, flames, speed, wall-pass, detonator, bomb-pass, flame-pass, mystery
-
 
 // TODO:
-// add different enemy logic
-// add bomberman walk sounds
-// pause game when user looses focus
+// add different enemy logic by levels: 1, 2, 3
 // add backend:
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest
