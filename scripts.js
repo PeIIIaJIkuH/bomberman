@@ -290,20 +290,20 @@ class Enemy extends Entity {
 		this.direction = 'left'
 	}
 
-	moveRight() {
-		super.moveRight()
+	moveRight(speed) {
+		super.moveRight(speed)
 		this.img.className = 'enemy-walk-right'
 		this.direction = 'right'
 	}
 
-	moveUp() {
-		super.moveUp()
+	moveUp(speed) {
+		super.moveUp(speed)
 		this.img.className = 'enemy-walk-up'
 		this.direction = 'up'
 	}
 
-	moveDown() {
-		super.moveDown()
+	moveDown(speed) {
+		super.moveDown(speed)
 		this.img.className = 'enemy-walk-down'
 		this.direction = 'down'
 	}
@@ -1566,20 +1566,22 @@ class Game {
 			this.bomberman.img.className = `bomberman-look-${this.bomberman.direction}`
 	}
 
-	moveEnemyRandomly(id) {
+	moveEnemyRandomly(id, diff) {
 		const enemy = this.stage.enemies.get(id)
 		if (!enemy.dead) {
 			const {
 				left, right, top, bottom
 			} = enemy.getBorders({own: true})
 
+			const fix = diff * 100
+
 			const wallPass = enemy.wallPass
 			if (enemy.direction === 'left') {
 				let moved = false
 				for (let i = enemy.speed; i > 0; i -= 0.25)
-					if (!this.stage.isBlock(left - (i / TILE_SIZE), top, {wallPass, enemy: true}) &&
-						!this.stage.isBlock(left - (i / TILE_SIZE), bottom, {wallPass, enemy: true})) {
-						enemy.moveLeft(i)
+					if (!this.stage.isBlock(left - (i * fix / TILE_SIZE), top, {wallPass, enemy: true}) &&
+						!this.stage.isBlock(left - (i * fix / TILE_SIZE), bottom, {wallPass, enemy: true})) {
+						enemy.moveLeft(i * fix)
 						moved = true
 						break
 					}
@@ -1590,9 +1592,9 @@ class Game {
 			if (enemy.direction === 'right') {
 				let moved = false
 				for (let i = enemy.speed; i > 0; i -= 0.25)
-					if (!this.stage.isBlock(right + (i / TILE_SIZE), top, {wallPass, enemy: true}) &&
-						!this.stage.isBlock(right + (i / TILE_SIZE), bottom, {wallPass, enemy: true})) {
-						enemy.moveRight(i)
+					if (!this.stage.isBlock(right + (i * fix / TILE_SIZE), top, {wallPass, enemy: true}) &&
+						!this.stage.isBlock(right + (i * fix / TILE_SIZE), bottom, {wallPass, enemy: true})) {
+						enemy.moveRight(i * fix)
 						moved = true
 						break
 					}
@@ -1603,9 +1605,9 @@ class Game {
 			if (enemy.direction === 'up') {
 				let moved = false
 				for (let i = enemy.speed; i > 0; i -= 0.25)
-					if (!this.stage.isBlock(left, top - (i / TILE_SIZE), {wallPass, enemy: true}) &&
-						!this.stage.isBlock(right, top - (i / TILE_SIZE), {wallPass, enemy: true})) {
-						enemy.moveUp(i)
+					if (!this.stage.isBlock(left, top - (i * fix / TILE_SIZE), {wallPass, enemy: true}) &&
+						!this.stage.isBlock(right, top - (i * fix / TILE_SIZE), {wallPass, enemy: true})) {
+						enemy.moveUp(i * fix)
 						moved = true
 						break
 					}
@@ -1616,9 +1618,9 @@ class Game {
 			if (enemy.direction === 'down') {
 				let moved = false
 				for (let i = enemy.speed; i > 0; i -= 0.25)
-					if (!this.stage.isBlock(left, bottom + (i / TILE_SIZE), {wallPass, enemy: true}) &&
-						!this.stage.isBlock(right, bottom + (i / TILE_SIZE), {wallPass, enemy: true})) {
-						enemy.moveDown(i)
+					if (!this.stage.isBlock(left, bottom + (i * fix / TILE_SIZE), {wallPass, enemy: true}) &&
+						!this.stage.isBlock(right, bottom + (i * fix / TILE_SIZE), {wallPass, enemy: true})) {
+						enemy.moveDown(i * fix)
 						moved = true
 						break
 					}
@@ -1663,14 +1665,14 @@ class Game {
 		return false
 	}
 
-	updateEnemies = () => {
+	updateEnemies = (diff) => {
 		for (const [enemyId] of this.stage.enemies)
-			this.updateEnemy(enemyId)
+			this.updateEnemy(enemyId, diff)
 	}
 
-	updateEnemy = id => {
+	updateEnemy = (id, diff) => {
 		if (!this.isEnemyExploded(id))
-			this.moveEnemyRandomly(id)
+			this.moveEnemyRandomly(id, diff)
 	}
 
 	updateInstantBombs = () => {
