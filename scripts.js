@@ -5,10 +5,10 @@ const PIXEL_SIZE = 2,
 	EXPLOSION_TIME = 2000,
 	WALL_EXPLOSION_TIME = 500
 
-const ENEMY_TYPES = ['ballom', 'onil', 'dahl', 'minvo'],
+const ENEMY_TYPES = ['balloom', 'oneal', 'doll', 'minvo', 'kondoria', 'ovapi', 'pass', 'pontan'],
 	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
 
-const POWER_UP_SPEED_BOOST = 0.3,
+const POWER_UP_SPEED_BOOST = 0.25,
 	POWER_UP_INVINCIBLE_TIME = 30000
 
 let SFX_VOLUME = 0.2,
@@ -112,7 +112,7 @@ class Entity {
 		this.speed = speed || PIXEL_SIZE / 2
 		this.left = left || PIXEL_SIZE * 2
 		this.top = top || PIXEL_SIZE * 2
-		this.size = 16 * PIXEL_SIZE * 0.75
+		this.size = TILE_SIZE * 0.75
 		this.wallPass = false
 
 		this.createHTML()
@@ -233,25 +233,48 @@ class Enemy extends Entity {
 
 	handleType = () => {
 		switch (this.type) {
-			case 'ballom':
+			case 'balloom':
 				this.xp = 100
-				this.speed = 0.25
-				this.createHTML('./img/enemies/ballom.png')
-				break
-			case 'onil':
-				this.xp = 200
 				this.speed = 0.5
-				this.createHTML('./img/enemies/onil.png')
+				this.createHTML('./img/enemies/balloom.png')
 				break
-			case 'dahl':
-				this.xp = 400
+			case 'oneal':
+				this.xp = 200
 				this.speed = 1
-				this.createHTML('./img/enemies/dahl.png')
+				this.createHTML('./img/enemies/oneal.png')
+				break
+			case 'doll':
+				this.xp = 400
+				this.speed = 1.25
+				this.createHTML('./img/enemies/doll.png')
 				break
 			case 'minvo':
 				this.xp = 800
 				this.speed = 1.5
 				this.createHTML('./img/enemies/minvo.png')
+				break
+			case 'kondoria':
+				this.xp = 1000
+				this.speed = 0.25
+				this.wallPass = true
+				this.createHTML('./img/enemies/kondoria.png')
+				break
+			case 'ovapi':
+				this.xp = 2000
+				this.speed = 0.5
+				this.wallPass = true
+				this.createHTML('./img/enemies/ovapi.png')
+				break
+			case 'pass':
+				this.xp = 4000
+				this.speed = 1.5
+				this.createHTML('./img/enemies/pass.png')
+				break
+			case 'pontan':
+				this.xp = 8000
+				this.speed = 1.5
+				this.wallPass = true
+				this.createHTML('./img/enemies/pontan.png')
 				break
 		}
 	}
@@ -311,6 +334,7 @@ class Bomberman extends Entity {
 		this.detonator = false
 		this.invincible = false
 		this.isSurroundedWithBombs = false
+		this.wallPass = true
 	}
 
 	resetPosition = () => {
@@ -501,6 +525,7 @@ class Bomb {
 			size: this.explosionSize,
 			stage: this.stage
 		})
+		console.log(explosion)
 		new Timer(() => {
 			this.stage.deleteExplosion(this.x, this.y)
 		}, WALL_EXPLOSION_TIME)
@@ -568,7 +593,7 @@ class Explosion {
 			new Timer(() => {
 				this.stage.deleteWall(x, y)
 			}, WALL_EXPLOSION_TIME)
-			created = false
+			created = true
 		} else if (this.stage.isRock(x, y))
 			created = false
 		const id = createId(x, y)
@@ -756,22 +781,11 @@ class StageOptions {
 
 class Stage {
 	constructor({data, bombCount, explosionSize}) {
-		if (!(data instanceof Object)) {
-			this.error = 'incorrect type of stage'
-			return
-		}
-
 		const rows = data.rows || DEFAULT_ROWS,
 			columns = data.columns || DEFAULT_COLUMNS,
 			roundTime = data.roundTime || 200,
 			enemies = data.enemies || {},
 			powerUps = data.powerUps || {}
-
-		const error = this.checkArguments(rows, columns, roundTime, enemies, powerUps)
-		if (error) {
-			this.error = error
-			return
-		}
 
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
@@ -791,33 +805,6 @@ class Stage {
 	updateBombCountBy = val => {
 		this.bombCount += val
 		this.options.bombCount += val
-	}
-
-	checkArguments = (rowCount, columnCount, roundTime, enemies, powerUps) => {
-		if (isNaN(rowCount) || rowCount < 7)
-			return 'incorrect number of rows'
-		if (isNaN(columnCount) || columnCount < 7)
-			return 'incorrect number of columns'
-		if (isNaN(roundTime) || roundTime < 10)
-			return 'incorrect roundTime'
-		if (!(enemies instanceof Object))
-			return 'incorrect enemies'
-		if (enemies)
-			for (const enemyType of Object.keys(enemies)) {
-				if (!ENEMY_TYPES.includes(enemyType))
-					return `incorrect type of enemy: ${enemyType}`
-				if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1)
-					return `incorrect number of enemies: ${enemyType}`
-			}
-		if (powerUps !== undefined && !(powerUps instanceof Object))
-			return 'incorrect type of powerUps'
-		if (powerUps)
-			for (const powerUpType of Object.keys(powerUps)) {
-				if (!POWER_UP_TYPES.includes(powerUpType))
-					return `incorrect type of powerUp: ${powerUpType}`
-				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1)
-					return `incorrect number of enemies: ${powerUpType}`
-			}
 	}
 
 	reinitialize = data => {
@@ -1320,13 +1307,53 @@ class Game {
 
 	checkArguments = (explosionSize, bombCount, liveCount, stages) => {
 		if (isNaN(explosionSize) || explosionSize < 1)
-			return 'incorrect explosionSize'
+			return `incorrect explosionSize: ${String(explosionSize)}`
 		if (isNaN(bombCount) || bombCount < 1)
-			return 'incorrect bombCount'
+			return `incorrect bombCount: ${String(bombCount)}`
 		if (isNaN(liveCount) || liveCount < 1)
-			return 'incorrect liveCount'
+			return `incorrect liveCount: ${String(liveCount)}`
 		if (!(stages instanceof Array))
-			return 'incorrect type of stages'
+			return `incorrect stages: ${String(stages)}`
+		for (let i = 0; i < stages.length; i++) {
+			const stage = stages[i]
+			if (!(stage instanceof Object))
+				return `incorrect stage(${i + 1}): ${String(stage)}`
+			const rows = stage.rows || 13,
+				columns = stage.columns || 31,
+				roundTime = stage.roundTime || 200,
+				enemies = stage.enemies || {},
+				powerUps = stage.powerUps || {}
+			const error = this.checkStageArguments(rows, columns, roundTime, enemies, powerUps, i)
+			if (error)
+				return error
+		}
+	}
+
+	checkStageArguments = (rows, columns, roundTime, enemies, powerUps, index) => {
+		if (isNaN(rows) || rows < 7)
+			return `incorrect stage(${index + 1}) rows: ${String(rows)}`
+		if (isNaN(columns) || columns < 7)
+			return `incorrect stage(${index + 1}) columns: ${String(columns)}`
+		if (isNaN(roundTime) || roundTime < 10)
+			return `incorrect stage(${index + 1}) roundTime: ${String(roundTime)}`
+		if (!(enemies instanceof Object))
+			return `incorrect stage(${index + 1}) enemies: ${String(enemies)}`
+		if (enemies)
+			for (const enemyType of Object.keys(enemies)) {
+				if (!ENEMY_TYPES.includes(enemyType))
+					return `incorrect stage(${index + 1}) enemy: ${enemyType}`
+				if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1)
+					return `incorrect stage(${index + 1}) enemy(${enemyType}) count: ${String(enemies[enemyType])}`
+			}
+		if (powerUps !== undefined && !(powerUps instanceof Object))
+			return `incorrect stage(${index + 1}) powerUps: ${String(powerUps)}`
+		if (powerUps)
+			for (const powerUpType of Object.keys(powerUps)) {
+				if (!POWER_UP_TYPES.includes(powerUpType))
+					return `incorrect stage(${index + 1}) powerUp: ${String(powerUpType)}`
+				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1)
+					return `incorrect stage(${index + 1}) powerUp(${powerUpType}) count: ${String(powerUps[powerUpType])}`
+			}
 	}
 
 	handleUserInteraction = () => {
@@ -1938,7 +1965,7 @@ const game = new Game({
 	stages: [
 		{
 			rows: 13, columns: 31,
-			enemies: {ballom: 6},
+			enemies: {kondoria: 6},
 			powerUps: {
 				bombs: 1,
 				flames: 1
@@ -1946,7 +1973,7 @@ const game = new Game({
 		},
 		{
 			rows: 13, columns: 31,
-			enemies: {ballom: 4, onil: 4},
+			enemies: {balloom: 4, oneal: 4},
 			powerUps: {flames: 1}
 		}
 		// {rows: 13, columns: 31, enemies: {ballom: 1}, powerUps: {'wall-pass': 1, 'bombs': 1, 'speed': 1}}
@@ -1963,7 +1990,6 @@ game.run()
 // TODO:
 // add enemies who can pass through wall
 // add different enemy logic
-// fix the movement of the Entity: if the distance to the wall is less than speed of the entity, move by the difference
 // add bomberman walk sounds
 // pause game when user looses focus
 // add backend:
@@ -1979,3 +2005,5 @@ game.run()
 // add helper, which shows the keys to play the game
 
 // OPTIMIZE, REMOVE FPS DROPS
+
+// checkArguments in Game constructor, not in Stage
