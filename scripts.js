@@ -525,7 +525,6 @@ class Bomb {
 			size: this.explosionSize,
 			stage: this.stage
 		})
-		console.log(explosion)
 		new Timer(() => {
 			this.stage.deleteExplosion(this.x, this.y)
 		}, WALL_EXPLOSION_TIME)
@@ -577,6 +576,7 @@ class Explosion {
 
 	create = (x, y, className) => {
 		let created = true,
+			isWall = false,
 			div
 		if (className !== 'explosion-center' && this.stage.isBomb(x, y)) {
 			const bomb = this.stage.getBomb(x, y)
@@ -594,10 +594,11 @@ class Explosion {
 				this.stage.deleteWall(x, y)
 			}, WALL_EXPLOSION_TIME)
 			created = true
+			isWall = true
 		} else if (this.stage.isRock(x, y))
 			created = false
 		const id = createId(x, y)
-		return {id, created, div}
+		return {id, created, div, isWall}
 	}
 
 	createCenter = () => {
@@ -627,40 +628,48 @@ class Explosion {
 	}
 	createLeftHorizontals = () => {
 		for (let i = this.x - 1; i >= this.x - this.size + 1; i--) {
-			const {id, created, div} = this.create(i, this.y, 'explosion-horizontal')
-			if (created)
+			const {id, div, created, isWall} = this.create(i, this.y, 'explosion-horizontal')
+			if (created) {
 				this.divs.set(id, div)
-			else
+				if (isWall)
+					return false
+			} else
 				return false
 		}
 		return true
 	}
 	createRightHorizontals = () => {
 		for (let i = this.x + 1; i < this.x + this.size; i++) {
-			const {id, created, div} = this.create(i, this.y, 'explosion-horizontal')
-			if (created)
+			const {id, div, created, isWall} = this.create(i, this.y, 'explosion-horizontal')
+			if (created) {
 				this.divs.set(id, div)
-			else
+				if (isWall)
+					return false
+			} else
 				return false
 		}
 		return true
 	}
 	createTopVerticals = () => {
 		for (let i = this.y - 1; i >= this.y - this.size + 1; i--) {
-			const {id, created, div} = this.create(this.x, i, 'explosion-vertical')
-			if (created)
+			const {id, div, created, isWall} = this.create(this.x, i, 'explosion-vertical')
+			if (created) {
 				this.divs.set(id, div)
-			else
+				if (isWall)
+					return false
+			} else
 				return false
 		}
 		return true
 	}
 	createBottomVerticals = () => {
 		for (let i = this.y + 1; i < this.y + this.size; i++) {
-			const {id, created, div} = this.create(this.x, i, 'explosion-vertical')
-			if (created)
+			const {id, div, created, isWall} = this.create(this.x, i, 'explosion-vertical')
+			if (created) {
 				this.divs.set(id, div)
-			else
+				if (isWall)
+					return false
+			} else
 				return false
 		}
 		return true
@@ -1962,6 +1971,7 @@ class Game {
 
 const game = new Game({
 	bombCount: 100,
+	explosionSize: 2,
 	stages: [
 		{
 			rows: 13, columns: 31,
@@ -1988,7 +1998,6 @@ game.run()
 
 
 // TODO:
-// add enemies who can pass through wall
 // add different enemy logic
 // add bomberman walk sounds
 // pause game when user looses focus
@@ -1996,7 +2005,6 @@ game.run()
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest
 // add responsive design: just resize if the gameBoard is smaller than the device screen
-// change document title depending on the state of the game
 
 // show score at end of the game
 // add animation to the last page
