@@ -575,6 +575,9 @@ class Explosion {
 		div.style.gridRowStart = String(y)
 		div.append(img)
 		this.board.append(div)
+		new Timer(() => {
+			div.remove()
+		}, WALL_EXPLOSION_TIME)
 		return div
 	}
 
@@ -2049,37 +2052,30 @@ const defaultStages = {
 	easy: [
 		{
 			rows: 15, columns: 15,
-			enemies: {balloom: 4},
-			powerUps: {
-				bombs: 1,
-				flames: 1
-			}
-		}, {
-			rows: 15, columns: 15,
 			enemies: {balloom: 2, oneal: 2},
 			powerUps: {
 				bombs: 1,
-				'bomb-pass': 1
+				'bomb-pass': 1,
+				'wall-pass': 1
 			}
 		}, {
 			rows: 15, columns: 15,
-			enemies: {balloom: 1, oneal: 2, doll: 2},
+			enemies: {doll: 2, minvo: 2},
 			powerUps: {
-				'wall-pass': 1,
+				flames: 1,
+				detonator: 1,
+				'flame-pass': 1
+			}
+		}, {
+			rows: 15, columns: 15,
+			enemies: {kondoria: 2, ovapi: 2},
+			powerUps: {
 				speed: 1
 			}
 		}, {
 			rows: 15, columns: 15,
-			enemies: {oneal: 1, doll: 2, minvo: 2},
+			enemies: {pass: 2, pontan: 2},
 			powerUps: {
-				'flame-pass': 1,
-				detonator: 1
-			}
-		}, {
-			rows: 15, columns: 15,
-			enemies: {doll: 1, minvo: 2, kondoria: 2},
-			powerUps: {
-				'bomb-pass': 1,
 				mystery: 1
 			}
 		}
