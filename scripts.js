@@ -2047,11 +2047,7 @@ const defaultStages = {
 }
 
 const game = new Game({
-	stages: [{
-		rows: 11,
-		columns: 11,
-		enemies: {balloom: 1}
-	}]
+	stages: defaultStages.easy
 })
 game.run()
 
