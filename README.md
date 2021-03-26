@@ -1,7 +1,7 @@
 # make-your-game
 
 ## How to start the game
-* Just open the index.html file
+* Open the index.html file with live-server extension on VSCode or another editors like Webstorm
 
 ## Powerups
 * About the powerups in the game you can read [here](https://strategywiki.org/wiki/Bomberman/How_to_play)
