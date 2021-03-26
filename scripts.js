@@ -20,6 +20,13 @@ const ENEMY_XP_SHOW_TIME = 2000,
 	BOMBERMAN_DYING_TIME = 600,
 	CHAIN_EXPLOSION_TIME = 100
 
+const GAME_MENU_CONTINUE = 0,
+	GAME_MENU_RESTART_STAGE = 1,
+	GAME_MENU_RESTART_GAME = 2,
+	GAME_MENU_SFX = 3,
+	GAME_MENU_MUSIC = 4,
+	GAME_MENU_MAIN_MENU = 5
+
 let ENEMY_ID = 0
 
 
@@ -108,9 +115,9 @@ class IntervalTimer {
 }
 
 class Entity {
-	constructor({board, left, top, speed}) {
+	constructor({board, left, top}) {
 		this.board = board
-		this.speed = speed || PIXEL_SIZE / 2
+		this.speed = 1
 		this.left = left || PIXEL_SIZE * 2
 		this.top = top || PIXEL_SIZE * 2
 		this.size = TILE_SIZE * 0.75
@@ -340,8 +347,8 @@ class Bomberman extends Entity {
 	}
 
 	resetPosition = () => {
-		this.left = 0
-		this.top = 0
+		this.left = PIXEL_SIZE * 2
+		this.top = PIXEL_SIZE * 2
 	}
 
 	initialize = () => {
@@ -394,11 +401,6 @@ class Bomberman extends Entity {
 		this.timer = new Timer(() => {
 			this.img.className = 'bomberman-dead'
 		}, BOMBERMAN_DYING_TIME)
-	}
-
-	restart = () => {
-		this.left = PIXEL_SIZE
-		this.top = PIXEL_SIZE
 	}
 }
 
@@ -1087,7 +1089,7 @@ class GameMenu {
 		this.div = document.querySelector('#game-menu')
 		this.items = document.querySelectorAll('.game-menu-item')
 		this.ranges = document.querySelectorAll('.game-menu-item input[type="range"]')
-		this.selected = 0
+		this.selected = GAME_MENU_CONTINUE
 
 		this.sounds = gameMusic
 
@@ -1095,7 +1097,7 @@ class GameMenu {
 	}
 
 	show = () => {
-		this.selected = 0
+		this.selected = GAME_MENU_CONTINUE
 		this.div.className = 'game-menu-show'
 		document.addEventListener('keyup', this.listener)
 	}
@@ -1106,17 +1108,17 @@ class GameMenu {
 	}
 
 	draw = () => {
-		if (this.selected === 2) {
+		if (this.selected === GAME_MENU_SFX) {
 			this.ranges[0].disabled = false
 			this.ranges[1].disabled = true
 			this.ranges[0].focus()
 		}
-		if (this.selected === 3) {
+		if (this.selected === GAME_MENU_MUSIC) {
 			this.ranges[0].disabled = true
 			this.ranges[1].disabled = false
 			this.ranges[1].focus()
 		}
-		if (this.selected !== 2 && this.selected !== 3) {
+		if (this.selected !== GAME_MENU_SFX && this.selected !== GAME_MENU_MUSIC) {
 			this.unFocusAll()
 		}
 		this.items.forEach((item, i) => {
@@ -1140,7 +1142,7 @@ class GameMenu {
 
 	initializeInputs = () => {
 		const callback = e => {
-			const i = this.selected - 2
+			const i = this.selected - GAME_MENU_SFX
 			if (e.code === 'ArrowLeft') {
 				this.ranges[i].stepDown()
 				this.changeVolume(i)
@@ -1326,6 +1328,10 @@ class Game {
 		this.completed = false
 		this.state = 'click-me'
 
+		this.initialBombCount = bombCount
+		this.initialLiveCount = liveCount
+		this.initialExplosionSize = explosionSize
+
 		this.handleUserInteraction()
 	}
 
@@ -1434,6 +1440,11 @@ class Game {
 
 	updateStage = () => {
 		this.stageNumber++
+		document.querySelector('#stage-start span').innerText = `${this.stageNumber + 1}`
+	}
+
+	resetStageNumber = () => {
+		this.stageNumber = 0
 		document.querySelector('#stage-start span').innerText = `${this.stageNumber + 1}`
 	}
 
@@ -1757,7 +1768,7 @@ class Game {
 				if (this.state === 'stage') {
 					this.state = 'pre-pause'
 				} else if (this.state === 'pause') {
-					this.state = 'pre-pre-resume'
+					this.state = 'pre-resume'
 				}
 			} else if (e.code === 'KeyE' && this.bomberman.detonator) {
 				if (this.stage.bombs.size > 0) {
@@ -1806,21 +1817,45 @@ class Game {
 		}
 	}
 
-	restart = () => {
+	restartStage = () => {
 		this.cancelPowerUps()
 		this.stage.restart()
-		this.bomberman.restart()
+		this.bomberman.resetPosition()
+	}
+
+	restartGame = () => {
+		this.resetStageNumber()
+		const stage = this.stages[this.stageNumber]
+		this.stage.reinitialize(stage)
+		this.stage.options.score = 0
+		this.stage.options.bombCount = this.initialBombCount
+		this.stage.options.explosionSize = this.initialExplosionSize
+		this.bomberman.resetPosition()
+		this.bomberman.left = 2 * PIXEL_SIZE
+		this.bomberman.top = 2 * PIXEL_SIZE
+		this.bomberman.direction = 'down'
+		this.bomberman.liveCount = this.initialLiveCount
+		this.bomberman.bombPass = false
+		this.bomberman.flamePass = false
+		this.bomberman.detonator = false
+		this.bomberman.invincible = false
+		this.bomberman.isSurroundedWithBombs = false
+		this.bomberman.speed = 1
+		this.gameMenu.hide()
 	}
 
 	gameMenuListener = e => {
 		if (e.code === 'Enter') {
-			if (this.gameMenu.selected === 0) {
-				this.state = 'pre-pre-resume'
-			} else if (this.gameMenu.selected === 1) {
+			if (this.gameMenu.selected === GAME_MENU_CONTINUE) {
+				this.state = 'pre-resume'
+			} else if (this.gameMenu.selected === GAME_MENU_RESTART_STAGE) {
 				this.bomberman.liveCount += this.stage.options.deathCount
-				this.restart()
-				this.state = 'pre-pre-resume'
-			} else if (this.gameMenu.selected === 2) {
+				this.restartStage()
+				this.state = 'pre-resume'
+			} else if (this.gameMenu.selected === GAME_MENU_RESTART_GAME) {
+				this.restartGame()
+				this.state = 'pre-stage-start'
+			} else if (this.gameMenu.selected === GAME_MENU_MAIN_MENU) {
 				location.reload()
 			}
 		}
@@ -1905,10 +1940,6 @@ class Game {
 				this.state = 'pause'
 			} else if (this.state === 'pause') {
 				this.gameMenu.draw()
-			} else if (this.state === 'pre-pre-resume') {
-				prevTime = currTime
-				this.sounds.pause.clear()
-				this.state = 'pre-resume'
 			} else if (this.state === 'pre-resume') {
 				this.sounds.pause.stop()
 				this.sounds.pause.play()
@@ -1949,7 +1980,7 @@ class Game {
 						this.state = 'pre-game-score'
 				}
 			} else if (this.state === 'restart') {
-				this.restart()
+				this.restartStage()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'find-exit') {
 				this.sounds.stage.stop()
