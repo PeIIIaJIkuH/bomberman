@@ -2,6 +2,7 @@ const PIXEL_SIZE = 2,
 	TILE_SIZE = PIXEL_SIZE * 16,
 	DEFAULT_ROWS = 13,
 	DEFAULT_COLUMNS = 31,
+	DEFAULT_ROUND_TIME = 200,
 	EXPLOSION_TIME = 2000,
 	WALL_EXPLOSION_TIME = 500
 
@@ -787,6 +788,10 @@ class StageOptions {
 		this.roundTime += this.passedTime
 		this.passedTime = 0
 	}
+
+	restart = () => {
+
+	}
 }
 
 class Stage {
@@ -851,11 +856,13 @@ class Stage {
 		this.removeMapElements('walls')
 		this.removeMapElements('powerUps')
 		this.removeMapElements('enemies')
+		this.removeMapElements('bombs')
 		this.removeExplosions()
 		this.exitDoor.div.remove()
 	}
 
 	restart = () => {
+		this.options.resetRoundTime()
 		this.options.bombCount = this.bombCount
 		this.removeAllDivs()
 		this.createHTML()
@@ -1334,9 +1341,9 @@ class Game {
 			const stage = stages[i]
 			if (!(stage instanceof Object))
 				return `incorrect stage(${i + 1}): ${String(stage)}`
-			const rows = stage.rows || 13,
-				columns = stage.columns || 31,
-				roundTime = stage.roundTime || 200,
+			const rows = stage.rows || DEFAULT_ROWS,
+				columns = stage.columns || DEFAULT_COLUMNS,
+				roundTime = stage.roundTime || DEFAULT_ROUND_TIME,
 				enemies = stage.enemies || {},
 				powerUps = stage.powerUps || {}
 			const error = this.checkStageArguments(rows, columns, roundTime, enemies, powerUps, i)
@@ -1906,11 +1913,9 @@ class Game {
 				this.stage.options.interval.resume()
 				this.state = 'resume'
 			} else if (this.state === 'resume') {
-				if (currTime - prevTime >= this.sounds.pause.durationMS() / 2) {
-					changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
-					this.resume()
-					this.state = 'pre-stage'
-				}
+				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
+				this.resume()
+				this.state = 'pre-stage'
 			} else if (this.state === 'over') {
 				this.sounds.stopStageMusic()
 				this.sounds.over.play()
@@ -1934,10 +1939,9 @@ class Game {
 			} else if (this.state === 'die') {
 				if (currTime - prevTime >= (this.sounds.die.durationMS() + this.sounds.lifeLost.durationMS())) {
 					prevTime = currTime
-					if (this.bomberman.liveCount) {
+					if (this.bomberman.liveCount > 0)
 						this.state = 'restart'
-						this.stage.options.resetRoundTime()
-					} else
+					else
 						this.state = 'pre-game-score'
 				}
 			} else if (this.state === 'restart') {
