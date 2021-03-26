@@ -1315,6 +1315,7 @@ class Game {
 		this.keyListener = new KeyListener()
 
 		changeTitle('Activate the Game | Bomberman')
+		this.completed = false
 		this.state = 'click-me'
 
 		this.handleUserInteraction()
@@ -1937,7 +1938,7 @@ class Game {
 						this.state = 'restart'
 						this.stage.options.resetRoundTime()
 					} else
-						this.state = 'over'
+						this.state = 'pre-game-score'
 				}
 			} else if (this.state === 'restart') {
 				this.restart()
@@ -1966,8 +1967,10 @@ class Game {
 					this.stage.reinitialize(stage)
 					this.bomberman.resetPosition()
 					this.state = 'pre-stage-start'
-				} else
+				} else {
+					this.completed = true
 					this.state = 'pre-game-score'
+				}
 			} else if (this.state === 'pre-game-score') {
 				changeTitle(`Stage ${this.stageNumber + 1} Start | Bomberman`)
 				this.screen.hideStage()
@@ -1979,7 +1982,10 @@ class Game {
 			} else if (this.state === 'game-score') {
 				if (currTime - prevTime >= 5000) {
 					this.screen.gameScore.hide()
-					this.state = 'ending'
+					if (this.completed)
+						this.state = 'ending'
+					else
+						this.state = 'over'
 				}
 			} else if (this.state === 'ending') {
 				changeTitle('Game End | Bomberman')
