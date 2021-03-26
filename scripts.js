@@ -1961,6 +1961,7 @@ class Game {
 				this.cancelPowerUps()
 				this.sounds.stopStageMusic()
 				this.pauseEnemies()
+				this.pauseBombs()
 				this.sounds.die.play()
 				this.stage.options.deathCount++
 				this.state = 'pre-die'

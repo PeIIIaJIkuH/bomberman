@@ -35,7 +35,7 @@ img {
 #bomberman {
     overflow: hidden;
     object-fit: contain;
-    z-index: 5;
+    z-index: 7;
 }
 
 #bomberman img {
