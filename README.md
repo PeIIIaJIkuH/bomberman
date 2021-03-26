@@ -1,5 +1,11 @@
 # make-your-game
 
+## How to start the game
+* Just open the index.html file
+
+## Powerups
+* About the powerups in the game you can read [here](https://strategywiki.org/wiki/Bomberman/How_to_play)
+
 ## Controls
 * WASD - move
 * Space - leave a bomb
