@@ -709,7 +709,7 @@ class KeyListener {
 	isPressed = code => this.keysPressed.get(code)
 }
 
-class StageOptions {
+class GameStageOptions {
 	constructor({rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps}) {
 		this.rows = rows
 		this.columns = columns
@@ -721,6 +721,7 @@ class StageOptions {
 		this.score = score
 		this.initialScore = score
 		this.powerUps = powerUps
+		this.deathCount = 0
 
 		this.initialize()
 	}
@@ -794,7 +795,7 @@ class StageOptions {
 	}
 }
 
-class Stage {
+class GameStage {
 	constructor({data, bombCount, explosionSize}) {
 		const rows = data.rows || DEFAULT_ROWS,
 			columns = data.columns || DEFAULT_COLUMNS,
@@ -804,7 +805,7 @@ class Stage {
 
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
-		this.options = new StageOptions({
+		this.options = new GameStageOptions({
 			rows, columns, enemies, bombCount, powerUps,
 			explosionSize, roundTime, score: 0
 		})
@@ -830,7 +831,7 @@ class Stage {
 			enemies = data.enemies,
 			powerUps = data.powerUps || {}
 		const {bombCount, explosionSize, score} = this.options
-		this.options = new StageOptions({
+		this.options = new GameStageOptions({
 			rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps
 		})
 		this.createHTML()
@@ -1311,7 +1312,7 @@ class Game {
 
 		this.stageNumber = 0
 		this.stages = stages
-		this.stage = new Stage({
+		this.stage = new GameStage({
 			data: stages[this.stageNumber], bombCount, explosionSize
 		})
 		if (this.stage.error) {
@@ -1806,6 +1807,7 @@ class Game {
 	}
 
 	restart = () => {
+		this.cancelPowerUps()
 		this.stage.restart()
 		this.bomberman.restart()
 	}
@@ -1815,6 +1817,7 @@ class Game {
 			if (this.gameMenu.selected === 0) {
 				this.state = 'pre-pre-resume'
 			} else if (this.gameMenu.selected === 1) {
+				this.bomberman.liveCount += this.stage.options.deathCount
 				this.restart()
 				this.state = 'pre-pre-resume'
 			} else if (this.gameMenu.selected === 2) {
@@ -1928,6 +1931,7 @@ class Game {
 				this.sounds.stopStageMusic()
 				this.pauseEnemies()
 				this.sounds.die.play()
+				this.stage.options.deathCount++
 				this.state = 'pre-die'
 			} else if (this.state === 'pre-die') {
 				if (currTime - prevTime >= this.sounds.die.durationMS()) {
@@ -2070,3 +2074,5 @@ game.run()
 // add helper, which shows the keys to play the game
 
 // OPTIMIZE, REMOVE FPS DROPS
+
+// restart must clear powerups and liveCount
