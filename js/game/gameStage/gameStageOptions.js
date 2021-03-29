@@ -1,7 +1,7 @@
 import {IntervalTimer} from '../../utils/timers/intervalTimer.js'
 
 export class GameStageOptions {
-	constructor({rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps}) {
+	constructor({rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps, map}) {
 		this.rows = rows
 		this.columns = columns
 		this.enemies = enemies
@@ -13,6 +13,8 @@ export class GameStageOptions {
 		this.initialScore = score
 		this.powerUps = powerUps
 		this.deathCount = 0
+		if (map)
+			this.map = map
 
 		this.initialize()
 	}

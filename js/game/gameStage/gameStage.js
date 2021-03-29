@@ -1,4 +1,4 @@
-import {DEFAULT_COLUMNS, DEFAULT_ROWS, TILE_SIZE} from '../../utils/constants.js'
+import {DEFAULT_COLUMNS, DEFAULT_ROWS, TILE_SIZE, TILES} from '../../utils/constants.js'
 import {createId, getRandomInt} from '../../utils/helpers.js'
 import {ExitDoor} from '../blocks/exitDoor.js'
 import {PowerUp} from '../blocks/powerUp.js'
@@ -9,17 +9,21 @@ import {GameStageOptions} from './gameStageOptions.js'
 
 export class GameStage {
 	constructor({data, bombCount, explosionSize}) {
-		const rows = data.rows || DEFAULT_ROWS,
-			columns = data.columns || DEFAULT_COLUMNS,
-			roundTime = data.roundTime || 200,
+		let rows = data.rows || DEFAULT_ROWS,
+			columns = data.columns || DEFAULT_COLUMNS
+		const roundTime = data.roundTime || 200,
 			enemies = data.enemies || {},
-			powerUps = data.powerUps || {}
+			powerUps = data.powerUps || {},
+			map = data.map
 
 		this.board = document.querySelector('#board')
 		this.bombCount = bombCount
+		if (map) {
+			rows = map.length + 2
+			columns = map[0].length + 2
+		}
 		this.options = new GameStageOptions({
-			rows, columns, enemies, bombCount, powerUps,
-			explosionSize, roundTime, score: 0
+			rows, columns, enemies, bombCount, powerUps, explosionSize, roundTime, score: 0, map
 		})
 		this.rocks = new Map()
 		this.walls = new Map()
@@ -37,16 +41,21 @@ export class GameStage {
 
 	reinitialize = data => {
 		this.removeAllDivs()
-		const rows = data.rows || DEFAULT_ROWS,
-			columns = data.columns || DEFAULT_COLUMNS,
-			roundTime = data.roundTime || 200,
+		let rows = data.rows || DEFAULT_ROWS,
+			columns = data.columns || DEFAULT_COLUMNS
+		const roundTime = data.roundTime || 200,
 			enemies = data.enemies,
-			powerUps = data.powerUps || {}
+			powerUps = data.powerUps || {},
+			map = data.map
+		if (map) {
+			rows = map.length + 2
+			columns = map[0].length + 2
+		}
 		const {bombCount, explosionSize, score} = this.options
 		this.options = new GameStageOptions({
-			rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps
+			rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps, map
 		})
-		this.createHTML()
+		this.createStage()
 		this.changeStyles()
 	}
 
@@ -78,10 +87,10 @@ export class GameStage {
 		this.options.resetRoundTime()
 		this.options.bombCount = this.bombCount
 		this.removeAllDivs()
-		this.createHTML()
+		this.createStage()
 	}
 
-	createRocks = () => {
+	createBorderRocks = () => {
 		for (let i = 1; i <= this.options.columns; i++) {
 			const rock1 = new Rock({board: this.board, x: i, y: 1}),
 				rock2 = new Rock({board: this.board, x: i, y: this.options.rows})
@@ -94,6 +103,10 @@ export class GameStage {
 			this.rocks.set(rock1.id, rock1)
 			this.rocks.set(rock2.id, rock2)
 		}
+	}
+
+	createDefaultRocks = () => {
+		this.createBorderRocks()
 		for (let i = 3; i < this.options.columns; i += 2)
 			for (let j = 3; j < this.options.rows; j += 2) {
 				const rock = new Rock({board: this.board, x: i, y: j})
@@ -101,13 +114,13 @@ export class GameStage {
 			}
 	}
 
-	createWalls = () => {
+	createDefaultWalls = () => {
 		const count = Math.round(this.options.rows * this.options.columns / 8)
 		const wallsCount = getRandomInt(count * 0.9, count * 1.1)
 		let sum = 0
 		while (sum < wallsCount) {
-			const x = getRandomInt(1, this.options.columns + 1),
-				y = getRandomInt(1, this.options.rows + 1)
+			const x = getRandomInt(2, this.options.columns),
+				y = getRandomInt(2, this.options.rows)
 			if (!this.isBlock(x, y) && !(x <= 3 && y <= 3)) {
 				const wall = new Wall({x, y, board: this.board})
 				this.walls.set(wall.id, wall)
@@ -121,8 +134,8 @@ export class GameStage {
 			for (const powerUpType of Object.keys(this.options.powerUps)) {
 				let count = 0
 				while (count < this.options.powerUps[powerUpType]) {
-					const x = getRandomInt(1, this.options.columns + 1),
-						y = getRandomInt(1, this.options.rows + 1)
+					const x = getRandomInt(2, this.options.columns),
+						y = getRandomInt(2, this.options.rows)
 					if (!this.isPowerUp(x, y) && this.isWall(x, y) && !this.isExitDoor(x, y)) {
 						const powerUp = new PowerUp({board: this.board, x, y, type: powerUpType})
 						this.powerUps.set(powerUp.id, powerUp)
@@ -134,8 +147,8 @@ export class GameStage {
 
 	createExitDoor = () => {
 		while (true) {
-			const x = getRandomInt(1, this.options.columns),
-				y = getRandomInt(1, this.options.rows)
+			const x = getRandomInt(2, this.options.columns),
+				y = getRandomInt(2, this.options.rows)
 			if (this.isWall(x, y)) {
 				this.exitDoor = new ExitDoor({board: this.board, x, y})
 				return
@@ -148,8 +161,8 @@ export class GameStage {
 			for (const enemyType of Object.keys(this.options.enemies)) {
 				let count = 0
 				while (count < this.options.enemies[enemyType]) {
-					const x = getRandomInt(1, this.options.columns + 1),
-						y = getRandomInt(1, this.options.rows + 1)
+					const x = getRandomInt(2, this.options.columns),
+						y = getRandomInt(2, this.options.rows)
 					if (!this.isBlock(x, y) && !(x < 5 && y < 5)) {
 						const left = TILE_SIZE * (x - 2),
 							top = TILE_SIZE * (y - 2)
@@ -163,12 +176,37 @@ export class GameStage {
 			}
 	}
 
-	createHTML = () => {
-		this.createRocks()
-		this.createWalls()
+	createStage = () => {
+		if (!this.options.map)
+			this.createDefaultTiles()
+		else
+			this.createCustomTiles()
 		this.createExitDoor()
 		this.createEnemies()
 		this.createPowerUps()
+	}
+
+	createDefaultTiles = () => {
+		this.createDefaultRocks()
+		this.createDefaultWalls()
+	}
+
+	createCustomTiles = () => {
+		this.createBorderRocks()
+		for (let i = 0; i < this.options.map.length; i++)
+			for (let j = 0; j < this.options.map[i].length; j++) {
+				switch (this.options.map[i][j]) {
+					case TILES.ROCK:
+						const rock = new Rock({board: this.board, x: j + 2, y: i + 2})
+						this.rocks.set(rock.id, rock)
+						break
+					case TILES.WALL:
+						const wall = new Wall({board: this.board, x: j + 2, y: i + 2})
+						this.walls.set(wall.id, wall)
+						break
+
+				}
+			}
 	}
 
 	addStyles = () => {
@@ -189,7 +227,7 @@ export class GameStage {
 	}
 
 	initialize = () => {
-		this.createHTML()
+		this.createStage()
 		this.addStyles()
 		this.changeStyles()
 	}
@@ -224,7 +262,7 @@ export class GameStage {
 		return false
 	}
 
-	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y && !this.isWall(x, y)
+	isExitDoor = (x, y) => this.exitDoor.x === x && this.exitDoor.y === y
 
 	isBlock = (x, y, {bombPass = false, wallPass = false, enemy = false} = {}) => {
 		x = Math.floor(x)

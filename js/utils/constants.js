@@ -15,6 +15,12 @@ export const POWER_UP_SPEED_BOOST = 0.25,
 export let SFX_VOLUME = 0.2,
 	MUSIC_VOLUME = 0.2
 
+export const TILES = {
+	EMPTY: 0,
+	ROCK: 1,
+	WALL: 2
+}
+
 export function setSFXVolume(val) {
 	SFX_VOLUME = val
 }

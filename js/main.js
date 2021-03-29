@@ -19,9 +19,10 @@ import {
 	POWER_UP_SPEED_BOOST,
 	POWER_UP_TYPES,
 	resetEnemyId,
-	TILE_SIZE
+	TILE_SIZE,
+	TILES
 } from './utils/constants.js'
-import {changeTitle, createId, getRandomDirection} from './utils/helpers.js'
+import {changeTitle, createId, getRandomDirection, isRectangle, powerUpsCount, tileCount} from './utils/helpers.js'
 import {KeyListener} from './utils/keyListener.js'
 import {playBombLeaveSound, playExplosionSound, playPowerUpPickedSound} from './utils/sounds.js'
 import {Timer} from './utils/timers/timer.js'
@@ -75,11 +76,23 @@ class Game {
 				columns = stage.columns || DEFAULT_COLUMNS,
 				roundTime = stage.roundTime || DEFAULT_ROUND_TIME,
 				enemies = stage.enemies || {},
-				powerUps = stage.powerUps || {}
-			const error = this.checkStageArguments(rows, columns, roundTime, enemies, powerUps, i)
+				powerUps = stage.powerUps || {},
+				map = stage.map
+			let error = this.checkStageArguments(rows, columns, roundTime, enemies, powerUps, i)
+			if (map)
+				error = this.checkMap(map, powerUps, i)
 			if (error)
 				return error
 		}
+	}
+
+	checkMap = (map, powerUps, i) => {
+		if (!isRectangle(map) || map[0][0] !== TILES.EMPTY)
+			return `incorrect stage map: ${i + 1}`
+		const wallCount = tileCount(map, TILES.WALL),
+			powerUpCount = powerUpsCount(powerUps)
+		if (wallCount < powerUpCount + 1)
+			return `incorrect stage(${i + 1}) wall count: ${wallCount}`
 	}
 
 	checkStageArguments = (rows, columns, roundTime, enemies, powerUps, index) => {
@@ -768,44 +781,78 @@ class Game {
 // enemy types: balloom, oneal, doll, minvo, kondoria, ovapi, pass, pontan
 // power-ups: bombs, flames, speed, wall-pass, detonator, bomb-pass, flame-pass, mystery
 
-const defaultStages = {
+const _ = TILES.EMPTY,
+	r = TILES.ROCK,
+	w = TILES.WALL
+
+const defaultGames = {
 	easy: [
 		{
 			rows: 15, columns: 15,
 			enemies: {balloom: 2, oneal: 2},
-			powerUps: {
-				bombs: 1,
-				'bomb-pass': 1,
-				'wall-pass': 1
-			}
+			powerUps: {bombs: 1, 'bomb-pass': 1, 'wall-pass': 1}
 		}, {
 			rows: 15, columns: 15,
 			enemies: {doll: 2, minvo: 2},
-			powerUps: {
-				flames: 1,
-				detonator: 1,
-				'flame-pass': 1
-			}
+			powerUps: {flames: 1, detonator: 1, 'flame-pass': 1}
 		}, {
 			rows: 15, columns: 15,
 			enemies: {kondoria: 2, ovapi: 2},
-			powerUps: {
-				speed: 1
-			}
+			powerUps: {speed: 1}
 		}, {
 			rows: 15, columns: 15,
 			enemies: {pass: 2, pontan: 2},
-			powerUps: {
-				mystery: 1
-			}
+			powerUps: {mystery: 1}
+		}
+	],
+	differentMaps: [
+		{
+			enemies: {balloom: 3, oneal: 3},
+			powerUps: {bombs: 1, flames: 1, detonator: 1}
+		}, {
+			roundTime: 300,
+			enemies: {doll: 2, minvo: 2, kondoria: 2},
+			powerUps: {'flame-pass': 1, 'wall-pass': 1, 'bomb-pass': 1},
+			map: [
+				[_, _, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w],
+				[r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, _],
+				[_, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, r, _],
+				[w, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, _, r, w],
+				[_, r, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, r, _, r, _],
+				[_, r, _, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, _, r, w, r, _],
+				[w, r, _, r, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, r, _, r, w],
+				[_, r, w, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, _, r, _],
+				[_, r, _, _, w, _, _, w, _, _, w, _, _, w, _, _, _, w, _, _, w, _, _, w, _, _, w, r, _],
+				[w, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, w],
+				[_, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _]
+			]
+		}, {
+			roundTime: 300,
+			enemies: {ovapi: 2, pass: 2, pontan: 2},
+			powerUps: {speed: 1, mystery: 1, bombs: 1, flames: 1},
+			map: [
+				[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _],
+				[_, r, r, r, r, r, r, _, r, r, r, r, r, r, r, r, r, r, r, r, _, r, r, r, r, r, r, r, _],
+				[_, r, _, w, _, _, _, w, _, _, _, w, _, _, r, _, w, _, _, _, w, _, _, _, w, _, _, r, _],
+				[_, r, _, w, _, w, _, w, _, w, _, w, _, w, r, _, w, _, w, _, w, _, w, _, w, _, w, r, _],
+				[_, r, _, _, _, w, _, _, _, w, _, _, _, w, r, _, _, _, w, _, _, _, w, _, _, _, w, r, _],
+				[_, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, _],
+				[_, r, _, w, _, _, _, w, _, _, _, w, _, _, r, _, w, _, _, _, w, _, _, _, w, _, _, r, _],
+				[_, r, _, w, _, w, _, w, _, w, _, w, _, w, r, _, w, _, w, _, w, _, w, _, w, _, w, r, _],
+				[_, r, _, _, _, w, _, _, _, w, _, _, _, w, r, _, _, _, w, _, _, _, w, _, _, _, w, r, _],
+				[_, r, r, r, r, r, r, _, r, r, r, r, r, r, r, r, r, r, r, r, _, r, r, r, r, r, r, r, _],
+				[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]
+			]
 		}
 	]
 }
 
 const game = new Game({
-	stages: defaultStages.easy
+	stages: defaultGames.differentMaps
 })
 game.run()
+
+window.game = game
 
 
 // TODO:
@@ -813,11 +860,9 @@ game.run()
 // add backend:
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest
-// add responsive design: just resize if the gameBoard is smaller than the device screen
+// add responsive design: just change PIXEL_SIZE
 
-// show score at end of the game
 // add animation to the last page
-// add transition to the start state after game-completed or game-over states
 
 // add helper, which shows the keys to play the game
 
