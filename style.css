@@ -66,6 +66,7 @@ img {
 
 .wall-explode {
     animation: wall-explode 0.5s steps(7);
+    animation-fill-mode: forwards;
 }
 
 @keyframes wall-explode {
