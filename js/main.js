@@ -10,10 +10,7 @@ import {
 	DEFAULT_ROUND_TIME,
 	DEFAULT_ROWS,
 	ENEMY_TYPES,
-	GAME_MENU_CONTINUE,
-	GAME_MENU_MAIN_MENU,
-	GAME_MENU_RESTART_GAME,
-	GAME_MENU_RESTART_STAGE,
+	GAME_MENU,
 	PIXEL_SIZE,
 	POWER_UP_INVINCIBLE_TIME,
 	POWER_UP_SPEED_BOOST,
@@ -582,16 +579,12 @@ class Game {
 
 	gameMenuListener = e => {
 		if (e.code === 'Enter') {
-			if (this.gameMenu.selected === GAME_MENU_CONTINUE) {
+			if (this.gameMenu.selected === GAME_MENU.CONTINUE) {
 				this.state = 'pre-resume'
-			} else if (this.gameMenu.selected === GAME_MENU_RESTART_STAGE) {
-				this.bomberman.liveCount += this.stage.options.deathCount
-				this.restartStage()
-				this.state = 'pre-resume'
-			} else if (this.gameMenu.selected === GAME_MENU_RESTART_GAME) {
+			} else if (this.gameMenu.selected === GAME_MENU.RESTART) {
 				this.restartGame()
 				this.state = 'pre-stage-start'
-			} else if (this.gameMenu.selected === GAME_MENU_MAIN_MENU) {
+			} else if (this.gameMenu.selected === GAME_MENU.MAIN_MENU) {
 				location.reload()
 			}
 		}

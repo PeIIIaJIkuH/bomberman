@@ -1,7 +1,5 @@
 import {
-	GAME_MENU_CONTINUE,
-	GAME_MENU_MUSIC,
-	GAME_MENU_SFX,
+	GAME_MENU,
 	MUSIC_VOLUME, setMusicVolume,
 	setSFXVolume,
 	SFX_VOLUME
@@ -13,7 +11,7 @@ export class GameMenu {
 		this.div = document.querySelector('#game-menu')
 		this.items = document.querySelectorAll('.game-menu-item')
 		this.ranges = document.querySelectorAll('.game-menu-item input[type="range"]')
-		this.selected = GAME_MENU_CONTINUE
+		this.selected = GAME_MENU.CONTINUE
 
 		this.sounds = gameMusic
 
@@ -21,7 +19,7 @@ export class GameMenu {
 	}
 
 	show = () => {
-		this.selected = GAME_MENU_CONTINUE
+		this.selected = GAME_MENU.CONTINUE
 		this.div.className = 'game-menu-show'
 		document.addEventListener('keyup', this.listener)
 	}
@@ -32,17 +30,17 @@ export class GameMenu {
 	}
 
 	draw = () => {
-		if (this.selected === GAME_MENU_SFX) {
+		if (this.selected === GAME_MENU.SFX) {
 			this.ranges[0].disabled = false
 			this.ranges[1].disabled = true
 			this.ranges[0].focus()
 		}
-		if (this.selected === GAME_MENU_MUSIC) {
+		if (this.selected === GAME_MENU.MUSIC) {
 			this.ranges[0].disabled = true
 			this.ranges[1].disabled = false
 			this.ranges[1].focus()
 		}
-		if (this.selected !== GAME_MENU_SFX && this.selected !== GAME_MENU_MUSIC) {
+		if (this.selected !== GAME_MENU.SFX && this.selected !== GAME_MENU.MUSIC) {
 			this.unFocusAll()
 		}
 		this.items.forEach((item, i) => {
@@ -66,7 +64,7 @@ export class GameMenu {
 
 	initializeInputs = () => {
 		const callback = e => {
-			const i = this.selected - GAME_MENU_SFX
+			const i = this.selected - GAME_MENU.SFX
 			if (e.code === 'ArrowLeft') {
 				this.ranges[i].stepDown()
 				this.changeVolume(i)
