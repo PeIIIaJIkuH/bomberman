@@ -15,6 +15,7 @@ export class GameStageOptions {
 		this.deathCount = 0
 		if (map)
 			this.map = map
+		this.areEnemiesDead = false
 
 		this.initialize()
 	}

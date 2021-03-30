@@ -47,6 +47,7 @@ class Game {
 
 		changeTitle('Activate the Game | Bomberman')
 		this.completed = false
+		this.wasPaused = false
 		this.state = 'click-me'
 
 		this.initialBombCount = bombCount
@@ -416,6 +417,7 @@ class Game {
 			enemy.die()
 			this.stage.options.score += enemy.xp
 			if (this.stage.enemies.size <= 0) {
+				this.stage.options.areEnemiesDead = true
 				this.state = 'find-exit'
 			}
 			return true
@@ -501,7 +503,7 @@ class Game {
 				if (this.state === 'stage') {
 					this.state = 'pre-pause'
 				} else if (this.state === 'pause') {
-					this.state = 'pre-resume'
+					this.state = 'resume'
 				}
 			} else if (e.code === 'KeyE' && this.bomberman.detonator) {
 				if (this.stage.bombs.size > 0) {
@@ -509,6 +511,19 @@ class Game {
 					this.stage.deleteBomb(bomb.x, bomb.y)
 					bomb.createExplosions()
 				}
+			}
+		})
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden) {
+				changeTitle('Paused | Bomberman')
+				this.stage.options.interval && this.stage.options.interval.clear()
+				this.sounds.pauseStageMusic()
+				this.pause()
+			} else {
+				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
+				this.sounds.playStageMusic(this.stage.options.areEnemiesDead)
+				this.stage.options.interval && this.stage.options.interval.resume()
+				this.resume()
 			}
 		})
 	}
@@ -580,7 +595,7 @@ class Game {
 	gameMenuListener = e => {
 		if (e.code === 'Enter') {
 			if (this.gameMenu.selected === GAME_MENU.CONTINUE) {
-				this.state = 'pre-resume'
+				this.state = 'resume'
 			} else if (this.gameMenu.selected === GAME_MENU.RESTART) {
 				this.restartGame()
 				this.state = 'pre-stage-start'
@@ -591,6 +606,7 @@ class Game {
 	}
 
 	pause = () => {
+		this.wasPaused = true
 		this.pauseBomberman()
 		this.pauseEnemies()
 		this.pauseBombs()
@@ -620,7 +636,6 @@ class Game {
 				changeTitle('Incorrect arguments | Bomberman')
 				this.state = 'INCORRECT-ARGUMENTS'
 			}
-
 			if (this.state === 'pre-main-menu') {
 				changeTitle('Main Menu | Bomberman')
 				this.screen.mainMenu.showDisplay()
@@ -652,35 +667,37 @@ class Game {
 			} else if (this.state === 'pre-stage') {
 				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
 				this.screen.showStage()
-				this.sounds.stage.play()
+				this.sounds.playStageMusic(this.stage.options.areEnemiesDead)
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
 				prevTime = currTime
+				if (this.wasPaused) {
+					prevFPSTime = currTime
+					this.wasPaused = false
+				}
 				const diff = (currTime - prevFPSTime) / 1000
 				this.update(diff)
 				this.draw()
 			} else if (this.state === 'pre-pause') {
 				changeTitle('Paused | Bomberman')
 				this.stage.options.interval.clear()
-				this.sounds.stopStageMusic()
+				this.sounds.pauseStageMusic()
 				this.sounds.pause.stop()
 				this.sounds.pause.play()
 				this.pause()
 				this.state = 'pause'
 			} else if (this.state === 'pause') {
 				this.gameMenu.draw()
-			} else if (this.state === 'pre-resume') {
+			} else if (this.state === 'resume') {
 				this.sounds.pause.stop()
 				this.sounds.pause.play()
 				this.gameMenu.hide()
 				this.stage.options.interval.resume()
-				this.state = 'resume'
-			} else if (this.state === 'resume') {
 				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
 				this.resume()
 				this.state = 'pre-stage'
 			} else if (this.state === 'over') {
-				this.sounds.stopStageMusic()
+				this.sounds.pauseStageMusic()
 				this.sounds.over.play()
 				this.screen.hideStage()
 				this.screen.gameOver.showDisplay()
@@ -688,7 +705,7 @@ class Game {
 				this.state = 'GAME-OVER'
 			} else if (this.state === 'pre-pre-die') {
 				this.cancelPowerUps()
-				this.sounds.stopStageMusic()
+				this.sounds.pauseStageMusic()
 				this.pauseEnemies()
 				this.pauseBombs()
 				this.sounds.die.play()
@@ -719,7 +736,7 @@ class Game {
 			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
 				this.stage.consumedPowerUps.clear()
-				this.sounds.stopStageMusic()
+				this.sounds.pauseStageMusic()
 				this.sounds.complete.play()
 				this.state = 'pre-stage-completed'
 				resetEnemyId()
@@ -800,22 +817,6 @@ const defaultGames = {
 	],
 	differentMaps: [
 		{
-			enemies: {balloom: 3, oneal: 3},
-			powerUps: {bombs: 1, flames: 1, detonator: 1},
-			map: [
-				[_, _, _, _, _, w, _, _, _, _, _, w, _, _, _, w, _, w, _, _, w, _, w, _, _, _, _, _, _],
-				[_, r, w, r, _, r, _, r, _, r, w, r, w, r, _, r, _, r, w, r, _, r, _, r, w, r, _, r, _],
-				[_, _, w, _, _, _, w, _, _, w, _, _, _, w, _, w, _, _, _, _, _, _, _, _, _, _, _, _, _],
-				[_, r, _, r, w, r, _, r, w, r, _, r, _, r, _, r, _, r, _, r, w, r, _, r, _, r, _, r, _],
-				[_, _, w, w, w, _, w, _, _, _, _, _, _, _, _, w, _, _, _, _, _, _, _, _, _, _, _, _, _],
-				[_, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, w],
-				[_, _, _, _, _, _, _, _, _, _, w, _, _, w, _, _, w, _, _, _, _, w, _, _, _, _, _, _, _],
-				[_, r, w, r, w, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, w, r, _],
-				[w, _, _, _, _, _, w, _, _, _, _, _, _, _, w, _, _, _, _, _, _, w, _, _, _, _, w, w, _],
-				[_, r, w, r, _, r, _, r, _, r, _, r, _, r, _, r, w, r, _, r, _, r, _, r, _, r, _, r, _],
-				[w, _, _, _, _, _, _, w, w, _, w, _, w, _, w, _, w, _, _, _, _, _, _, _, _, _, _, _, _]
-			]
-		}, {
 			roundTime: 300,
 			enemies: {doll: 2, minvo: 2, kondoria: 2},
 			powerUps: {'flame-pass': 1, 'wall-pass': 1, 'bomb-pass': 1},
