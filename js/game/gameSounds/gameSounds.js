@@ -14,9 +14,16 @@ export class GameSounds {
 		this.die = new Sound('die-sound')
 	}
 
-	stopStageMusic = () => {
-		this.stage.stop()
-		this.findExit.stop()
+	playStageMusic = areEnemiesDead => {
+		if (!areEnemiesDead)
+			this.stage.play()
+		else
+			this.findExit.play()
+	}
+
+	pauseStageMusic = () => {
+		this.stage.pause()
+		this.findExit.pause()
 	}
 
 	changeSFXVolume = val => {
