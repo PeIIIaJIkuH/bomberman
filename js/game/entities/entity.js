@@ -54,7 +54,7 @@ export class Entity {
 			this.top += this.speed
 	}
 
-	draw = () => {
+	draw() {
 		this.div.style.transform = `translate3d(${16 * PIXEL_SIZE + Math.floor(this.left)}px, ${16 * PIXEL_SIZE + Math.floor(this.top)}px, 0)`
 	}
 

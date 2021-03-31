@@ -2,6 +2,7 @@ import {Bomb} from './game/entities/bomberman/bomb.js'
 import {Bomberman} from './game/entities/bomberman/bomberman.js'
 import {GameMenu} from './game/gameMenu/gameMenu.js'
 import {GameScreen} from './game/gameScreen/gameScreen.js'
+import {GameSettings} from './game/gameSettings/gameSettings.js'
 import {GameSounds} from './game/gameSounds/gameSounds.js'
 import {GameStage} from './game/gameStage/gameStage.js'
 import {
@@ -24,33 +25,18 @@ import {Timer} from './utils/timers/timer.js'
 class Game {
 	constructor({explosionSize = 1, bombCount = 1, liveCount = 3, stages} = {}) {
 		this.screen = new GameScreen()
-		const error = this.checkArguments(explosionSize, bombCount, liveCount, stages)
-		if (error) {
-			this.error = error
+		this.error = this.checkArguments(explosionSize, bombCount, liveCount, stages)
+		if (this.error)
 			return
-		}
-
-		this.stageNumber = 0
-		this.stages = stages
+		this.settings = new GameSettings(bombCount, liveCount, explosionSize, stages)
 		this.stage = new GameStage({
-			data: stages[this.stageNumber], bombCount, explosionSize
+			data: stages[this.settings.stageNumber], bombCount, explosionSize
 		})
-		if (this.stage.error) {
-			this.error = this.stage.error
-			return
-		}
 		this.bomberman = new Bomberman({board: this.stage.board, liveCount})
 		this.keyListener = new KeyListener()
-
-		changeTitle('Activate the Game | Bomberman')
-		this.completed = false
-		this.wasPaused = false
 		this.state = 'click-me'
 
-		this.initialBombCount = bombCount
-		this.initialLiveCount = liveCount
-		this.initialExplosionSize = explosionSize
-
+		changeTitle('Activate the Game | Bomberman')
 		this.handleUserInteraction()
 	}
 
@@ -129,9 +115,7 @@ class Game {
 	}
 
 	isBombermanCollidedWithEnemies = () => {
-		const {
-			left, right, top, bottom
-		} = this.bomberman.getBorders({own: true})
+		const {left, right, top, bottom} = this.bomberman.getBorders({own: true})
 		for (const [, enemy] of this.stage.enemies) {
 			const {
 				left: eLeft, right: eRight, top: eTop, bottom: eBottom
@@ -142,11 +126,7 @@ class Game {
 	}
 
 	isBombermanExploded = () => {
-		const {
-			left, right, top, bottom
-		} = this.bomberman.getBorders({
-			own: true, floorValues: true
-		})
+		const {left, right, top, bottom} = this.bomberman.getBorders({own: true, floorValues: true})
 		const flamePass = this.bomberman.flamePass
 		return this.stage.isExplosion(left, top, {flamePass}) ||
 			this.stage.isExplosion(left, bottom, {flamePass}) ||
@@ -160,26 +140,22 @@ class Game {
 	}
 
 	isBombermanCollidedWithExitDoor = () => {
-		const {
-			left, right, top, bottom
-		} = this.bomberman.getBorders({
-			own: true, floorValues: true
-		})
+		const {left, right, top, bottom} = this.bomberman.getBorders({own: true, floorValues: true})
 		return this.stage.isExitDoor(left, top) || this.stage.isExitDoor(left, bottom) ||
 			this.stage.isExitDoor(right, top) || this.stage.isExitDoor(right, bottom)
 	}
 
 	drawStage = () => {
-		document.querySelector('#stage-start span').innerText = `${this.stageNumber + 1}`
+		document.querySelector('#stage-start span').innerText = `${this.settings.getStageNumber()}`
 	}
 
 	updateStage = () => {
-		this.stageNumber++
+		this.settings.stageNumber++
 		this.drawStage()
 	}
 
 	resetStageNumber = () => {
-		this.stageNumber = 0
+		this.settings.stageNumber = 0
 		this.drawStage()
 	}
 
@@ -217,11 +193,7 @@ class Game {
 	}
 
 	handleBombermanCollidedWithPowerUp = () => {
-		const {
-			left, right, top, bottom
-		} = this.bomberman.getBorders({
-			own: true, floorValues: true
-		})
+		const {left, right, top, bottom} = this.bomberman.getBorders({own: true, floorValues: true})
 		let powerUp
 		if (this.stage.isPowerUp(left, top) && !this.stage.isWall(left, top)) {
 			powerUp = this.stage.getPowerUp(left, top)
@@ -277,9 +249,7 @@ class Game {
 	}
 
 	handleBombermanMove = diff => {
-		const {
-			left, right, top, bottom
-		} = this.bomberman.getBorders({own: false})
+		const {left, right, top, bottom} = this.bomberman.getBorders({own: false})
 
 		this.handleBombermanSurroundedWithBombs(Math.floor(left), Math.floor(right), Math.floor(top), Math.floor(bottom))
 
@@ -327,9 +297,7 @@ class Game {
 	moveEnemyRandomly = (id, diff) => {
 		const enemy = this.stage.enemies.get(id)
 		if (!enemy.dead) {
-			const {
-				left, right, top, bottom
-			} = enemy.getBorders({own: true})
+			const {left, right, top, bottom} = enemy.getBorders({own: true})
 
 			const wallPass = enemy.wallPass
 			if (enemy.direction === DIRECTIONS.LEFT) {
@@ -406,10 +374,9 @@ class Game {
 
 	isEnemyExploded = id => {
 		const enemy = this.stage.enemies.get(id)
-		const {
-			left, right, top, bottom
-		} = enemy.getBorders({floorValues: true})
-		if (this.stage.isExplosion(left, top) || this.stage.isExplosion(left, bottom) || this.stage.isExplosion(right, top) || this.stage.isExplosion(right, bottom)) {
+		const {left, right, top, bottom} = enemy.getBorders({floorValues: true})
+		if (this.stage.isExplosion(left, top) || this.stage.isExplosion(left, bottom) ||
+			this.stage.isExplosion(right, top) || this.stage.isExplosion(right, bottom)) {
 			this.stage.deleteEnemy(enemy.id)
 			enemy.die()
 			this.stage.options.score += enemy.xp
@@ -481,7 +448,6 @@ class Game {
 
 	draw = () => {
 		this.bomberman.draw()
-		this.bomberman.liveCountDiv.querySelector('span').innerText = `${this.bomberman.liveCount}`
 		this.drawEnemies()
 		this.stage.options.draw()
 	}
@@ -518,7 +484,7 @@ class Game {
 				this.sounds.pauseStageMusic()
 				this.pause()
 			} else if (!document.hidden && this.state === 'stage') {
-				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
+				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
 				this.sounds.playStageMusic(this.stage.options.areEnemiesDead)
 				this.stage.options.interval && this.stage.options.interval.resume()
 				this.resume()
@@ -571,9 +537,9 @@ class Game {
 
 	restartGame = () => {
 		this.resetStageNumber()
-		this.stage.reinitialize(this.stages[this.stageNumber])
-		this.stage.options.reset(this.initialBombCount, this.initialExplosionSize)
-		this.bomberman.reset(this.initialLiveCount)
+		this.stage.reinitialize(this.settings.getStage())
+		this.stage.options.reset(this.settings)
+		this.bomberman.reset(this.settings)
 		this.gameMenu.hide()
 	}
 
@@ -591,7 +557,7 @@ class Game {
 	}
 
 	pause = () => {
-		this.wasPaused = true
+		this.settings.wasPaused = true
 		this.pauseBomberman()
 		this.pauseEnemies()
 		this.pauseBombs()
@@ -620,6 +586,7 @@ class Game {
 				this.screen.incorrectArguments.showDisplay()
 				changeTitle('Incorrect arguments | Bomberman')
 				this.state = 'INCORRECT-ARGUMENTS'
+				return
 			}
 
 			if (this.state === 'pre-main-menu') {
@@ -635,7 +602,7 @@ class Game {
 				this.initialize()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'pre-stage-start') {
-				changeTitle(`Stage ${this.stageNumber + 1} Start | Bomberman`)
+				changeTitle(`Stage ${this.settings.getStageNumber()} Start | Bomberman`)
 				this.sounds.clearStageMusic()
 				this.screen.stageStart.show()
 				this.screen.hideStage()
@@ -650,15 +617,15 @@ class Game {
 				this.stage.options.initializeTimerChange()
 				this.state = 'pre-stage'
 			} else if (this.state === 'pre-stage') {
-				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
+				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
 				this.screen.showStage()
 				this.sounds.playStageMusic(this.stage.options.areEnemiesDead)
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
 				prevTime = currTime
-				if (this.wasPaused) {
+				if (this.settings.wasPaused) {
 					prevFPSTime = currTime
-					this.wasPaused = false
+					this.settings.wasPaused = false
 				}
 				const diff = (currTime - prevFPSTime) / 1000 * 100
 				this.update(diff)
@@ -678,7 +645,7 @@ class Game {
 				this.sounds.pause.play()
 				this.gameMenu.hide()
 				this.stage.options.interval.resume()
-				changeTitle(`Stage ${this.stageNumber + 1} | Bomberman`)
+				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
 				this.resume()
 				this.state = 'pre-stage'
 			} else if (this.state === 'over') {
@@ -716,6 +683,7 @@ class Game {
 				this.state = 'stage'
 			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
+				this.pauseBombs()
 				this.stage.consumedPowerUps.clear()
 				this.sounds.pauseStageMusic()
 				this.sounds.complete.play()
@@ -724,20 +692,19 @@ class Game {
 				prevTime = currTime
 			} else if (this.state === 'pre-stage-completed' && currTime - prevTime >= this.sounds.complete.durationMS()) {
 				this.screen.hideStage()
-				changeTitle(`Stage ${this.stageNumber + 1} Completed | Bomberman`)
+				changeTitle(`Stage ${this.settings.getStageNumber()} Completed | Bomberman`)
 				this.state = 'stage-completed'
 			} else if (this.state === 'stage-completed') {
-				if (this.stageNumber < this.stages.length) {
-					const stage = this.stages[this.stageNumber]
-					this.stage.reinitialize(stage)
+				if (!this.settings.isLastStage()) {
+					this.stage.reinitialize(this.settings.getStage())
 					this.bomberman.resetPosition()
 					this.state = 'pre-stage-start'
 				} else {
-					this.completed = true
+					this.settings.completed = true
 					this.state = 'pre-game-score'
 				}
 			} else if (this.state === 'pre-game-score') {
-				changeTitle(`Stage ${this.stageNumber + 1} Start | Bomberman`)
+				changeTitle(`Stage ${this.settings.getStageNumber()} Start | Bomberman`)
 				this.screen.hideStage()
 				this.screen.setGameScore(this.stage.options.score)
 				this.screen.gameScore.show()
@@ -746,7 +713,7 @@ class Game {
 				this.state = 'game-score'
 			} else if (this.state === 'game-score' && currTime - prevTime >= 5000) {
 				this.screen.gameScore.hide()
-				if (this.completed)
+				if (this.settings.completed)
 					this.state = 'ending'
 				else
 					this.state = 'over'
@@ -865,7 +832,3 @@ window.game = game
 // add animation to the last page
 
 // add helper, which shows the keys to play the game
-
-// OPTIMIZE, REMOVE FPS DROPS
-
-// restart must clear powerups and liveCount

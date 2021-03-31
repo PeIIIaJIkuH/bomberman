@@ -72,17 +72,23 @@ export class Bomberman extends Entity {
 		}, DURATIONS.BOMBERMAN_DIE)
 	}
 
-	reset = initialLiveCount => {
+	reset = settings => {
 		this.resetPosition()
 		this.left = 2 * PIXEL_SIZE
 		this.top = 2 * PIXEL_SIZE
 		this.direction = DIRECTIONS.DOWN
-		this.liveCount = initialLiveCount
+		this.liveCount = settings.liveCount
 		this.bombPass = false
 		this.flamePass = false
 		this.detonator = false
 		this.invincible = false
 		this.isSurroundedWithBombs = false
 		this.speed = 1
+	}
+
+	draw() {
+		super.draw()
+		if (this.liveCountDiv)
+			this.liveCountDiv.querySelector('span').innerText = `${this.liveCount}`
 	}
 }
