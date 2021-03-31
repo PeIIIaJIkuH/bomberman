@@ -65,8 +65,7 @@ img {
 }
 
 .wall-explode {
-    animation: wall-explode 0.5s steps(7);
-    animation-fill-mode: forwards;
+    animation: wall-explode 0.5s steps(7) forwards;
 }
 
 @keyframes wall-explode {
@@ -504,14 +503,16 @@ img {
 }
 
 #ending {
-    display: flex;
+    display: none;
     flex-direction: column;
+    justify-content: space-between;
     text-align: center;
     position: relative;
     z-index: 6;
+    height: 500px;
 }
 
-#ending div {
+.ending-text {
     margin-bottom: 10px;
 }
 
@@ -577,4 +578,75 @@ img {
 
 .power-up-mystery {
     background: url(./img/power-ups/mystery.jpg) center center / cover no-repeat;
+}
+
+#ending-animation {
+    overflow: hidden;
+}
+
+#ending-bricks {
+    width: 100%;
+    height: 32px;
+    background: url(./img/ending-brick.jpg) repeat-x left;
+    background-size: 32px;
+    image-rendering: pixelated;
+}
+
+#lode-runner {
+    overflow: hidden;
+    object-fit: contain;
+    height: 32px;
+    width: 32px;
+    transform: translateX(-100%);
+    animation: bomberman-move 9s linear forwards;
+}
+
+#lode-runner img {
+    height: 200%;
+    width: 500%;
+}
+
+@keyframes bomberman-move {
+    0% {
+        transform: translateX(-100%);
+    }
+    66% {
+        transform: translateX(1400%);
+    }
+    66.01% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(650%);
+    }
+}
+
+.bomberman-run {
+    animation: bomberman-run 0.4s steps(3) infinite;
+}
+
+@keyframes bomberman-run {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(-60%, 0, 0);
+    }
+}
+
+.lode-runner-run {
+    animation: lode-runner-run 0.4s steps(3) infinite;
+}
+
+.lode-runner-stop {
+    transform: translate3d(-20%, -50%, 0);
+}
+
+@keyframes lode-runner-run {
+    from {
+        transform: translate3d(0, -50%, 0);
+    }
+    to {
+        transform: translate3d(-60%, -50%, 0);
+    }
 }

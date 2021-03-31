@@ -723,6 +723,13 @@ class Game {
 				this.screen.stage.hideDisplay()
 				this.sounds.ending.play()
 				this.screen.ending.showDisplay()
+				document.querySelector('#lode-runner img').className = 'bomberman-run'
+				new Timer(() => {
+					document.querySelector('#lode-runner img').className = 'lode-runner-run'
+				}, 2900)
+				new Timer(() => {
+					document.querySelector('#lode-runner img').className = 'lode-runner-stop'
+				}, 9000)
 				this.state = 'END'
 			}
 			prevFPSTime = currTime
