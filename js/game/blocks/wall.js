@@ -22,7 +22,7 @@ export class Wall extends Block {
 		this.div.append(this.img)
 	}
 
-	explode() {
+	explode = () => {
 		this.img.classList.add('wall-explode')
 	}
 }

@@ -1,4 +1,4 @@
-import {EXPLOSION_TIME, WALL_EXPLOSION_TIME} from '../../../utils/constants.js'
+import {DURATIONS} from '../../../utils/constants.js'
 import {createId} from '../../../utils/helpers.js'
 import {playExplosionSound} from '../../../utils/sounds.js'
 import {Timer} from '../../../utils/timers/timer.js'
@@ -45,7 +45,7 @@ export class Bomb {
 		})
 		new Timer(() => {
 			this.stage.deleteExplosion(this.x, this.y)
-		}, WALL_EXPLOSION_TIME)
+		}, DURATIONS.WALL_EXPLOSION)
 		this.stage.explosions.set(explosion.id, explosion)
 		playExplosionSound()
 	}
@@ -54,6 +54,6 @@ export class Bomb {
 		this.timer = new Timer(() => {
 			this.createExplosions()
 			this.stage.deleteBomb(this.x, this.y)
-		}, EXPLOSION_TIME)
+		}, DURATIONS.BOMB_COUNTDOWN)
 	}
 }

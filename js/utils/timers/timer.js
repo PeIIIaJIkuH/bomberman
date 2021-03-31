@@ -6,18 +6,18 @@ export class Timer {
 		this.resume()
 	}
 
-	pause() {
+	pause = () => {
 		this.clear()
 		this.remaining -= new Date().getTime() - this.start
 	}
 
-	resume() {
+	resume = () => {
 		this.start = new Date().getTime()
 		this.clear()
 		this.timerID = setTimeout(this.callback, this.remaining)
 	}
 
-	clear() {
+	clear = () => {
 		clearTimeout(this.timerID)
 	}
 }

@@ -1,4 +1,4 @@
-import {DEFAULT_COLUMNS, DEFAULT_ROWS, TILE_SIZE, TILES} from '../../utils/constants.js'
+import {DEFAULT, TILE_SIZE, TILES} from '../../utils/constants.js'
 import {createId, getRandomInt} from '../../utils/helpers.js'
 import {ExitDoor} from '../blocks/exitDoor.js'
 import {PowerUp} from '../blocks/powerUp.js'
@@ -9,8 +9,8 @@ import {GameStageOptions} from './gameStageOptions.js'
 
 export class GameStage {
 	constructor({data, bombCount, explosionSize}) {
-		let rows = data.rows || DEFAULT_ROWS,
-			columns = data.columns || DEFAULT_COLUMNS
+		let rows = data.rows || DEFAULT.ROWS,
+			columns = data.columns || DEFAULT.COLUMNS
 		const roundTime = data.roundTime || 200,
 			enemies = data.enemies || {},
 			powerUps = data.powerUps || {},
@@ -41,8 +41,8 @@ export class GameStage {
 
 	reinitialize = data => {
 		this.removeAllDivs()
-		let rows = data.rows || DEFAULT_ROWS,
-			columns = data.columns || DEFAULT_COLUMNS
+		let rows = data.rows || DEFAULT.ROWS,
+			columns = data.columns || DEFAULT.COLUMNS
 		const roundTime = data.roundTime || 200,
 			enemies = data.enemies,
 			powerUps = data.powerUps || {},

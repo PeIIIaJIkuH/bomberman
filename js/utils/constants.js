@@ -1,16 +1,36 @@
 export const PIXEL_SIZE = 2,
-	TILE_SIZE = PIXEL_SIZE * 16,
-	DEFAULT_ROWS = 13,
-	DEFAULT_COLUMNS = 31,
-	DEFAULT_ROUND_TIME = 200,
-	EXPLOSION_TIME = 2000,
-	WALL_EXPLOSION_TIME = 500
+	TILE_SIZE = PIXEL_SIZE * 16
+
+export const DEFAULT = {
+	ROWS: 13,
+	COLUMNS: 31,
+	ROUND_TIME: 200
+}
+
+export const DURATIONS = {
+	BOMB_COUNTDOWN: 2000,
+	WALL_EXPLOSION: 500,
+	ENEMY_XP: 2000,
+	ENEMY_DIE: 1100,
+	BOMBERMAN_DIE: 600,
+	CHAIN_EXPLOSION: 100
+}
+
+export const GAME_MENU = {
+	CONTINUE: 0,
+	RESTART: 1,
+	SFX: 2,
+	MUSIC: 3,
+	MAIN_MENU: 4
+}
 
 export const ENEMY_TYPES = ['balloom', 'oneal', 'doll', 'minvo', 'kondoria', 'ovapi', 'pass', 'pontan'],
 	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
 
-export const POWER_UP_SPEED_BOOST = 0.25,
-	POWER_UP_INVINCIBLE_TIME = 30000
+export const POWER_UPS = {
+	SPEED_BOOST: 0.25,
+	INVINCIBLE_DURATION: 30000
+}
 
 export let SFX_VOLUME = 0.2,
 	MUSIC_VOLUME = 0.2
@@ -21,33 +41,28 @@ export const TILES = {
 	WALL: 2
 }
 
-export function setSFXVolume(val) {
+export const DIRECTIONS = {
+	LEFT: 0,
+	RIGHT: 1,
+	UP: 2,
+	DOWN: 3
+}
+
+let ENEMY_ID = 0
+
+export const setSFXVolume = val => {
 	SFX_VOLUME = val
 }
 
-export function setMusicVolume(val) {
+export const setMusicVolume = val => {
 	MUSIC_VOLUME = val
 }
 
-export const ENEMY_XP_SHOW_TIME = 2000,
-	ENEMY_DYING_TIME = 1100,
-	BOMBERMAN_DYING_TIME = 600,
-	CHAIN_EXPLOSION_TIME = 100
-
-export const GAME_MENU = {
-	CONTINUE: 0,
-	RESTART: 1,
-	SFX: 2,
-	MUSIC: 3,
-	MAIN_MENU: 4
-}
-
-export let ENEMY_ID = 0
-
-export function increaseEnemyId() {
+export const createEnemyId = () => {
 	ENEMY_ID++
+	return ENEMY_ID
 }
 
-export function resetEnemyId() {
+export const resetEnemyId = () => {
 	ENEMY_ID = 0
 }

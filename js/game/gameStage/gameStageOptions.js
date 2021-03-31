@@ -83,4 +83,10 @@ export class GameStageOptions {
 		this.roundTime += this.passedTime
 		this.passedTime = 0
 	}
+	
+	reset = (initialBombCount, initialExplosionSize) => {
+		this.score = 0
+		this.bombCount = initialBombCount
+		this.explosionSize = initialExplosionSize
+	}
 }

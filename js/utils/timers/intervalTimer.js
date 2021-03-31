@@ -4,12 +4,12 @@ export class IntervalTimer {
 		this.resume()
 	}
 
-	resume() {
+	resume = () => {
 		this.clear()
 		this.timerId = setInterval(this.callback, 1000)
 	}
 
-	clear() {
+	clear = () => {
 		clearInterval(this.timerId)
 	}
 }

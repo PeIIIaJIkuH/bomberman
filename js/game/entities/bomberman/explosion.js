@@ -1,4 +1,4 @@
-import {WALL_EXPLOSION_TIME} from '../../../utils/constants.js'
+import {DURATIONS} from '../../../utils/constants.js'
 import {createId} from '../../../utils/helpers.js'
 import {Timer} from '../../../utils/timers/timer.js'
 
@@ -35,7 +35,7 @@ export class Explosion {
 		this.board.append(div)
 		new Timer(() => {
 			div.remove()
-		}, WALL_EXPLOSION_TIME)
+		}, DURATIONS.WALL_EXPLOSION)
 		return div
 	}
 
@@ -57,7 +57,7 @@ export class Explosion {
 			wall.explode()
 			new Timer(() => {
 				this.stage.deleteWall(x, y)
-			}, WALL_EXPLOSION_TIME)
+			}, DURATIONS.WALL_EXPLOSION)
 			created = true
 			isWall = true
 		} else if (this.stage.isRock(x, y))

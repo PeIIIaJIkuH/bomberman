@@ -26,6 +26,11 @@ export class GameSounds {
 		this.findExit.pause()
 	}
 
+	clearStageMusic = () => {
+		this.stage.clear()
+		this.findExit.clear()
+	}
+
 	changeSFXVolume = val => {
 		this.pause.audio.volume = val
 		this.die.audio.volume = val

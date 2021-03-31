@@ -1,4 +1,4 @@
-import {PIXEL_SIZE, TILE_SIZE} from '../../utils/constants.js'
+import {DIRECTIONS, PIXEL_SIZE, TILE_SIZE} from '../../utils/constants.js'
 import {Bomberman} from './bomberman/bomberman.js'
 
 export class Entity {
@@ -8,6 +8,7 @@ export class Entity {
 		this.left = left || PIXEL_SIZE * 2
 		this.top = top || PIXEL_SIZE * 2
 		this.size = TILE_SIZE * 0.75
+		this.direction = DIRECTIONS.DOWN
 		this.wallPass = false
 
 		this.createHTML()
@@ -53,11 +54,11 @@ export class Entity {
 			this.top += this.speed
 	}
 
-	draw() {
+	draw = () => {
 		this.div.style.transform = `translate3d(${16 * PIXEL_SIZE + Math.floor(this.left)}px, ${16 * PIXEL_SIZE + Math.floor(this.top)}px, 0)`
 	}
 
-	getBorders({own = true, floorValues = false} = {}) {
+	getBorders = ({own = true, floorValues = false} = {}) => {
 		let x = 0
 		if (!own)
 			x = 1
@@ -80,5 +81,10 @@ export class Entity {
 			bottom = Math.floor(bottom)
 		}
 		return {left, right, top, bottom}
+	}
+
+	setLookDirection = entity => {
+		const directions = ['left', 'right', 'up', 'down']
+		this.img.className = `${entity}-look-${directions[this.direction]}`
 	}
 }

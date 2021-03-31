@@ -1,9 +1,4 @@
-import {
-	GAME_MENU,
-	MUSIC_VOLUME, setMusicVolume,
-	setSFXVolume,
-	SFX_VOLUME
-} from '../../utils/constants.js'
+import {GAME_MENU, MUSIC_VOLUME, setMusicVolume, setSFXVolume, SFX_VOLUME} from '../../utils/constants.js'
 import {playChangeVolumeSound} from '../../utils/sounds.js'
 
 export class GameMenu {
@@ -29,18 +24,18 @@ export class GameMenu {
 		document.removeEventListener('keyup', this.listener)
 	}
 
+	toggleRanges = index => {
+		this.ranges[index].disabled = false
+		this.ranges[1 - index].disabled = true
+		this.ranges[index].focus()
+	}
+
 	draw = () => {
 		if (this.selected === GAME_MENU.SFX) {
-			this.ranges[0].disabled = false
-			this.ranges[1].disabled = true
-			this.ranges[0].focus()
-		}
-		if (this.selected === GAME_MENU.MUSIC) {
-			this.ranges[0].disabled = true
-			this.ranges[1].disabled = false
-			this.ranges[1].focus()
-		}
-		if (this.selected !== GAME_MENU.SFX && this.selected !== GAME_MENU.MUSIC) {
+			this.toggleRanges(0)
+		} else if (this.selected === GAME_MENU.MUSIC) {
+			this.toggleRanges(1)
+		} else if (this.selected !== GAME_MENU.SFX && this.selected !== GAME_MENU.MUSIC) {
 			this.unFocusAll()
 		}
 		this.items.forEach((item, i) => {
