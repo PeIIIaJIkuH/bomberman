@@ -595,7 +595,7 @@ class Game {
 				changeTitle('Main Menu | Bomberman')
 				this.screen.mainMenu.showDisplay()
 				this.sounds.titleScreen.play()
-				this.screen.incorrectArguments.div.remove()
+				this.screen.removeIncorrectArguments()
 				this.state = 'main-menu'
 			} else if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
 				this.state = 'initialize'
