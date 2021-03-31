@@ -141,8 +141,10 @@ class Game {
 
 	isBombermanCollidedWithExitDoor = () => {
 		const {left, right, top, bottom} = this.bomberman.getBorders({own: true, floorValues: true})
-		return this.stage.isExitDoor(left, top) || this.stage.isExitDoor(left, bottom) ||
-			this.stage.isExitDoor(right, top) || this.stage.isExitDoor(right, bottom)
+		return (!this.stage.isWall(left, top) && this.stage.isExitDoor(left, top)) ||
+			(!this.stage.isWall(left, bottom) && this.stage.isExitDoor(left, bottom)) ||
+			(!this.stage.isWall(right, top) && this.stage.isExitDoor(right, top)) ||
+			(!this.stage.isWall(right, bottom) && this.stage.isExitDoor(right, bottom))
 	}
 
 	drawStage = () => {
@@ -593,6 +595,7 @@ class Game {
 				changeTitle('Main Menu | Bomberman')
 				this.screen.mainMenu.showDisplay()
 				this.sounds.titleScreen.play()
+				this.screen.incorrectArguments.div.remove()
 				this.state = 'main-menu'
 			} else if (this.state === 'main-menu' && this.keyListener.isPressed('Enter')) {
 				this.state = 'initialize'
@@ -836,6 +839,6 @@ window.game = game
 //          add page, where user can see scores of the other players, from highest to the lowest
 // add responsive design: just change PIXEL_SIZE
 
-// add animation to the last page
+// add options to the main menu: help, controls, leaderboard
 
 // add helper, which shows the keys to play the game
