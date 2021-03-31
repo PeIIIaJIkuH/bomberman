@@ -636,6 +636,7 @@ class Game {
 				changeTitle('Incorrect arguments | Bomberman')
 				this.state = 'INCORRECT-ARGUMENTS'
 			}
+			
 			if (this.state === 'pre-main-menu') {
 				changeTitle('Main Menu | Bomberman')
 				this.screen.mainMenu.showDisplay()
@@ -655,12 +656,10 @@ class Game {
 				this.state = 'stage-start'
 				this.sounds.stageStart.play()
 				prevTime = currTime
-			} else if (this.state === 'stage-start') {
-				if (currTime - prevTime >= this.sounds.stageStart.durationMS()) {
-					this.screen.stageStart.hide()
-					this.screen.showStage()
-					this.state = 'initialize-timer'
-				}
+			} else if (this.state === 'stage-start' && currTime - prevTime >= this.sounds.stageStart.durationMS()) {
+				this.screen.stageStart.hide()
+				this.screen.showStage()
+				this.state = 'initialize-timer'
 			} else if (this.state === 'initialize-timer') {
 				this.stage.options.initializeTimerChange()
 				this.state = 'pre-stage'
@@ -711,21 +710,17 @@ class Game {
 				this.sounds.die.play()
 				this.stage.options.deathCount++
 				this.state = 'pre-die'
-			} else if (this.state === 'pre-die') {
-				if (currTime - prevTime >= this.sounds.die.durationMS()) {
-					this.sounds.die.stop()
-					this.sounds.lifeLost.play()
-					this.stage.options.score = this.stage.options.initialScore
-					this.state = 'die'
-				}
-			} else if (this.state === 'die') {
-				if (currTime - prevTime >= (this.sounds.die.durationMS() + this.sounds.lifeLost.durationMS())) {
-					prevTime = currTime
-					if (this.bomberman.liveCount > 0)
-						this.state = 'restart'
-					else
-						this.state = 'pre-game-score'
-				}
+			} else if (this.state === 'pre-die' && currTime - prevTime >= this.sounds.die.durationMS()) {
+				this.sounds.die.stop()
+				this.sounds.lifeLost.play()
+				this.stage.options.score = this.stage.options.initialScore
+				this.state = 'die'
+			} else if (this.state === 'die' && currTime - prevTime >= (this.sounds.die.durationMS() + this.sounds.lifeLost.durationMS())) {
+				prevTime = currTime
+				if (this.bomberman.liveCount > 0)
+					this.state = 'restart'
+				else
+					this.state = 'pre-game-score'
 			} else if (this.state === 'restart') {
 				this.restartStage()
 				this.state = 'pre-stage-start'
@@ -741,12 +736,10 @@ class Game {
 				this.state = 'pre-stage-completed'
 				resetEnemyId()
 				prevTime = currTime
-			} else if (this.state === 'pre-stage-completed') {
-				if (currTime - prevTime >= this.sounds.complete.durationMS()) {
-					this.screen.hideStage()
-					changeTitle(`Stage ${this.stageNumber + 1} Completed | Bomberman`)
-					this.state = 'stage-completed'
-				}
+			} else if (this.state === 'pre-stage-completed' && currTime - prevTime >= this.sounds.complete.durationMS()) {
+				this.screen.hideStage()
+				changeTitle(`Stage ${this.stageNumber + 1} Completed | Bomberman`)
+				this.state = 'stage-completed'
 			} else if (this.state === 'stage-completed') {
 				if (this.stageNumber < this.stages.length) {
 					const stage = this.stages[this.stageNumber]
@@ -765,14 +758,12 @@ class Game {
 				prevTime = currTime
 				changeTitle('Final Score | Bomberman')
 				this.state = 'game-score'
-			} else if (this.state === 'game-score') {
-				if (currTime - prevTime >= 5000) {
-					this.screen.gameScore.hide()
-					if (this.completed)
-						this.state = 'ending'
-					else
-						this.state = 'over'
-				}
+			} else if (this.state === 'game-score' && currTime - prevTime >= 5000) {
+				this.screen.gameScore.hide()
+				if (this.completed)
+					this.state = 'ending'
+				else
+					this.state = 'over'
 			} else if (this.state === 'ending') {
 				changeTitle('Game End | Bomberman')
 				this.screen.info.hide()
