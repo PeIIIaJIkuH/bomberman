@@ -472,14 +472,6 @@ img {
     background: black;
 }
 
-.game-menu-hide {
-    opacity: 0;
-}
-
-.game-menu-show {
-    opacity: 1;
-}
-
 .game-menu-item {
     padding: 5px;
     margin-bottom: 10px;
@@ -654,4 +646,28 @@ img {
     to {
         transform: translate3d(-60%, -50%, 0);
     }
+}
+
+.main-menu-show {
+    opacity: 1;
+}
+
+.main-menu-hide {
+    opacity: 0;
+}
+
+.main-menu-item {
+    color: #a6a6a6;
+}
+
+.main-menu-item + .main-menu-item {
+    margin-top: 20px;
+}
+
+.main-menu-item-selected {
+    color: white;
+}
+
+#main-menu-info {
+    margin-top: 50px;
 }
