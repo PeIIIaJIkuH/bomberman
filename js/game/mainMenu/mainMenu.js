@@ -1,4 +1,5 @@
 import {MAIN_MENU} from '../../utils/constants.js'
+import {playSFXSound} from '../../utils/sounds.js'
 
 export class MainMenu {
 	constructor() {
@@ -19,9 +20,11 @@ export class MainMenu {
 
 	addEventListener = () => {
 		document.addEventListener('keydown', e => {
-			if (e.code === 'ArrowDown')
+			if (e.code === 'ArrowDown') {
+				playSFXSound()
 				this.selected = (this.selected + 1) % this.items.length
-			else if (e.code === 'ArrowUp') {
+			} else if (e.code === 'ArrowUp') {
+				playSFXSound()
 				this.selected = (this.selected - 1) % this.items.length
 				if (this.selected < 0)
 					this.selected = this.items.length - 1

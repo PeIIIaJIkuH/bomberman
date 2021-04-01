@@ -49,7 +49,7 @@ export class GameMenu {
 	changeVolume = index => {
 		if (index === 0) {
 			setSFXVolume(this.ranges[0].value)
-			playSFXSound(SFX_VOLUME)
+			playSFXSound()
 		} else if (index === 1) {
 			setMusicVolume(this.ranges[1].value)
 			playSFXSound(MUSIC_VOLUME)
@@ -89,10 +89,10 @@ export class GameMenu {
 
 	listener = e => {
 		if (e.code === 'ArrowDown') {
-			playSFXSound(SFX_VOLUME)
+			playSFXSound()
 			this.selected = (this.selected + 1) % this.items.length
 		} else if (e.code === 'ArrowUp') {
-			playSFXSound(SFX_VOLUME)
+			playSFXSound()
 			this.selected = (this.selected - 1) % this.items.length
 			if (this.selected < 0)
 				this.selected = this.items.length - 1

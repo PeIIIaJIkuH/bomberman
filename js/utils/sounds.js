@@ -25,7 +25,7 @@ export const playPowerUpPickedSound = () => {
 let wasSFXSoundPlayed = false,
 	wasBombermanMoveSoundPlayed = false
 
-export const playSFXSound = volume => {
+export const playSFXSound = (volume = SFX_VOLUME) => {
 	if (!wasSFXSoundPlayed) {
 		const sound = document.createElement('audio')
 		sound.src = './assets/sounds/volume-change.wav'

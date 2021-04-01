@@ -2,6 +2,7 @@ export class Screen {
 	constructor(id, display = 'flex') {
 		this.div = document.querySelector(`#${id}`)
 		this.display = display
+		
 		this.hide()
 	}
 
