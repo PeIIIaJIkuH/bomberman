@@ -17,12 +17,12 @@ export class GameMenu {
 	show = () => {
 		this.selected = GAME_MENU.CONTINUE
 		this.div.style.display = 'flex'
-		document.addEventListener('keyup', this.listener)
+		document.addEventListener('keydown', this.listener)
 	}
 
 	hide = () => {
 		this.div.style.display = 'none'
-		document.removeEventListener('keyup', this.listener)
+		document.removeEventListener('keydown', this.listener)
 	}
 
 	toggleRanges = index => {
