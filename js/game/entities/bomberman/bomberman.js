@@ -27,12 +27,12 @@ export class Bomberman extends Entity {
 
 	createHTML = () => {
 		this.div.id = 'bomberman'
-		this.img.src = './img/bomberman.png'
+		this.img.src = './assets/img/bomberman.png'
 		this.img.alt = 'bomberman'
 		this.liveCountDiv = document.createElement('div')
 		this.liveCountDiv.id = 'live-count'
 		const img = document.createElement('img')
-		img.src = './img/game-info/heart.png'
+		img.src = './assets/img/game-info/heart.png'
 		img.alt = 'heart'
 		const span = document.createElement('span')
 		span.textContent = `${this.liveCount}`

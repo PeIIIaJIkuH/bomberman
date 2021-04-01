@@ -27,7 +27,7 @@ export class Explosion {
 			div.style.opacity = '0'
 		div.classList.add('explosion')
 		img.classList.add(className)
-		img.src = './img/explosion.png'
+		img.src = './assets/img/explosion.png'
 		img.alt = 'explosion'
 		div.style.gridColumnStart = String(x)
 		div.style.gridRowStart = String(y)

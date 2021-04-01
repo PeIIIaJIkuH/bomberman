@@ -17,7 +17,7 @@ export class Wall extends Block {
 		this.addClass()
 
 		this.img = document.createElement('img')
-		this.img.src = './img/wall.png'
+		this.img.src = './assets/img/wall.png'
 		this.img.alt = 'wall'
 		this.div.append(this.img)
 	}

@@ -44,7 +44,7 @@ export class GameStageOptions {
 		this.timerDiv = document.createElement('div')
 		this.timerDiv.id = 'timer'
 		const img = document.createElement('img')
-		img.src = './img/game-info/clock.png'
+		img.src = './assets/img/game-info/clock.png'
 		img.alt = 'clock'
 		const span = document.createElement('span')
 		span.innerText = `${this.roundTime}`
@@ -59,7 +59,7 @@ export class GameStageOptions {
 		this.scoreDiv = document.createElement('div')
 		this.scoreDiv.id = 'score'
 		const img = document.createElement('img')
-		img.src = './img/game-info/star.png'
+		img.src = './assets/img/game-info/star.png'
 		img.alt = 'star'
 		const span = document.createElement('span')
 		span.innerText = `${this.score}`
@@ -83,7 +83,7 @@ export class GameStageOptions {
 		this.roundTime += this.passedTime
 		this.passedTime = 0
 	}
-	
+
 	reset = settings => {
 		this.score = 0
 		this.bombCount = settings.bombCount

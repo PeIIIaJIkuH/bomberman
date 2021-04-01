@@ -3,21 +3,21 @@ import {Timer} from './timers/timer.js'
 
 export const playExplosionSound = () => {
 	const sound = document.createElement('audio')
-	sound.src = './sounds/explosion.wav'
+	sound.src = './assets/sounds/explosion.wav'
 	sound.volume = SFX_VOLUME
 	sound.play().then()
 }
 
 export const playBombLeaveSound = () => {
 	const sound = document.createElement('audio')
-	sound.src = './sounds/leave-bomb.wav'
+	sound.src = './assets/sounds/leave-bomb.wav'
 	sound.volume = SFX_VOLUME
 	sound.play().then()
 }
 
 export const playPowerUpPickedSound = () => {
 	const sound = document.createElement('audio')
-	sound.src = './sounds/power-up.wav'
+	sound.src = './assets/sounds/power-up.wav'
 	sound.volume = SFX_VOLUME
 	sound.play().then()
 }
@@ -28,7 +28,7 @@ let wasSFXSoundPlayed = false,
 export const playSFXSound = volume => {
 	if (!wasSFXSoundPlayed) {
 		const sound = document.createElement('audio')
-		sound.src = './sounds/volume-change.wav'
+		sound.src = './assets/sounds/volume-change.wav'
 		sound.volume = volume
 		sound.play().then()
 		wasSFXSoundPlayed = true
@@ -41,7 +41,7 @@ export const playSFXSound = volume => {
 export const playBombermanMoveSound = () => {
 	if (!wasBombermanMoveSoundPlayed) {
 		const sound = document.createElement('audio')
-		sound.src = './sounds/bomberman-move.wav'
+		sound.src = './assets/sounds/bomberman-move.wav'
 		sound.volume = SFX_VOLUME
 		sound.play().then()
 		wasBombermanMoveSoundPlayed = true

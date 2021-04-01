@@ -29,7 +29,7 @@ export class Bomb {
 		this.div.style.gridColumnStart = String(this.x)
 		this.div.style.gridRowStart = String(this.y)
 		this.img.classList.add('bomb-exploding')
-		this.img.src = './img/bomb.png'
+		this.img.src = './assets/img/bomb.png'
 		this.div.append(this.img)
 		this.board.append(this.div)
 	}
