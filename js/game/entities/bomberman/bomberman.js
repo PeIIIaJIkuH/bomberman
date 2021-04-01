@@ -1,4 +1,5 @@
 import {DIRECTIONS, DURATIONS, PIXEL_SIZE} from '../../../utils/constants.js'
+import {playBombermanMoveSound} from '../../../utils/sounds.js'
 import {Timer} from '../../../utils/timers/timer.js'
 import {Entity} from '../entity.js'
 
@@ -44,24 +45,28 @@ export class Bomberman extends Entity {
 		super.moveLeft(speed)
 		this.direction = DIRECTIONS.LEFT
 		this.img.className = 'bomberman-walk-left'
+		playBombermanMoveSound()
 	}
 
 	moveRight(speed) {
 		super.moveRight(speed)
 		this.direction = DIRECTIONS.RIGHT
 		this.img.className = 'bomberman-walk-right'
+		playBombermanMoveSound()
 	}
 
 	moveUp(speed) {
 		super.moveUp(speed)
 		this.direction = DIRECTIONS.UP
 		this.img.className = 'bomberman-walk-up'
+		playBombermanMoveSound()
 	}
 
 	moveDown(speed) {
 		super.moveDown(speed)
 		this.direction = DIRECTIONS.DOWN
 		this.img.className = 'bomberman-walk-down'
+		playBombermanMoveSound()
 	}
 
 	die = () => {
