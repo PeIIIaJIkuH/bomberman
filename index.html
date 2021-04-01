@@ -8,7 +8,7 @@
 	<meta name='author' content='PeIIIaJIkuH, indecember'>
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
 	<link rel='icon' type='image/png' href='./img/logo.png'>
-	<link rel='stylesheet' href='style.min.css'>
+	<link rel='stylesheet' href='style.css'>
 	<script src='js/main.js' type='module' defer></script>
 </head>
 <body>
@@ -33,14 +33,10 @@
 
 <div id='main-menu'>
 	<img id='main-menu-img' src='./img/menu-background.png' alt='menu'>
-	<div id='press-enter'>
-		PRESS ENTER TO START
-	</div>
-	<div id='high-score'>
-		<div>TOP</div>
-		<div id='high-score-number'>00</div>
-	</div>
-	<div id='info'>
+	<div class='main-menu-item'>START</div>
+	<div class='main-menu-item'>CONTROLS</div>
+	<div class='main-menu-item'>LEADERBOARD</div>
+	<div id='main-menu-info'>
 		PeIIIaJIkuH, indecember
 	</div>
 </div>
@@ -73,32 +69,33 @@
 	</div>
 </div>
 
-<div id='game'>
-	<div id='game-menu' class='game-menu-hide'>
-		<div class='game-menu-item'>
-			CONTINUE
-		</div>
-		<div class='game-menu-item'>
-			RESTART
-		</div>
-		<div class='game-menu-item'>
-			<label for='game-menu-sfx-volume-range' class='game-menu-item-label'>
-				SFX:
-			</label>
-			<input class='game-menu-item-range' type='range' id='game-menu-sfx-volume-range' min='0' max='1' step='0.05'
-				   value='0.2'>
-		</div>
-		<div class='game-menu-item'>
-			<label for='game-menu-music-volume-range' class='game-menu-item-label'>
-				MUSIC:
-			</label>
-			<input class='game-menu-item-range' type='range' id='game-menu-music-volume-range' min='0' max='1'
-				   step='0.05' value='0.2'>
-		</div>
-		<div class='game-menu-item'>
-			MAIN MENU
-		</div>
+<div id='game-menu' class='game-menu-hide'>
+	<div class='game-menu-item'>
+		CONTINUE
 	</div>
+	<div class='game-menu-item'>
+		RESTART
+	</div>
+	<div class='game-menu-item'>
+		<label for='game-menu-sfx-volume-range' class='game-menu-item-label'>
+			SFX:
+		</label>
+		<input class='game-menu-item-range' type='range' id='game-menu-sfx-volume-range' min='0' max='1' step='0.05'
+			   value='0.2'>
+	</div>
+	<div class='game-menu-item'>
+		<label for='game-menu-music-volume-range' class='game-menu-item-label'>
+			MUSIC:
+		</label>
+		<input class='game-menu-item-range' type='range' id='game-menu-music-volume-range' min='0' max='1'
+			   step='0.05' value='0.2'>
+	</div>
+	<div class='game-menu-item'>
+		MAIN MENU
+	</div>
+</div>
+
+<div id='game'>
 	<div id='game-info'></div>
 	<div id='board'></div>
 </div>
