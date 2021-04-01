@@ -29,8 +29,11 @@ class Game {
 		this.mainMenu = new MainMenu()
 		this.screens = new GameScreens()
 		this.error = this.checkArguments(explosionSize, bombCount, liveCount, stages)
-		if (this.error)
+		if (this.error) {
+			console.log('error')
+			this.screens.incorrectArguments.show()
 			return
+		}
 		this.settings = new GameSettings(bombCount, liveCount, explosionSize, stages)
 		this.stage = new GameStage({
 			data: stages[this.settings.stageNumber], bombCount, explosionSize
