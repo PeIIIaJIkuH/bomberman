@@ -24,6 +24,12 @@ export const GAME_MENU = {
 	MAIN_MENU: 4
 }
 
+export const MAIN_MENU = {
+	START: 0,
+	CONTROLS: 1,
+	LEADERBOARD: 2
+}
+
 export const ENEMY_TYPES = ['balloom', 'oneal', 'doll', 'minvo', 'kondoria', 'ovapi', 'pass', 'pontan'],
 	POWER_UP_TYPES = ['bombs', 'flames', 'speed', 'wall-pass', 'detonator', 'bomb-pass', 'flame-pass', 'mystery']
 
