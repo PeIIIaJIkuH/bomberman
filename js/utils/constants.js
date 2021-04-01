@@ -27,7 +27,8 @@ export const GAME_MENU = {
 export const MAIN_MENU = {
 	START: 0,
 	CONTROLS: 1,
-	LEADERBOARD: 2
+	HELP: 2,
+	LEADERBOARD: 3,
 }
 
 export const ENEMY_TYPES = ['balloom', 'oneal', 'doll', 'minvo', 'kondoria', 'ovapi', 'pass', 'pontan'],

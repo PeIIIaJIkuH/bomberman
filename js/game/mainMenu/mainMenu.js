@@ -35,4 +35,8 @@ export class MainMenu {
 	hide = () => {
 		this.div.style.display = 'none'
 	}
+	
+	show = () => {
+		this.div.style.display = 'flex'
+	}
 }

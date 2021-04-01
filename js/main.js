@@ -507,7 +507,23 @@ class Game {
 				if (this.mainMenu.selected === MAIN_MENU.START) {
 					this.state = 'initialize'
 					this.sounds.titleScreen.stop()
+				} else if (this.mainMenu.selected === MAIN_MENU.CONTROLS) {
+					this.mainMenu.hide()
+					this.screens.controls.show()
+					this.state = 'controls'
+				} else if (this.mainMenu.selected === MAIN_MENU.HELP) {
+					this.mainMenu.hide()
+					this.screens.help.show()
+					this.state = 'help'
+				} else if (this.mainMenu.selected === MAIN_MENU.LEADERBOARD) {
+					this.mainMenu.hide()
+					this.screens.leaderboard.show()
+					this.state = 'leaderboard'
 				}
+			} else if (e.code === 'Escape' && (this.state === 'controls' || this.state === 'help' || this.state === 'leaderboard')) {
+				this.screens.hideMainMenuScreens()
+				this.mainMenu.show()
+				this.state = 'main-menu'
 			}
 		})
 	}
@@ -842,7 +858,7 @@ const defaultGames = {
 }
 
 const game = new Game({
-	stages: [{rows: 7, columns: 7}]
+	stages: defaultGames.easy
 })
 game.run()
 

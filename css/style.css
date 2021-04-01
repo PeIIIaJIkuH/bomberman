@@ -417,7 +417,10 @@ img {
 #game-score,
 #click-me,
 #incorrect-arguments,
-#ending {
+#ending,
+#game-controls,
+#game-help,
+#game-leaderboard {
     width: 100%;
     height: 100%;
     top: 0;
@@ -429,6 +432,47 @@ img {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+#game-leaderboard-header {
+    margin-bottom: 40px;
+}
+
+.game-controls-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 60%;
+}
+
+.game-controls-item + .game-controls-item {
+    margin-top: 20px;
+}
+
+.press-escape {
+    margin-top: 40px;
+    animation: fade 2s infinite;
+}
+
+@keyframes fade {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.game-help-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.game-help-info div + div {
+    margin-top: 10px;
 }
 
 #ending {

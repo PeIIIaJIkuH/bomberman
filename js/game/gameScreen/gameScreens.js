@@ -9,6 +9,9 @@ export class GameScreens {
 		this.info = new Screen('game-info')
 		this.incorrectArguments = new Screen('incorrect-arguments')
 		this.gameScore = new Screen('game-score')
+		this.controls = new Screen('game-controls')
+		this.help = new Screen('game-help')
+		this.leaderboard = new Screen('game-leaderboard')
 	}
 
 	showStage = () => {
@@ -19,6 +22,12 @@ export class GameScreens {
 	hideStage = () => {
 		this.stage.hide()
 		this.info.hide()
+	}
+	
+	hideMainMenuScreens = () => {
+		this.controls.hide()
+		this.help.hide()
+		this.leaderboard.hide()
 	}
 
 	setGameScore = score => {
