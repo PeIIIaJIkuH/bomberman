@@ -51,9 +51,9 @@ export class GameStage {
 			rows = map.length + 2
 			columns = map[0].length + 2
 		}
-		const {bombCount, explosionSize, score} = this.options
+		const {explosionSize, score} = this.options
 		this.options = new GameStageOptions({
-			rows, columns, enemies, bombCount, explosionSize, roundTime, score, powerUps, map
+			rows, columns, enemies, bombCount: this.bombCount, explosionSize, roundTime, score, powerUps, map
 		})
 		this.createStage()
 		this.changeStyles()

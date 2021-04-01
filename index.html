@@ -8,7 +8,7 @@
 	<meta name='author' content='PeIIIaJIkuH, indecember'>
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
 	<link rel='icon' type='image/png' href='./img/logo.png'>
-	<link rel='stylesheet' href='style.min.css'>
+	<link rel='stylesheet' href='style.css'>
 	<script src='js/main.js' type='module' defer></script>
 </head>
 <body>
@@ -31,27 +31,49 @@
 	INCORRECT ARGUMENTS
 </div>
 
+<div id='main-menu'>
+	<img id='main-menu-img' src='./img/menu-background.png' alt='menu'>
+	<div id='press-enter'>
+		PRESS ENTER TO START
+	</div>
+	<div id='high-score'>
+		<div>TOP</div>
+		<div id='high-score-number'>00</div>
+	</div>
+	<div id='info'>
+		PeIIIaJIkuH, indecember
+	</div>
+</div>
+
+<div id='stage-start'>
+	STAGE <span>1</span>
+</div>
+
+<div id='game-over'>
+	<div>GAME OVER</div>
+	<div>RELOAD PAGE TO TRY AGAIN</div>
+</div>
+
+<div id='game-score'>
+	YOUR SCORE: <span></span>
+</div>
+
+<div id='ending'>
+	<div id='ending-info'>
+		<div class='ending-text'>CONGRATULATIONS</div>
+		<div class='ending-text'>YOU HAVE SUCCEEDED IN HELPING BOMBERMAN TO BECOME A HUMAN BEING</div>
+		<div class='ending-text'>MAYBE YOU CAN RECOGNIZE HIM IN ANOTHER HUDSON SOFT GAME</div>
+		<div class='ending-text'>GOOD BYE</div>
+	</div>
+	<div id='ending-animation'>
+		<div id='lode-runner'>
+			<img src='./img/lode-runner.png' alt='lode runner'>
+		</div>
+		<div id='ending-bricks'></div>
+	</div>
+</div>
+
 <div id='game'>
-	<div id='main-menu'>
-		<img id='main-menu-img' src='./img/menu-background.png' alt='menu'>
-		<div id='press-enter'>
-			PRESS ENTER TO START
-		</div>
-		<div id='high-score'>
-			<div>TOP</div>
-			<div id='high-score-number'>00</div>
-		</div>
-		<div id='info'>
-			PeIIIaJIkuH, indecember
-		</div>
-	</div>
-	<div id='stage-start'>
-		STAGE <span>1</span>
-	</div>
-	<div id='game-over'>
-		<div>GAME OVER</div>
-		<div>RELOAD PAGE TO TRY AGAIN</div>
-	</div>
 	<div id='game-menu' class='game-menu-hide'>
 		<div class='game-menu-item'>
 			CONTINUE
@@ -75,22 +97,6 @@
 		</div>
 		<div class='game-menu-item'>
 			MAIN MENU
-		</div>
-	</div>
-	<div id='game-score'>
-		YOUR SCORE: <span></span>
-	</div>
-	<div id='ending'>
-		<div id='ending-info'>
-			<div class='ending-text'>CONGRATULATIONS!</div>
-			<div class='ending-text'>BOMBER MAN BECOMES RUNNER</div>
-			<div class='ending-text'>SEE YOU AGAIN IN LODE RUNNER</div>
-		</div>
-		<div id='ending-animation'>
-			<div id='lode-runner'>
-				<img src='./img/lode-runner.png' alt='lode runner'>
-			</div>
-			<div id='ending-bricks'></div>
 		</div>
 	</div>
 	<div id='game-info'></div>

@@ -20,6 +20,7 @@ body {
     width: 100%;
     height: 100%;
     background: black;
+    position: relative;
 }
 
 img {
@@ -376,6 +377,9 @@ img {
 }
 
 #main-menu {
+    position: absolute;
+    width: 100%;
+    height: 100%;
     font-size: 24px;
     display: flex;
     flex-direction: column;
@@ -503,13 +507,14 @@ img {
 }
 
 #ending {
-    display: none;
+    display: flex;
     flex-direction: column;
     justify-content: space-between;
     text-align: center;
-    position: relative;
+    position: absolute;
     z-index: 6;
-    height: 500px;
+    height: 60%;
+    width: 100%;
 }
 
 .ending-text {
@@ -598,7 +603,7 @@ img {
     height: 32px;
     width: 32px;
     transform: translateX(-100%);
-    animation: bomberman-move 9s linear forwards;
+    animation: bomberman-move 21s linear forwards;
 }
 
 #lode-runner img {
@@ -611,18 +616,18 @@ img {
         transform: translateX(-100%);
     }
     66% {
-        transform: translateX(1400%);
+        transform: translateX(calc(100vw + 100%));
     }
     66.01% {
         transform: translateX(-100%);
     }
     100% {
-        transform: translateX(650%);
+        transform: translateX(calc(50vw + 50%));
     }
 }
 
 .bomberman-run {
-    animation: bomberman-run 0.4s steps(3) infinite;
+    animation: bomberman-run 0.2s steps(3) infinite;
 }
 
 @keyframes bomberman-run {

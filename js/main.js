@@ -417,16 +417,22 @@ class Game {
 	}
 
 	updateBombs = () => {
-		if (this.keyListener.isPressed('Space') && this.stage.options.bombCount) {
-			const x = Math.floor((this.bomberman.left - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2),
-				y = Math.floor((this.bomberman.top - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2)
-			if (!this.stage.isBomb(x, y) && !this.stage.isExitDoor(x, y) && !this.stage.isWall(x, y)) {
-				const bomb = new Bomb({
-					board: this.stage.board, x, y, explosionSize: this.stage.options.explosionSize, stage: this.stage
-				})
-				this.bomberman.isSurroundedWithBombs = true
-				this.stage.addBomb(bomb)
-				playBombLeaveSound()
+		if (this.keyListener.isPressed('Space')) {
+			if (this.stage.options.bombCount) {
+				const x = Math.floor((this.bomberman.left - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2),
+					y = Math.floor((this.bomberman.top - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2)
+				if (!this.stage.isBomb(x, y) && !this.stage.isExitDoor(x, y) && !this.stage.isWall(x, y)) {
+					const bomb = new Bomb({
+						board: this.stage.board,
+						x,
+						y,
+						explosionSize: this.stage.options.explosionSize,
+						stage: this.stage
+					})
+					this.bomberman.isSurroundedWithBombs = true
+					this.stage.addBomb(bomb)
+					playBombLeaveSound()
+				}
 			}
 		}
 		this.updateInstantBombs()
@@ -479,7 +485,6 @@ class Game {
 			}
 		})
 		document.addEventListener('visibilitychange', () => {
-			console.log(this.state)
 			if (document.hidden && this.state === 'stage') {
 				changeTitle('Paused | Bomberman')
 				this.stage.options.interval && this.stage.options.interval.clear()
@@ -729,10 +734,10 @@ class Game {
 				document.querySelector('#lode-runner img').className = 'bomberman-run'
 				new Timer(() => {
 					document.querySelector('#lode-runner img').className = 'lode-runner-run'
-				}, 2900)
+				}, 6700)
 				new Timer(() => {
 					document.querySelector('#lode-runner img').className = 'lode-runner-stop'
-				}, 9000)
+				}, 21000)
 				this.state = 'END'
 			}
 			prevFPSTime = currTime
@@ -836,9 +841,7 @@ window.game = game
 // add different enemy logic by levels: 1, 2, 3
 // add backend:
 //          add page, where user can write his nickname and send his score to the backend
-//          add page, where user can see scores of the other players, from highest to the lowest
-// add responsive design: just change PIXEL_SIZE
+//          add page, where user can see scores of the other players, from highest to the lowest, pagination
+// add responsive design: just change PIXEL_SIZE OR move the camera if the playfield is big
 
 // add options to the main menu: help, controls, leaderboard
-
-// add helper, which shows the keys to play the game
