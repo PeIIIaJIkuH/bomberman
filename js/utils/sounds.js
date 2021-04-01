@@ -1,4 +1,5 @@
 import {SFX_VOLUME} from './constants.js'
+import {Timer} from './timers/timer.js'
 
 export const playExplosionSound = () => {
 	const sound = document.createElement('audio')
@@ -21,9 +22,31 @@ export const playPowerUpPickedSound = () => {
 	sound.play().then()
 }
 
-export const playChangeVolumeSound = volume => {
-	const sound = document.createElement('audio')
-	sound.src = './sounds/volume-change.wav'
-	sound.volume = volume
-	sound.play().then()
+let wasSFXSoundPlayed = false,
+	wasBombermanMoveSoundPlayed = false
+
+export const playSFXSound = volume => {
+	if (!wasSFXSoundPlayed) {
+		const sound = document.createElement('audio')
+		sound.src = './sounds/volume-change.wav'
+		sound.volume = volume
+		sound.play().then()
+		wasSFXSoundPlayed = true
+		new Timer(() => {
+			wasSFXSoundPlayed = false
+		}, 100)
+	}
+}
+
+export const playBombermanMoveSound = () => {
+	if (!wasBombermanMoveSoundPlayed) {
+		const sound = document.createElement('audio')
+		sound.src = './sounds/bomberman-move.wav'
+		sound.volume = SFX_VOLUME
+		sound.play().then()
+		wasBombermanMoveSoundPlayed = true
+		new Timer(() => {
+			wasBombermanMoveSoundPlayed = false
+		}, 200)
+	}
 }
