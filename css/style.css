@@ -380,15 +380,7 @@ img {
 }
 
 #main-menu {
-    position: absolute;
-    width: 100%;
-    height: 100%;
     font-size: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 6;
 }
 
 #main-menu-img {
@@ -414,24 +406,18 @@ img {
     }
 }
 
-#high-score {
-    display: flex;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-#high-score-number {
-    margin-left: 50px;
-}
-
 #game {
     position: relative;
 }
 
+#main-menu,
 #game-menu,
 #stage-start,
 #game-over,
-#game-score {
+#game-score,
+#click-me,
+#incorrect-arguments,
+#ending {
     width: 100%;
     height: 100%;
     top: 0;
@@ -445,6 +431,15 @@ img {
     justify-content: center;
 }
 
+#ending {
+    justify-content: space-between;
+    align-items: initial;
+    text-align: center;
+    height: 60%;
+    top: initial;
+    left: initial;
+}
+
 #stage-start,
 #game-score {
     flex-direction: row;
@@ -455,18 +450,13 @@ img {
     margin-left: 8px;
 }
 
+#click-me {
+    cursor: pointer;
+}
+
 #click-me,
 #incorrect-arguments {
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    position: absolute;
     background: black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 10;
 }
 
@@ -499,17 +489,6 @@ img {
 
 .game-menu-item-selected .game-menu-item-label {
     color: white;
-}
-
-#ending {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    text-align: center;
-    position: absolute;
-    z-index: 6;
-    height: 60%;
-    width: 100%;
 }
 
 .ending-text {
