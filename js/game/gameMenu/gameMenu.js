@@ -1,5 +1,5 @@
 import {GAME_MENU, MUSIC_VOLUME, setMusicVolume, setSFXVolume, SFX_VOLUME} from '../../utils/constants.js'
-import {playChangeVolumeSound} from '../../utils/sounds.js'
+import {playSFXSound} from '../../utils/sounds.js'
 
 export class GameMenu {
 	constructor(gameMusic) {
@@ -10,17 +10,18 @@ export class GameMenu {
 
 		this.sounds = gameMusic
 
+		this.hide()
 		this.initializeInputs()
 	}
 
 	show = () => {
 		this.selected = GAME_MENU.CONTINUE
-		this.div.className = 'game-menu-show'
+		this.div.style.display = 'flex'
 		document.addEventListener('keyup', this.listener)
 	}
 
 	hide = () => {
-		this.div.className = 'game-menu-hide'
+		this.div.style.display = 'none'
 		document.removeEventListener('keyup', this.listener)
 	}
 
@@ -48,10 +49,10 @@ export class GameMenu {
 	changeVolume = index => {
 		if (index === 0) {
 			setSFXVolume(this.ranges[0].value)
-			playChangeVolumeSound(SFX_VOLUME)
+			playSFXSound(SFX_VOLUME)
 		} else if (index === 1) {
 			setMusicVolume(this.ranges[1].value)
-			playChangeVolumeSound(MUSIC_VOLUME)
+			playSFXSound(MUSIC_VOLUME)
 		}
 		this.sounds.changeSFXVolume(SFX_VOLUME)
 		this.sounds.changeMusicVolume(MUSIC_VOLUME)
@@ -87,9 +88,11 @@ export class GameMenu {
 	}
 
 	listener = e => {
-		if (e.code === 'ArrowDown')
+		if (e.code === 'ArrowDown') {
+			playSFXSound(SFX_VOLUME)
 			this.selected = (this.selected + 1) % this.items.length
-		else if (e.code === 'ArrowUp') {
+		} else if (e.code === 'ArrowUp') {
+			playSFXSound(SFX_VOLUME)
 			this.selected = (this.selected - 1) % this.items.length
 			if (this.selected < 0)
 				this.selected = this.items.length - 1
