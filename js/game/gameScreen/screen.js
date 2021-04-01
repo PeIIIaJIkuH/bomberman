@@ -1,22 +1,15 @@
 export class Screen {
-	constructor(id) {
+	constructor(id, display = 'flex') {
 		this.div = document.querySelector(`#${id}`)
+		this.display = display
 		this.hide()
 	}
 
 	hide = () => {
-		this.div.style.opacity = '0'
-	}
-
-	show = () => {
-		this.div.style.opacity = '1'
-	}
-
-	hideDisplay = () => {
 		this.div.style.display = 'none'
 	}
 
-	showDisplay = () => {
-		this.div.style.display = 'flex'
+	show = () => {
+		this.div.style.display = this.display
 	}
 }
