@@ -30,7 +30,6 @@ class Game {
 		this.screens = new GameScreens()
 		this.error = this.checkArguments(explosionSize, bombCount, liveCount, stages)
 		if (this.error) {
-			console.log('error')
 			this.screens.incorrectArguments.show()
 			return
 		}
@@ -87,7 +86,7 @@ class Game {
 			return `incorrect stage(${index + 1}) rows: ${String(rows)}`
 		if (isNaN(columns) || columns < 7)
 			return `incorrect stage(${index + 1}) columns: ${String(columns)}`
-		if (isNaN(roundTime) || roundTime < 10)
+		if (isNaN(roundTime))
 			return `incorrect stage(${index + 1}) roundTime: ${String(roundTime)}`
 		if (!(enemies instanceof Object))
 			return `incorrect stage(${index + 1}) enemies: ${String(enemies)}`
@@ -445,10 +444,8 @@ class Game {
 		this.updateBomberman(diff)
 		this.updateEnemies(diff)
 
-		if (this.stage.options.roundTime === 0) {
-			this.handleBombermanDeath()
-			this.state = 'pre-pre-die'
-		}
+		if (this.stage.options.roundTime === 0 && !this.stage.options.createdStageEndEnemies)
+			this.stage.createStageEndEnemies()
 	}
 
 	drawEnemies = () => {
@@ -698,6 +695,7 @@ class Game {
 				this.pauseBombs()
 				this.sounds.die.play()
 				this.stage.options.deathCount++
+				this.stage.options.createdStageEndEnemies = false
 				this.state = 'pre-die'
 			} else if (this.state === 'pre-die' && currTime - prevTime >= this.sounds.die.durationMS()) {
 				this.sounds.die.stop()
@@ -872,4 +870,6 @@ window.game = game
 //          add page, where user can see scores of the other players, from highest to the lowest, pagination
 // add responsive design: just change PIXEL_SIZE OR move the camera if the playfield is big
 
-// add options to the main menu: help, controls, leaderboard
+// change logic of going to main menu from game menu
+
+// add prehistory of the bomberman and some middle screens

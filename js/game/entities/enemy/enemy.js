@@ -5,7 +5,7 @@ import {Entity} from '../entity.js'
 import {EnemyXP} from './enemyXP.js'
 
 export class Enemy extends Entity {
-	constructor({board, left, top, xp, type}) {
+	constructor({board, left, top, xp = 0, type}) {
 		super({board, left, top})
 		this.id = createEnemyId()
 		this.direction = getRandomDirection()
@@ -19,44 +19,52 @@ export class Enemy extends Entity {
 	handleType = () => {
 		switch (this.type) {
 			case 'balloom':
-				this.xp = 100
+				if (this.xp !== 0)
+					this.xp = 100
 				this.speed = 0.5
 				this.createHTML('./assets/img/enemies/balloom.png')
 				break
 			case 'oneal':
-				this.xp = 200
+				if (this.xp !== 0)
+					this.xp = 200
 				this.speed = 1
 				this.createHTML('./assets/img/enemies/oneal.png')
 				break
 			case 'doll':
-				this.xp = 400
+				if (this.xp !== 0)
+					this.xp = 400
 				this.speed = 1.25
 				this.createHTML('./assets/img/enemies/doll.png')
 				break
 			case 'minvo':
-				this.xp = 800
+				if (this.xp !== 0)
+					this.xp = 800
 				this.speed = 1.5
 				this.createHTML('./assets/img/enemies/minvo.png')
 				break
 			case 'kondoria':
-				this.xp = 1000
+				if (this.xp !== 0)
+					this.xp = 1000
 				this.speed = 0.25
 				this.wallPass = true
 				this.createHTML('./assets/img/enemies/kondoria.png')
 				break
 			case 'ovapi':
-				this.xp = 2000
+				if (this.xp !== 0)
+					this.xp = 2000
 				this.speed = 0.5
 				this.wallPass = true
 				this.createHTML('./assets/img/enemies/ovapi.png')
 				break
 			case 'pass':
-				this.xp = 4000
+				if (this.xp !== 0)
+					this.xp = 4000
 				this.speed = 1.5
 				this.createHTML('./assets/img/enemies/pass.png')
 				break
 			case 'pontan':
-				this.xp = 8000
+				if (this.xp !== 0)
+					this.xp = 8000
 				this.speed = 1.5
 				this.wallPass = true
 				this.createHTML('./assets/img/enemies/pontan.png')
@@ -99,12 +107,13 @@ export class Enemy extends Entity {
 		this.timer = new Timer(() => {
 			this.img.className = 'enemy-dead'
 			this.div.remove()
-			new EnemyXP({
-				board: this.board,
-				left: this.left,
-				top: this.top,
-				amount: this.xp
-			})
+			if (this.xp !== 0)
+				new EnemyXP({
+					board: this.board,
+					left: this.left,
+					top: this.top,
+					amount: this.xp
+				})
 		}, DURATIONS.ENEMY_DIE)
 	}
 }

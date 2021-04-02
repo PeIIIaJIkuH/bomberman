@@ -116,9 +116,9 @@ export class GameStage {
 
 	createDefaultWalls = () => {
 		const count = Math.round(this.options.rows * this.options.columns / 8)
-		const wallsCount = getRandomInt(count * 0.9, count * 1.1)
+		const wallCount = getRandomInt(count * 0.9, count * 1.1)
 		let sum = 0
-		while (sum < wallsCount) {
+		while (sum < wallCount) {
 			const x = getRandomInt(2, this.options.columns),
 				y = getRandomInt(2, this.options.rows)
 			if (!this.isBlock(x, y) && !(x <= 3 && y <= 3)) {
@@ -166,14 +166,29 @@ export class GameStage {
 					if (!this.isBlock(x, y) && !(x < 5 && y < 5)) {
 						const left = TILE_SIZE * (x - 2),
 							top = TILE_SIZE * (y - 2)
-						const enemy = new Enemy({
-							board: this.board, left, top, type: enemyType
-						})
+						const enemy = new Enemy({board: this.board, left, top, type: enemyType})
 						this.enemies.set(enemy.id, enemy)
 						count++
 					}
 				}
 			}
+	}
+
+	createStageEndEnemies = () => {
+		this.options.createdStageEndEnemies = true
+		const enemyCount = Math.round((this.options.rows + this.options.columns) / 5)
+		let count = 0
+		while (count < enemyCount) {
+			const x = getRandomInt(2, this.options.columns),
+				y = getRandomInt(2, this.options.rows)
+			if (!this.isBlock(x, y)) {
+				const left = TILE_SIZE * (x - 2),
+					top = TILE_SIZE * (y - 2)
+				const enemy = new Enemy({board: this.board, xp: 0, type: 'pontan', left, top})
+				this.enemies.set(enemy.id, enemy)
+				count++
+			}
+		}
 	}
 
 	createStage = () => {
