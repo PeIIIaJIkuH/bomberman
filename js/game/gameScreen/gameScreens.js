@@ -12,6 +12,7 @@ export class GameScreens {
 		this.controls = new Screen('game-controls')
 		this.help = new Screen('game-help')
 		this.leaderboard = new Screen('game-leaderboard')
+		this.prehistory = new Screen('bomberman-prehistory')
 	}
 
 	showStage = () => {
@@ -23,7 +24,7 @@ export class GameScreens {
 		this.stage.hide()
 		this.info.hide()
 	}
-	
+
 	hideMainMenuScreens = () => {
 		this.controls.hide()
 		this.help.hide()

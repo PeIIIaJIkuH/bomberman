@@ -3,7 +3,7 @@ import {Bomberman} from './game/entities/bomberman/bomberman.js'
 import {GameMenu} from './game/gameMenu/gameMenu.js'
 import {GameScreens} from './game/gameScreen/gameScreens.js'
 import {GameSettings} from './game/gameSettings/gameSettings.js'
-import {GameSounds} from './game/gameSounds/gameSounds.js'
+import {GameMedia} from './game/gameSounds/gameMedia.js'
 import {GameStage} from './game/gameStage/gameStage.js'
 import {MainMenu} from './game/mainMenu/mainMenu.js'
 import {
@@ -110,8 +110,8 @@ class Game {
 
 	handleUserInteraction = () => {
 		const clickListener = () => {
-			this.sounds = new GameSounds()
-			this.gameMenu = new GameMenu(this.sounds)
+			this.media = new GameMedia()
+			this.gameMenu = new GameMenu(this.media)
 			this.state = 'pre-main-menu'
 			document.querySelector('#click-me').remove()
 			document.removeEventListener('click', clickListener)
@@ -487,11 +487,11 @@ class Game {
 			if (document.hidden && this.state === 'stage') {
 				changeTitle('Paused | Bomberman')
 				this.stage.options.interval && this.stage.options.interval.clear()
-				this.sounds.pauseStageMusic()
+				this.media.pauseStageMusic()
 				this.pause()
 			} else if (!document.hidden && this.state === 'stage') {
 				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
-				this.sounds.playStageMusic(this.stage.options.areEnemiesDead)
+				this.media.playStageMusic(this.stage.options.areEnemiesDead)
 				this.stage.options.interval && this.stage.options.interval.resume()
 				this.resume()
 			}
@@ -502,8 +502,8 @@ class Game {
 		document.addEventListener('keyup', e => {
 			if (e.code === 'Enter' && this.state === 'main-menu') {
 				if (this.mainMenu.selected === MAIN_MENU.START) {
-					this.state = 'initialize'
-					this.sounds.titleScreen.stop()
+					this.state = 'pre-bomberman-origins'
+					this.media.titleScreen.stop()
 				} else if (this.mainMenu.selected === MAIN_MENU.CONTROLS) {
 					this.mainMenu.hide()
 					this.screens.controls.show()
@@ -624,25 +624,35 @@ class Game {
 
 			if (this.state === 'pre-main-menu') {
 				changeTitle('Main Menu | Bomberman')
-				this.sounds.titleScreen.play()
+				this.media.titleScreen.play()
 				this.screens.removeIncorrectArguments()
 				this.addMainMenuListener()
 				this.state = 'main-menu'
 			} else if (this.state === 'main-menu') {
 				this.mainMenu.draw()
-			} else if (this.state === 'initialize') {
+			} else if (this.state === 'pre-bomberman-origins') {
 				this.screens.hideStage()
+				this.mainMenu.hide()
+				this.screens.prehistory.show()
+				this.media.bombermanOrigins.play()
+				prevTime = currTime
+				this.state = 'bomberman-origins'
+			} else if (this.state === 'bomberman-origins' && (this.keyListener.isPressed('Enter') ||
+				currTime - prevTime >= this.media.bombermanOrigins.durationMS())) {
+				this.screens.prehistory.hide()
+				this.media.bombermanOrigins.stop()
+				this.state = 'initialize'
+			} else if (this.state === 'initialize') {
 				this.initialize()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'pre-stage-start') {
 				changeTitle(`Stage ${this.settings.getStageNumber()} Start | Bomberman`)
-				this.sounds.clearStageMusic()
+				this.media.clearStageMusic()
 				this.screens.stageStart.show()
-				this.screens.hideStage()
 				this.state = 'stage-start'
-				this.sounds.stageStart.play()
+				this.media.stageStart.play()
 				prevTime = currTime
-			} else if (this.state === 'stage-start' && currTime - prevTime >= this.sounds.stageStart.durationMS()) {
+			} else if (this.state === 'stage-start' && currTime - prevTime >= this.media.stageStart.durationMS()) {
 				this.screens.stageStart.hide()
 				this.screens.showStage()
 				this.state = 'initialize-timer'
@@ -651,8 +661,7 @@ class Game {
 				this.state = 'pre-stage'
 			} else if (this.state === 'pre-stage') {
 				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
-				this.screens.showStage()
-				this.sounds.playStageMusic(this.stage.options.areEnemiesDead)
+				this.media.playStageMusic(this.stage.options.areEnemiesDead)
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
 				prevTime = currTime
@@ -666,43 +675,43 @@ class Game {
 			} else if (this.state === 'pre-pause') {
 				changeTitle('Paused | Bomberman')
 				this.stage.options.interval.clear()
-				this.sounds.pauseStageMusic()
-				this.sounds.pause.stop()
-				this.sounds.pause.play()
+				this.media.pauseStageMusic()
+				this.media.pause.stop()
+				this.media.pause.play()
 				this.pause()
 				this.state = 'pause'
 			} else if (this.state === 'pause') {
 				this.gameMenu.draw()
 			} else if (this.state === 'resume') {
-				this.sounds.pause.stop()
-				this.sounds.pause.play()
+				this.media.pause.stop()
+				this.media.pause.play()
 				this.gameMenu.hide()
 				this.stage.options.interval.resume()
 				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
 				this.resume()
 				this.state = 'pre-stage'
 			} else if (this.state === 'over') {
-				this.sounds.pauseStageMusic()
-				this.sounds.over.play()
+				this.media.pauseStageMusic()
+				this.media.over.play()
 				this.screens.hideStage()
 				this.screens.gameOver.show()
 				changeTitle('Game Over | Bomberman')
 				this.state = 'GAME-OVER'
 			} else if (this.state === 'pre-pre-die') {
 				this.cancelPowerUps()
-				this.sounds.pauseStageMusic()
+				this.media.pauseStageMusic()
 				this.pauseEnemies()
 				this.pauseBombs()
-				this.sounds.die.play()
+				this.media.die.play()
 				this.stage.options.deathCount++
 				this.stage.options.createdStageEndEnemies = false
 				this.state = 'pre-die'
-			} else if (this.state === 'pre-die' && currTime - prevTime >= this.sounds.die.durationMS()) {
-				this.sounds.die.stop()
-				this.sounds.lifeLost.play()
+			} else if (this.state === 'pre-die' && currTime - prevTime >= this.media.die.durationMS()) {
+				this.media.die.stop()
+				this.media.lifeLost.play()
 				this.stage.options.score = this.stage.options.initialScore
 				this.state = 'die'
-			} else if (this.state === 'die' && currTime - prevTime >= (this.sounds.die.durationMS() + this.sounds.lifeLost.durationMS())) {
+			} else if (this.state === 'die' && currTime - prevTime >= (this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
 				prevTime = currTime
 				if (this.bomberman.liveCount > 0)
 					this.state = 'restart'
@@ -712,19 +721,19 @@ class Game {
 				this.restartStage()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'find-exit') {
-				this.sounds.stage.stop()
-				this.sounds.findExit.play()
+				this.media.stage.stop()
+				this.media.findExit.play()
 				this.state = 'stage'
 			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
 				this.pauseBombs()
 				this.stage.consumedPowerUps.clear()
-				this.sounds.pauseStageMusic()
-				this.sounds.complete.play()
+				this.media.pauseStageMusic()
+				this.media.complete.play()
 				this.state = 'pre-stage-completed'
 				resetEnemyId()
 				prevTime = currTime
-			} else if (this.state === 'pre-stage-completed' && currTime - prevTime >= this.sounds.complete.durationMS()) {
+			} else if (this.state === 'pre-stage-completed' && currTime - prevTime >= this.media.complete.durationMS()) {
 				this.screens.hideStage()
 				changeTitle(`Stage ${this.settings.getStageNumber()} Completed | Bomberman`)
 				this.state = 'stage-completed'
@@ -755,7 +764,7 @@ class Game {
 				changeTitle('Game End | Bomberman')
 				this.screens.info.hide()
 				this.screens.stage.hide()
-				this.sounds.ending.play()
+				this.media.ending.play()
 				this.screens.ending.show()
 				document.querySelector('#lode-runner img').className = 'bomberman-run'
 				new Timer(() => {

@@ -420,7 +420,8 @@ img {
 #ending,
 #game-controls,
 #game-help,
-#game-leaderboard {
+#game-leaderboard,
+#game-prehistory {
     width: 100%;
     height: 100%;
     top: 0;
@@ -696,4 +697,21 @@ img {
 
 #main-menu-info {
     margin-top: 50px;
+}
+
+#bomberman-prehistory {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#bomberman-origins {
+    width: 100%;
+    height: 100%;
+}
+
+#skip-btn {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
 }
