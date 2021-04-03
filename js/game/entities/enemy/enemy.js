@@ -5,7 +5,7 @@ import {Entity} from '../entity.js'
 import {EnemyXP} from './enemyXP.js'
 
 export class Enemy extends Entity {
-	constructor({board, left, top, xp = 0, type}) {
+	constructor({board, left, top, xp, type}) {
 		super({board, left, top})
 		this.id = createEnemyId()
 		this.direction = getRandomDirection()
