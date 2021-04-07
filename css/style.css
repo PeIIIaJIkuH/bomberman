@@ -41,11 +41,13 @@ img {
     overflow: hidden;
     object-fit: contain;
     z-index: 7;
+    will-change: transform;
 }
 
 #bomberman img {
     height: 400%;
     width: 1000%;
+    will-change: transform;
 }
 
 .rock {
@@ -67,6 +69,7 @@ img {
 
 .wall img {
     height: 100%;
+    will-change: transform;
 }
 
 .wall-explode {
@@ -83,19 +86,19 @@ img {
 }
 
 .bomberman-look-left {
-    transform: translate3d(-10%, 0, 0);
+    transform: translate(-10%, 0);
 }
 
 .bomberman-look-right {
-    transform: translate3d(-10%, -25%, 0);
+    transform: translate(-10%, -25%);
 }
 
 .bomberman-look-up {
-    transform: translate3d(-40%, -25%, 0);
+    transform: translate(-40%, -25%);
 }
 
 .bomberman-look-down {
-    transform: translate3d(-40%, 0, 0);
+    transform: translate(-40%, 0);
 }
 
 .bomberman-walk-left {
@@ -104,10 +107,10 @@ img {
 
 @keyframes bomberman-walk-left {
     from {
-        transform: translate3d(0, 0, 0);
+        transform: translate(0, 0);
     }
     to {
-        transform: translate3d(-30%, 0, 0);
+        transform: translate(-30%, 0);
     }
 }
 
@@ -117,10 +120,10 @@ img {
 
 @keyframes bomberman-walk-right {
     from {
-        transform: translate3d(0, -25%, 0);
+        transform: translate(0, -25%);
     }
     to {
-        transform: translate3d(-30%, -25%, 0);
+        transform: translate(-30%, -25%);
     }
 }
 
@@ -130,10 +133,10 @@ img {
 
 @keyframes bomberman-walk-up {
     from {
-        transform: translate3d(-30%, -25%, 0);
+        transform: translate(-30%, -25%);
     }
     to {
-        transform: translate3d(-60%, -25%, 0);
+        transform: translate(-60%, -25%);
     }
 }
 
@@ -143,10 +146,10 @@ img {
 
 @keyframes bomberman-walk-down {
     from {
-        transform: translate3d(-30%, 0, 0);
+        transform: translate(-30%, 0);
     }
     to {
-        transform: translate3d(-60%, 0, 0);
+        transform: translate(-60%, 0);
     }
 }
 
@@ -155,15 +158,15 @@ img {
 }
 
 .bomberman-dead {
-    transform: translate3d(-80%, 0, 0);
+    transform: translate(-80%, 0);
 }
 
 @keyframes bomberman-die {
     from {
-        transform: translate3d(0, -50%, 0);
+        transform: translate(0, -50%);
     }
     to {
-        transform: translate3d(-70%, -50%, 0);
+        transform: translate(-70%, -50%);
     }
 }
 
@@ -176,27 +179,29 @@ img {
     overflow: hidden;
     z-index: 2;
     object-fit: contain;
+    will-change: transform;
 }
 
 .enemy img {
     height: 200%;
     width: 1000%;
+    will-change: transform;
 }
 
 .enemy-look-left {
-    transform: translate3d(-40%, 0, 0);
+    transform: translate(-40%, 0);
 }
 
 .enemy-look-right {
-    transform: translate3d(-10%, 0, 0);
+    transform: translate(-10%, 0);
 }
 
 .enemy-look-up {
-    transform: translate3d(-40%, 0, 0);
+    transform: translate(-40%, 0);
 }
 
 .enemy-look-down {
-    transform: translate3d(-10%, 0, 0);
+    transform: translate(-10%, 0);
 }
 
 .enemy-walk-left {
@@ -205,10 +210,10 @@ img {
 
 @keyframes enemy-walk-left {
     from {
-        transform: translate3d(-30%, 0, 0);
+        transform: translate(-30%, 0);
     }
     to {
-        transform: translate3d(-60%, 0, 0);
+        transform: translate(-60%, 0);
     }
 }
 
@@ -218,10 +223,10 @@ img {
 
 @keyframes enemy-walk-right {
     from {
-        transform: translate3d(0, 0, 0);
+        transform: translate(0, 0);
     }
     to {
-        transform: translate3d(-30%, 0, 0);
+        transform: translate(-30%, 0);
     }
 }
 
@@ -234,21 +239,21 @@ img {
 }
 
 .enemy-die {
-    transform: translate3d(0, -50%, 0);
+    transform: translate(0, -50%);
     animation: enemy-die 1s 0.4s steps(6);
 }
 
 @keyframes enemy-die {
     from {
-        transform: translate3d(0, -50%, 0);
+        transform: translate(0, -50%);
     }
     to {
-        transform: translate3d(-60%, -50%, 0);
+        transform: translate(-60%, -50%);
     }
 }
 
 .enemy-dead {
-    transform: translate3d(-70%, 0, 0);
+    transform: translate(-70%, 0);
 }
 
 .bomb {
@@ -261,6 +266,7 @@ img {
 
 .bomb img {
     height: 100%;
+    will-change: transform;
 }
 
 .bomb-exploding {
@@ -268,15 +274,15 @@ img {
 }
 
 .bomb-paused {
-    transform: translate3d(0, 0, 0);
+    transform: translate(0, 0);
 }
 
 @keyframes bomb {
     from {
-        transform: translate3d(0, 0, 0);
+        transform: translate(0, 0);
     }
     to {
-        transform: translate3d(-75%, 0, 0);
+        transform: translate(-75%, 0);
     }
 }
 
@@ -287,6 +293,7 @@ img {
 
 .explosion img {
     height: 500%;
+    will-change: transform;
 }
 
 .explosion-center {
@@ -295,10 +302,10 @@ img {
 
 @keyframes explosion-center {
     from {
-        transform: translate3d(0, 0, 0);
+        transform: translate(0, 0);
     }
     to {
-        transform: translate3d(-100%, 0, 0);
+        transform: translate(-100%, 0);
     }
 }
 
@@ -308,10 +315,10 @@ img {
 
 @keyframes explosion-horizontal {
     from {
-        transform: translate3d(0, -20%, 0);
+        transform: translate(0, -20%);
     }
     to {
-        transform: translate3d(-100%, -20%, 0);
+        transform: translate(-100%, -20%);
     }
 }
 
@@ -321,10 +328,10 @@ img {
 
 @keyframes explosion-vertical {
     from {
-        transform: translate3d(0, -40%, 0);
+        transform: translate(0, -40%);
     }
     to {
-        transform: translate3d(-100%, -40%, 0);
+        transform: translate(-100%, -40%);
     }
 }
 
@@ -334,10 +341,10 @@ img {
 
 @keyframes explosion-left {
     from {
-        transform: translate3d(0, -60%, 0);
+        transform: translate(0, -60%);
     }
     to {
-        transform: translate3d(-100%, -60%, 0);
+        transform: translate(-100%, -60%);
     }
 }
 
@@ -347,10 +354,10 @@ img {
 
 @keyframes explosion-right {
     from {
-        transform: translate3d(-75%, -60%, 0) scaleX(-1);
+        transform: translate(-75%, -60%) scaleX(-1);
     }
     to {
-        transform: translate3d(25%, -60%, 0) scaleX(-1);
+        transform: translate(25%, -60%) scaleX(-1);
     }
 }
 
@@ -360,10 +367,10 @@ img {
 
 @keyframes explosion-top {
     from {
-        transform: translate3d(0, -80%, 0);
+        transform: translate(0, -80%);
     }
     to {
-        transform: translate3d(-100%, -80%, 0);
+        transform: translate(-100%, -80%);
     }
 }
 
@@ -373,10 +380,10 @@ img {
 
 @keyframes explosion-bottom {
     from {
-        transform: translate3d(0, 0, 0) scaleY(-1);
+        transform: translate(0, 0) scaleY(-1);
     }
     to {
-        transform: translate3d(-100%, 0, 0) scaleY(-1);
+        transform: translate(-100%, 0) scaleY(-1);
     }
 }
 
@@ -628,11 +635,13 @@ img {
     width: 32px;
     transform: translateX(-100%);
     animation: bomberman-move 21s linear forwards;
+    will-change: transform;
 }
 
 #lode-runner img {
     height: 200%;
     width: 500%;
+    will-change: transform;
 }
 
 @keyframes bomberman-move {
@@ -656,10 +665,10 @@ img {
 
 @keyframes bomberman-run {
     from {
-        transform: translate3d(0, 0, 0);
+        transform: translate(0, 0);
     }
     to {
-        transform: translate3d(-60%, 0, 0);
+        transform: translate(-60%, 0);
     }
 }
 
@@ -668,15 +677,15 @@ img {
 }
 
 .lode-runner-stop {
-    transform: translate3d(-20%, -50%, 0);
+    transform: translate(-20%, -50%);
 }
 
 @keyframes lode-runner-run {
     from {
-        transform: translate3d(0, -50%, 0);
+        transform: translate(0, -50%);
     }
     to {
-        transform: translate3d(-60%, -50%, 0);
+        transform: translate(-60%, -50%);
     }
 }
 

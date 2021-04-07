@@ -865,7 +865,6 @@ const defaultGames = {
 }
 
 const game = new Game({
-	liveCount: 1,
 	stages: defaultGames.easy
 })
 game.run()
