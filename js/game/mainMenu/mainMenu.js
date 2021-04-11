@@ -19,24 +19,32 @@ export class MainMenu {
 	}
 
 	addEventListener = () => {
-		document.addEventListener('keydown', e => {
-			if (e.code === 'ArrowDown') {
-				playSFXSound()
-				this.selected = (this.selected + 1) % this.items.length
-			} else if (e.code === 'ArrowUp') {
-				playSFXSound()
-				this.selected = (this.selected - 1) % this.items.length
-				if (this.selected < 0)
-					this.selected = this.items.length - 1
-			}
-		})
+		document.addEventListener('keydown', this.listener)
+	}
+
+	removeEventListener = () => {
+		document.removeEventListener('keydown', this.listener)
+	}
+
+	listener = e => {
+		if (e.code === 'ArrowDown') {
+			playSFXSound()
+			this.selected = (this.selected + 1) % this.items.length
+		} else if (e.code === 'ArrowUp') {
+			playSFXSound()
+			this.selected = (this.selected - 1) % this.items.length
+			if (this.selected < 0)
+				this.selected = this.items.length - 1
+		}
 	}
 
 	hide = () => {
+		this.removeEventListener()
 		this.div.style.display = 'none'
 	}
-	
+
 	show = () => {
+		this.addEventListener()
 		this.div.style.display = 'flex'
 	}
 }
