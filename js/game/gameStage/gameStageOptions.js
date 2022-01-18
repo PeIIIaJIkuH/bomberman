@@ -25,17 +25,12 @@ export class GameStageOptions {
 		this.initializeTimer()
 		this.initializeScore()
 	}
-
-	draw = () => {
-		this.drawTimer()
-		this.drawScore()
-	}
-
-	drawScore = () => {
+	
+	updateScore = () => {
 		this.scoreDiv.querySelector('span').innerText = `${this.score}`
 	}
 
-	drawTimer = () => {
+	updateTimer = () => {
 		this.timerDiv.querySelector('span').innerText = `${this.roundTime}`
 	}
 
@@ -74,6 +69,7 @@ export class GameStageOptions {
 		this.interval && this.interval.clear()
 		this.interval = new IntervalTimer(() => {
 			this.roundTime--
+			this.updateTimer()
 			this.passedTime++
 			if (this.roundTime <= 0)
 				this.interval.clear()

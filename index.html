@@ -8,223 +8,233 @@
 	<meta name='author' content='PeIIIaJIkuH, indecember'>
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
 	<link rel='icon' type='image/png' href='assets/img/logo.png'>
-	<link rel='stylesheet' href='css/style.min.css'>
-	<script src='js/main.js' type='module' defer></script>
+	<link rel='stylesheet' href='css/style.css'>
+		<script src='js/main.js' type='module' defer></script>
 </head>
 <body>
 
-	<div id='preload' style='display: none'>
-		<div id='preload-images'>
-			<div id='preoload-enemies'>
-				<img src='./assets/img/enemies/balloom.png' width='1' height='1' alt='balloom'>
-				<img src='./assets/img/enemies/doll.png' width='1' height='1' alt='doll'>
-				<img src='./assets/img/enemies/kondoria.png' width='1' height='1' alt='kondoria'>
-				<img src='./assets/img/enemies/minvo.png' width='1' height='1' alt='minvo'>
-				<img src='./assets/img/enemies/oneal.png' width='1' height='1' alt='oneal'>
-				<img src='./assets/img/enemies/ovapi.png' width='1' height='1' alt='ovapi'>
-				<img src='./assets/img/enemies/pass.png' width='1' height='1' alt='pass'>
-				<img src='./assets/img/enemies/pontan.png' width='1' height='1' alt='pontan'>
-			</div>
-			<div id='preload-game-info'>
-				<img src='./assets/img/game-info/clock.png' width='1' height='1' alt='clock'>
-				<img src='./assets/img/game-info/heart.png' width='1' height='1' alt='heart'>
-				<img src='./assets/img/game-info/star.png' width='1' height='1' alt='star'>
-			</div>
-			<div id='preoload-power-ups'>
-				<img src='./assets/img/power-ups/bomb-pass.jpg' width='1' height='1' alt='bomb-pass'>
-				<img src='./assets/img/power-ups/bombs.jpg' width='1' height='1' alt='bombs'>
-				<img src='./assets/img/power-ups/detonator.jpg' width='1' height='1' alt='detonator'>
-				<img src='./assets/img/power-ups/flame-pass.jpg' width='1' height='1' alt='flame pass'>
-				<img src='./assets/img/power-ups/flames.jpg' width='1' height='1' alt='flames'>
-				<img src='./assets/img/power-ups/mystery.jpg' width='1' height='1' alt='mystery'>
-				<img src='./assets/img/power-ups/speed.jpg' width='1' height='1' alt='speed'>
-				<img src='./assets/img/power-ups/wall-pass.jpg' width='1' height='1' alt='wall pass'>
-			</div>
-			<img src='./assets/img/bomb.png' width='1' height='1' alt='bomb'>
-			<img src='./assets/img/bomberman.png' width='1' height='1' alt='bomberman'>
-			<img src='./assets/img/ending-brick.jpg' width='1' height='1' alt='ending brick'>
-			<img src='./assets/img/exit-door.png' width='1' height='1' alt='exit door'>
-			<img src='./assets/img/explosion.png' width='1' height='1' alt='explosion'>
-			<img src='./assets/img/lode-runner.png' width='1' height='1' alt='lode runner'>
-			<img src='./assets/img/menu-background.png' width='1' height='1' alt='menu background'>
-			<img src='./assets/img/rock.jpg' width='1' height='1' alt='rock.'>
-			<img src='./assets/img/wall.png' width='1' height='1' alt='wall'>
+<div id='preload' style='display: none'>
+	<div id='preload-images'>
+		<div id='preoload-enemies'>
+			<img src='./assets/img/enemies/balloom.png' width='1' height='1' alt='balloom'>
+			<img src='./assets/img/enemies/doll.png' width='1' height='1' alt='doll'>
+			<img src='./assets/img/enemies/kondoria.png' width='1' height='1' alt='kondoria'>
+			<img src='./assets/img/enemies/minvo.png' width='1' height='1' alt='minvo'>
+			<img src='./assets/img/enemies/oneal.png' width='1' height='1' alt='oneal'>
+			<img src='./assets/img/enemies/ovapi.png' width='1' height='1' alt='ovapi'>
+			<img src='./assets/img/enemies/pass.png' width='1' height='1' alt='pass'>
+			<img src='./assets/img/enemies/pontan.png' width='1' height='1' alt='pontan'>
 		</div>
-
-		<div id='preload-audio'>
-			<audio src='./assets/sounds/bomberman-move.wav' preload='auto'></audio>
-			<audio src='./assets/sounds/die.wav' preload='auto'></audio>
-			<audio src='./assets/sounds/ending.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/explosion.wav' preload='auto'></audio>
-			<audio src='./assets/sounds/find-exit.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/game-over.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/leave-bomb.wav' preload='auto'></audio>
-			<audio src='./assets/sounds/life-lost.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/pause.wav' preload='auto'></audio>
-			<audio src='./assets/sounds/power-up.wav' preload='auto'></audio>
-			<audio src='./assets/sounds/stage.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/stage-complete.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/stage-start.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/title-screen.mp3' preload='auto'></audio>
-			<audio src='./assets/sounds/volume-change.wav' preload='auto'></audio>
+		<div id='preload-game-info'>
+			<img src='./assets/img/game-info/clock.png' width='1' height='1' alt='clock'>
+			<img src='./assets/img/game-info/heart.png' width='1' height='1' alt='heart'>
+			<img src='./assets/img/game-info/star.png' width='1' height='1' alt='star'>
 		</div>
+		<div id='preoload-power-ups'>
+			<img src='./assets/img/power-ups/bomb-pass.jpg' width='1' height='1' alt='bomb-pass'>
+			<img src='./assets/img/power-ups/bombs.jpg' width='1' height='1' alt='bombs'>
+			<img src='./assets/img/power-ups/detonator.jpg' width='1' height='1' alt='detonator'>
+			<img src='./assets/img/power-ups/flame-pass.jpg' width='1' height='1' alt='flame pass'>
+			<img src='./assets/img/power-ups/flames.jpg' width='1' height='1' alt='flames'>
+			<img src='./assets/img/power-ups/mystery.jpg' width='1' height='1' alt='mystery'>
+			<img src='./assets/img/power-ups/speed.jpg' width='1' height='1' alt='speed'>
+			<img src='./assets/img/power-ups/wall-pass.jpg' width='1' height='1' alt='wall pass'>
+		</div>
+		<img src='./assets/img/bomb.png' width='1' height='1' alt='bomb'>
+		<img src='./assets/img/bomberman.png' width='1' height='1' alt='bomberman'>
+		<img src='./assets/img/ending-brick.jpg' width='1' height='1' alt='ending brick'>
+		<img src='./assets/img/exit-door.png' width='1' height='1' alt='exit door'>
+		<img src='./assets/img/explosion.png' width='1' height='1' alt='explosion'>
+		<img src='./assets/img/lode-runner.png' width='1' height='1' alt='lode runner'>
+		<img src='./assets/img/menu-background.png' width='1' height='1' alt='menu background'>
+		<img src='./assets/img/rock.jpg' width='1' height='1' alt='rock.'>
+		<img src='./assets/img/wall.png' width='1' height='1' alt='wall'>
 	</div>
 
-	<div id='click-me'>
-		Click me
+	<div id='preload-audio'>
+		<audio src='./assets/sounds/bomberman-move.wav' preload='auto'></audio>
+		<audio src='./assets/sounds/die.wav' preload='auto'></audio>
+		<audio src='./assets/sounds/ending.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/explosion.wav' preload='auto'></audio>
+		<audio src='./assets/sounds/find-exit.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/game-over.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/leave-bomb.wav' preload='auto'></audio>
+		<audio src='./assets/sounds/life-lost.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/pause.wav' preload='auto'></audio>
+		<audio src='./assets/sounds/power-up.wav' preload='auto'></audio>
+		<audio src='./assets/sounds/stage.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/stage-complete.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/stage-start.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/title-screen.mp3' preload='auto'></audio>
+		<audio src='./assets/sounds/volume-change.wav' preload='auto'></audio>
 	</div>
+</div>
 
-	<div id='incorrect-arguments' style='display: none'>
-		Incorrect arguments
-	</div>
+<div id='click-me'>
+	Click me
+</div>
 
-	<div id='main-menu'>
-		<img id='main-menu-img' src='assets/img/menu-background.png' alt='menu'>
-		<div class='main-menu-item'>Start</div>
-		<div class='main-menu-item'>Controls</div>
-		<div class='main-menu-item'>Help</div>
-		<div class='main-menu-item'>Leaderboard</div>
-		<div id='main-menu-info'>
-			PeIIIaJIkuH, indecember
-		</div>
-	</div>
+<div id='incorrect-arguments' style='display: none'>
+	Incorrect arguments
+</div>
 
-	<div id='game-controls'>
-		<div class='game-controls-item'>
-			<div class='game-controls-key'>WASD</div>
-			<div class='game-controls-info'>Move</div>
-		</div>
-		<div class='game-controls-item'>
-			<div class='game-controls-key'>Space</div>
-			<div class='game-controls-info'>Leave a bomb</div>
-		</div>
-		<div class='game-controls-item'>
-			<div class='game-controls-key'>E</div>
-			<div class='game-controls-info'>Detonate bomb (must have such powerup)</div>
-		</div>
-		<div class='game-controls-item'>
-			<div class='game-controls-key'>Escape</div>
-			<div class='game-controls-info'>Pause the game</div>
-		</div>
-		<div class='game-controls-item'>
-			<div class='game-controls-key'>Arrow keys</div>
-			<div class='game-controls-info'>Change menu option</div>
-		</div>
-		<div class='game-controls-item'>
-			<div class='game-controls-key'>Enter</div>
-			<div class='game-controls-info'>Choose menu option</div>
-		</div>
-		<div class='press-escape'>
-			Press Escape to exit to the main menu
-		</div>
+<div id='main-menu'>
+	<img id='main-menu-img' src='assets/img/menu-background.png' alt='menu'>
+	<div class='main-menu-item'>Start</div>
+	<div class='main-menu-item'>Controls</div>
+	<div class='main-menu-item'>Help</div>
+	<div class='main-menu-item'>Leaderboard</div>
+	<div id='main-menu-info'>
+		PeIIIaJIkuH, indecember
 	</div>
+</div>
 
-	<div id='game-help'>
-		<div class='game-help-item'>
-			<div class='game-help-header'>How to complete the stage</div>
-			<div class='game-help-info'>
-				<div class='game-help-info-text'>Kill all the enemies on the stage</div>
-				<div class='game-help-info-text'>Find the exit door behind one of the walls</div>
-				<div class='game-help-info-text'>Tip: collect all the powerups before going to the next stage</div>
-			</div>
-		</div>
-		<div class='press-escape'>
-			Press Escape to exit to the main menu
-		</div>
+<div id='game-controls'>
+	<div class='game-controls-item'>
+		<div class='game-controls-key'>WASD</div>
+		<div class='game-controls-info'>Move</div>
 	</div>
+	<div class='game-controls-item'>
+		<div class='game-controls-key'>Space</div>
+		<div class='game-controls-info'>Leave a bomb</div>
+	</div>
+	<div class='game-controls-item'>
+		<div class='game-controls-key'>E</div>
+		<div class='game-controls-info'>Detonate bomb (must have such powerup)</div>
+	</div>
+	<div class='game-controls-item'>
+		<div class='game-controls-key'>Escape</div>
+		<div class='game-controls-info'>Pause the game</div>
+	</div>
+	<div class='game-controls-item'>
+		<div class='game-controls-key'>Arrow keys</div>
+		<div class='game-controls-info'>Change menu option</div>
+	</div>
+	<div class='game-controls-item'>
+		<div class='game-controls-key'>Enter</div>
+		<div class='game-controls-info'>Choose menu option</div>
+	</div>
+	<div class='press-escape'>
+		Press Escape to exit to the main menu
+	</div>
+</div>
 
-	<div id='game-leaderboard'>
-		<div id='game-leaderboard-header'>Leaderboard</div>
-		<div>Not implemented yet</div>
-		<div class='press-escape'>
-			Press Escape to exit to main menu
+<div id='game-help'>
+	<div class='game-help-item'>
+		<div class='game-help-header'>How to complete the stage</div>
+		<div class='game-help-info'>
+			<div class='game-help-info-text'>Kill all the enemies on the stage</div>
+			<div class='game-help-info-text'>Find the exit door behind one of the walls</div>
+			<div class='game-help-info-text'>Tip: collect all the powerups before going to the next stage</div>
 		</div>
 	</div>
+	<div class='press-escape'>
+		Press Escape to exit to the main menu
+	</div>
+</div>
 
-	<div id='stage-start'>
-		Stage <span>1</span>
+<div id='game-leaderboard'>
+	<div id='game-leaderboard-header'>Leaderboard</div>
+	<div>Not implemented yet</div>
+	<div class='press-escape'>
+		Press Escape to exit to main menu
 	</div>
+</div>
 
-	<div id='game-over'>
-		<div class='game-over-text'>Game over</div>
-		<div class='game-over-text'>Bomberman could not fulfil his dream</div>
-		<div class='game-over-text'>His memory was erased and he was locked underground</div>
-		<div class='game-over-text'>If you want to have another chance to help him, just reload the page</div>
-	</div>
+<div id='stage-start'>
+	Stage <span>1</span>
+</div>
 
-	<div id='game-score'>
-		Your score: <span></span>
-	</div>
+<div id='game-over'>
+	<div class='game-over-text'>Game over</div>
+	<div class='game-over-text'>Bomberman could not fulfil his dream</div>
+	<div class='game-over-text'>His memory was erased and he was locked underground</div>
+	<div class='game-over-text'>If you want to have another chance to help him, just reload the page</div>
+</div>
 
-	<div id='ending'>
-		<div id='ending-info'>
-			<div class='ending-text'>Congratulations</div>
-			<div class='ending-text'>You have succeded in helping bomberman to become a human being</div>
-			<div class='ending-text'>Bomberman become runner</div>
-			<div class='ending-text'>See you soon in Lode Runner</div>
-			<div class='ending-text'>Good bye</div>
-			<div class='ending-text'>If you want to go through this exciting journey again, just reload the page</div>
-		</div>
-		<div id='ending-animation'>
-			<div id='lode-runner'>
-				<img src='assets/img/lode-runner.png' alt='lode runner'>
-			</div>
-			<div id='ending-bricks'></div>
-		</div>
-	</div>
+<div id='game-score'>
+	Your score: <span></span>
+</div>
 
-	<div id='game-menu' class='game-menu-hide'>
-		<div class='game-menu-item'>
-			Continue
-		</div>
-		<div class='game-menu-item'>
-			Restart
-		</div>
-		<div class='game-menu-item'>
-			<label for='game-menu-sfx-volume-range' class='game-menu-item-label'>
-				SFX:
-			</label>
-			<input class='game-menu-item-range' type='range' id='game-menu-sfx-volume-range' min='0' max='1' step='0.05'
-				   value='0.2'>
-		</div>
-		<div class='game-menu-item'>
-			<label for='game-menu-music-volume-range' class='game-menu-item-label'>
-				Music:
-			</label>
-			<input class='game-menu-item-range' type='range' id='game-menu-music-volume-range' min='0' max='1'
-				   step='0.05' value='0.2'>
-		</div>
-		<div class='game-menu-item'>
-			Main menu
-		</div>
+<div id='ending'>
+	<div id='ending-info'>
+		<div class='ending-text'>Congratulations</div>
+		<div class='ending-text'>You have succeded in helping bomberman to become a human being</div>
+		<div class='ending-text'>Bomberman become runner</div>
+		<div class='ending-text'>See you soon in Lode Runner</div>
+		<div class='ending-text'>Good bye</div>
+		<div class='ending-text'>If you want to go through this exciting journey again, just reload the page</div>
 	</div>
+	<div id='ending-animation'>
+		<div id='lode-runner'>
+			<img src='assets/img/lode-runner.png' alt='lode runner'>
+		</div>
+		<div id='ending-bricks'></div>
+	</div>
+</div>
 
-	<div id='game'>
-		<div id='game-info'></div>
-		<div id='board'></div>
+<div id='game-menu' class='game-menu-hide'>
+	<div class='game-menu-item'>
+		Continue
 	</div>
+	<div class='game-menu-item'>
+		Restart
+	</div>
+	<div class='game-menu-item'>
+		<label for='game-menu-sfx-volume-range' class='game-menu-item-label'>
+			SFX:
+		</label>
+		<input class='game-menu-item-range' type='range' id='game-menu-sfx-volume-range' min='0' max='1' step='0.05'
+		       value='0.2'
+		>
+	</div>
+	<div class='game-menu-item'>
+		<label for='game-menu-music-volume-range' class='game-menu-item-label'>
+			Music:
+		</label>
+		<input class='game-menu-item-range' type='range' id='game-menu-music-volume-range' min='0' max='1'
+		       step='0.05' value='0.2'
+		>
+	</div>
+	<div class='game-menu-item'>
+		Main menu
+	</div>
+</div>
 
-	<div id='game-music'>
-		<audio src='assets/sounds/title-screen.mp3' id='title-screen-music' loop></audio>
-		<audio src='assets/sounds/stage-start.mp3' id='stage-start-music'></audio>
-		<audio src='assets/sounds/stage.mp3' id='stage-music' loop></audio>
-		<audio src='assets/sounds/life-lost.mp3' id='life-lost-music'></audio>
-		<audio src='assets/sounds/ending.mp3' id='ending-music'></audio>
-		<audio src='assets/sounds/game-over.mp3' id='over-music'></audio>
-		<audio src='assets/sounds/stage-complete.mp3' id='stage-complete-music'></audio>
-		<audio src='assets/sounds/find-exit.mp3' id='find-exit-music' loop></audio>
-		<audio src='assets/sounds/pause.wav' id='pause-sound'></audio>
-		<audio src='assets/sounds/die.wav' id='die-sound'></audio>
-	</div>
+<div id='game-info'></div>
 
-	<div id='bomberman-prehistory'>
-		<video id='bomberman-origins'>
-			<source src='./assets/videos/bomberman-origins.mp4' type='video/mp4'>
-		</video>
-		<div id='skip-btn'>
-			Press Enter to skip
-		</div>
+<div id='game'>
+	<div id='board'></div>
+</div>
+
+<div id='game-music'>
+	<audio src='assets/sounds/title-screen.mp3' id='title-screen-music' loop></audio>
+	<audio src='assets/sounds/stage-start.mp3' id='stage-start-music'></audio>
+	<audio src='assets/sounds/stage.mp3' id='stage-music' loop></audio>
+	<audio src='assets/sounds/life-lost.mp3' id='life-lost-music'></audio>
+	<audio src='assets/sounds/ending.mp3' id='ending-music'></audio>
+	<audio src='assets/sounds/game-over.mp3' id='over-music'></audio>
+	<audio src='assets/sounds/stage-complete.mp3' id='stage-complete-music'></audio>
+	<audio src='assets/sounds/find-exit.mp3' id='find-exit-music' loop></audio>
+	<audio src='assets/sounds/pause.wav' id='pause-sound'></audio>
+	<audio src='assets/sounds/die.wav' id='die-sound'></audio>
+</div>
+
+<div id='bomberman-prehistory'>
+	<video id='bomberman-origins'>
+		<source src='./assets/videos/bomberman-origins.mp4' type='video/mp4'>
+	</video>
+	<div id='skip-btn'>
+		Press Enter to skip
 	</div>
+</div>
+
+<div id='bomberman-upgrade'>
+	<div class='bomberman-upgrade-text'>Destroying more and more enemies standing in his way,</div>
+	<div class='bomberman-upgrade-text'>the bomberman realized that he was becoming sronger</div>
+	<div class='bomberman-upgrade-text'>Not only his physical strength,</div>
+	<div class='bomberman-upgrade-text'>but also his psychological strength increased many times over</div>
+</div>
 
 </body>
 </html>

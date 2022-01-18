@@ -429,7 +429,8 @@ img {
 #game-controls,
 #game-help,
 #game-leaderboard,
-#game-prehistory {
+#game-prehistory,
+#bomberman-upgrade {
     width: 100%;
     height: 100%;
     top: 0;
@@ -555,7 +556,8 @@ img {
 #game-info {
     position: absolute;
     width: 100%;
-    top: -30px;
+    top: 30px;
+    padding: 0 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -728,4 +730,8 @@ img {
     position: absolute;
     right: 15px;
     bottom: 15px;
+}
+
+.bomberman-upgrade-text + .bomberman-upgrade-text {
+    margin-top: 20px;
 }

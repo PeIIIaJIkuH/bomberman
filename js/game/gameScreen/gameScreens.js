@@ -13,6 +13,7 @@ export class GameScreens {
 		this.help = new Screen('game-help')
 		this.leaderboard = new Screen('game-leaderboard')
 		this.prehistory = new Screen('bomberman-prehistory')
+		this.upgrade = new Screen('bomberman-upgrade')
 	}
 
 	showStage = () => {

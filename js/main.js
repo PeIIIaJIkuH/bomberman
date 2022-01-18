@@ -16,8 +16,10 @@ import {
 	POWER_UP_TYPES,
 	POWER_UPS,
 	resetEnemyId,
+	SFX_VOLUME,
 	TILE_SIZE,
-	TILES
+	TILES,
+	XP_TO_UPGRADE,
 } from './utils/constants.js'
 import {changeTitle, createId, getRandomDirection, isRectangle, powerUpsCount, tileCount} from './utils/helpers.js'
 import {KeyListener} from './utils/keyListener.js'
@@ -35,7 +37,7 @@ class Game {
 		}
 		this.settings = new GameSettings(bombCount, liveCount, explosionSize, stages)
 		this.stage = new GameStage({
-			data: stages[this.settings.stageNumber], bombCount, explosionSize
+			data: stages[this.settings.stageNumber], bombCount, explosionSize,
 		})
 		this.bomberman = new Bomberman({board: this.stage.board, liveCount})
 		this.keyListener = new KeyListener()
@@ -123,7 +125,7 @@ class Game {
 		const {left, right, top, bottom} = this.bomberman.getBorders({own: true})
 		for (const [, enemy] of this.stage.enemies) {
 			const {
-				left: eLeft, right: eRight, top: eTop, bottom: eBottom
+				left: eLeft, right: eRight, top: eTop, bottom: eBottom,
 			} = enemy.getBorders({own: true})
 			if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop))
 				return true
@@ -387,9 +389,10 @@ class Game {
 			this.stage.deleteEnemy(enemy.id)
 			enemy.die()
 			this.stage.options.score += enemy.xp
+			this.stage.options.updateScore()
 			if (this.stage.enemies.size <= 0) {
 				this.stage.options.areEnemiesDead = true
-				this.state = 'find-exit'
+				this.state = 'pre-find-exit'
 			}
 			return true
 		}
@@ -427,9 +430,10 @@ class Game {
 				y = Math.floor((this.bomberman.top - 1 + (TILE_SIZE / 2)) / TILE_SIZE + 2)
 			if (!this.stage.isBomb(x, y) && !this.stage.isExitDoor(x, y) && !this.stage.isWall(x, y)) {
 				const bomb = new Bomb({
-					board: this.stage.board, x, y,
+					board: this.stage.board,
+					x, y,
 					explosionSize: this.stage.options.explosionSize,
-					stage: this.stage
+					stage: this.stage,
 				})
 				this.bomberman.isSurroundedWithBombs = true
 				this.stage.addBomb(bomb)
@@ -456,7 +460,6 @@ class Game {
 	draw = () => {
 		this.bomberman.draw()
 		this.drawEnemies()
-		this.stage.options.draw()
 	}
 
 	initialize = () => {
@@ -611,7 +614,7 @@ class Game {
 	run = () => {
 		let prevTime = 0,
 			prevFPSTime = 0
-		const callback = (currTime) => {
+		const callback = (curTime) => {
 			requestAnimationFrame(callback)
 
 			if (this.error) {
@@ -635,10 +638,10 @@ class Game {
 				this.mainMenu.hide()
 				this.screens.prehistory.show()
 				this.media.bombermanOrigins.play()
-				prevTime = currTime
+				prevTime = curTime
 				this.state = 'bomberman-origins'
 			} else if (this.state === 'bomberman-origins' && (this.keyListener.isPressed('Enter') ||
-				currTime - prevTime >= this.media.bombermanOrigins.durationMS())) {
+				curTime - prevTime >= this.media.bombermanOrigins.durationMS())) {
 				this.screens.prehistory.hide()
 				this.media.bombermanOrigins.stop()
 				this.state = 'initialize'
@@ -651,8 +654,8 @@ class Game {
 				this.screens.stageStart.show()
 				this.state = 'stage-start'
 				this.media.stageStart.play()
-				prevTime = currTime
-			} else if (this.state === 'stage-start' && currTime - prevTime >= this.media.stageStart.durationMS()) {
+				prevTime = curTime
+			} else if (this.state === 'stage-start' && curTime - prevTime >= this.media.stageStart.durationMS()) {
 				this.screens.stageStart.hide()
 				this.screens.showStage()
 				this.state = 'initialize-timer'
@@ -664,12 +667,12 @@ class Game {
 				this.media.playStageMusic(this.stage.options.areEnemiesDead)
 				this.state = 'stage'
 			} else if (this.state === 'stage') {
-				prevTime = currTime
+				prevTime = curTime
 				if (this.settings.wasPaused) {
-					prevFPSTime = currTime
+					prevFPSTime = curTime
 					this.settings.wasPaused = false
 				}
-				const diff = (currTime - prevFPSTime) / 1000 * 100
+				const diff = (curTime - prevFPSTime) / 1000 * 100
 				this.update(diff)
 				this.draw()
 			} else if (this.state === 'pre-pause') {
@@ -706,13 +709,13 @@ class Game {
 				this.stage.options.deathCount++
 				this.stage.options.createdStageEndEnemies = false
 				this.state = 'pre-die'
-			} else if (this.state === 'pre-die' && currTime - prevTime >= this.media.die.durationMS()) {
+			} else if (this.state === 'pre-die' && curTime - prevTime >= this.media.die.durationMS()) {
 				this.media.die.stop()
 				this.media.lifeLost.play()
 				this.stage.options.score = this.stage.options.initialScore
 				this.state = 'die'
-			} else if (this.state === 'die' && currTime - prevTime >= (this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
-				prevTime = currTime
+			} else if (this.state === 'die' && curTime - prevTime >= (this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
+				prevTime = curTime
 				if (this.bomberman.liveCount > 0)
 					this.state = 'restart'
 				else
@@ -720,6 +723,39 @@ class Game {
 			} else if (this.state === 'restart') {
 				this.restartStage()
 				this.state = 'pre-stage-start'
+			} else if (this.state === 'pre-find-exit') {
+				if (this.stage.options.score >= XP_TO_UPGRADE) {
+					this.state = 'pre-upgrade'
+				} else {
+					this.state = 'find-exit'
+				}
+			} else if (this.state === 'pre-upgrade') {
+				changeTitle('Upgrade | Bomberman')
+				this.stage.options.interval.clear()
+				this.media.pauseStageMusic()
+				this.settings.wasPaused = true
+				this.pauseBomberman()
+				this.pauseEnemies()
+				this.pauseBombs()
+				this.screens.stage.hide()
+				this.screens.info.hide()
+				this.screens.upgrade.show()
+				const sound = document.createElement('audio')
+				sound.src = './assets/sounds/power-up.wav'
+				sound.volume = SFX_VOLUME
+				sound.play().then(() => {
+					this.media.lifeLost.play()
+				})
+				this.state = 'upgrade'
+				prevTime = curTime
+			} else if (this.state === 'upgrade' && curTime - prevTime >= this.media.lifeLost.durationMS() + 5000) {
+				this.screens.upgrade.hide()
+				this.screens.stage.show()
+				this.screens.info.show()
+				this.stage.options.interval.resume()
+				changeTitle(`Stage ${this.settings.getStageNumber()} | Bomberman`)
+				this.resume()
+				this.state = 'find-exit'
 			} else if (this.state === 'find-exit') {
 				this.media.stage.stop()
 				this.media.findExit.play()
@@ -727,13 +763,14 @@ class Game {
 			} else if (this.state === 'pre-pre-stage-completed') {
 				this.pauseBomberman()
 				this.pauseBombs()
+				this.stage.options.interval.clear()
 				this.stage.consumedPowerUps.clear()
 				this.media.pauseStageMusic()
 				this.media.complete.play()
 				this.state = 'pre-stage-completed'
 				resetEnemyId()
-				prevTime = currTime
-			} else if (this.state === 'pre-stage-completed' && currTime - prevTime >= this.media.complete.durationMS()) {
+				prevTime = curTime
+			} else if (this.state === 'pre-stage-completed' && curTime - prevTime >= this.media.complete.durationMS()) {
 				this.screens.hideStage()
 				changeTitle(`Stage ${this.settings.getStageNumber()} Completed | Bomberman`)
 				this.state = 'stage-completed'
@@ -751,10 +788,10 @@ class Game {
 				this.screens.hideStage()
 				this.screens.setGameScore(this.stage.options.score)
 				this.screens.gameScore.show()
-				prevTime = currTime
+				prevTime = curTime
 				changeTitle('Final Score | Bomberman')
 				this.state = 'game-score'
-			} else if (this.state === 'game-score' && currTime - prevTime >= 5000) {
+			} else if (this.state === 'game-score' && curTime - prevTime >= 5000) {
 				this.screens.gameScore.hide()
 				if (this.settings.completed)
 					this.state = 'ending'
@@ -775,7 +812,7 @@ class Game {
 				}, 21000)
 				this.state = 'END'
 			}
-			prevFPSTime = currTime
+			prevFPSTime = curTime
 		}
 		requestAnimationFrame(callback)
 	}
@@ -794,20 +831,23 @@ const defaultGames = {
 		{
 			rows: 15, columns: 15,
 			enemies: {balloom: 2, oneal: 2},
-			powerUps: {bombs: 1, 'bomb-pass': 1, 'wall-pass': 1}
+			powerUps: {bombs: 1, 'bomb-pass': 1, 'wall-pass': 1},
+			// xp 600
 		}, {
 			rows: 15, columns: 15,
 			enemies: {doll: 2, minvo: 2},
-			powerUps: {flames: 1, detonator: 1, 'flame-pass': 1}
+			powerUps: {flames: 1, detonator: 1, 'flame-pass': 1},
+			// xp 2400
+			// if xp >== 3000, then play some stage
 		}, {
 			rows: 15, columns: 15,
 			enemies: {kondoria: 2, ovapi: 2},
-			powerUps: {speed: 1}
+			powerUps: {speed: 1},
 		}, {
 			rows: 15, columns: 15,
 			enemies: {pass: 2, pontan: 2},
-			powerUps: {mystery: 1}
-		}
+			powerUps: {mystery: 1},
+		},
 	],
 	differentMaps: [
 		{
@@ -824,8 +864,8 @@ const defaultGames = {
 				[_, r, w, r, w, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, _, r, w, r, _],
 				[w, _, _, _, _, _, w, _, _, _, _, _, _, _, w, _, _, _, _, _, _, w, _, _, _, _, w, w, _],
 				[_, r, w, r, _, r, _, r, _, r, _, r, _, r, _, r, w, r, _, r, _, r, _, r, _, r, _, r, _],
-				[w, _, _, _, _, _, _, w, w, _, w, _, w, _, w, _, w, _, _, _, _, _, _, _, _, _, _, _, _]
-			]
+				[w, _, _, _, _, _, _, w, w, _, w, _, w, _, w, _, w, _, _, _, _, _, _, _, _, _, _, _, _],
+			],
 		}, {
 			roundTime: 300,
 			enemies: {doll: 2, minvo: 2, kondoria: 2},
@@ -841,8 +881,8 @@ const defaultGames = {
 				[_, r, w, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, _, r, _],
 				[_, r, _, _, w, _, _, w, _, _, w, _, _, w, _, _, _, w, _, _, w, _, _, w, _, _, w, r, _],
 				[w, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, r, w],
-				[_, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _]
-			]
+				[_, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _, w, _, _],
+			],
 		}, {
 			roundTime: 300,
 			enemies: {ovapi: 2, pass: 2, pontan: 2},
@@ -858,14 +898,14 @@ const defaultGames = {
 				[_, r, _, w, _, w, _, w, _, w, _, w, _, w, r, _, w, _, w, _, w, _, w, _, w, _, w, r, _],
 				[_, r, _, _, _, w, _, _, _, w, _, _, _, w, r, _, _, _, w, _, _, _, w, _, _, _, w, r, _],
 				[_, r, r, r, r, r, r, _, r, r, r, r, r, r, r, r, r, r, r, r, _, r, r, r, r, r, r, r, _],
-				[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]
-			]
-		}
-	]
+				[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _],
+			],
+		},
+	],
 }
 
 const game = new Game({
-	stages: defaultGames.easy
+	stages: defaultGames.easy,
 })
 game.run()
 

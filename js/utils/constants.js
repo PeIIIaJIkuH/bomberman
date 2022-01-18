@@ -1,10 +1,10 @@
-export const PIXEL_SIZE = 2,
+export const PIXEL_SIZE = 3,
 	TILE_SIZE = PIXEL_SIZE * 16
 
 export const DEFAULT = {
 	ROWS: 13,
 	COLUMNS: 31,
-	ROUND_TIME: 200
+	ROUND_TIME: 200,
 }
 
 export const DURATIONS = {
@@ -13,7 +13,7 @@ export const DURATIONS = {
 	ENEMY_XP: 2000,
 	ENEMY_DIE: 1100,
 	BOMBERMAN_DIE: 600,
-	CHAIN_EXPLOSION: 100
+	CHAIN_EXPLOSION: 100,
 }
 
 export const GAME_MENU = {
@@ -36,7 +36,7 @@ export const ENEMY_TYPES = ['balloom', 'oneal', 'doll', 'minvo', 'kondoria', 'ov
 
 export const POWER_UPS = {
 	SPEED_BOOST: 0.25,
-	INVINCIBLE_DURATION: 30000
+	INVINCIBLE_DURATION: 30000,
 }
 
 export let SFX_VOLUME = 0.2,
@@ -52,7 +52,7 @@ export const DIRECTIONS = {
 	LEFT: 0,
 	RIGHT: 1,
 	UP: 2,
-	DOWN: 3
+	DOWN: 3,
 }
 
 let ENEMY_ID = 0
@@ -73,3 +73,5 @@ export const createEnemyId = () => {
 export const resetEnemyId = () => {
 	ENEMY_ID = 0
 }
+
+export const XP_TO_UPGRADE = 3000
