@@ -12,6 +12,12 @@ export class KeyListener {
 		document.addEventListener('keyup', e => {
 			this.keysPressed.set(e.code, false)
 		})
+		document.querySelector('iframe').contentDocument.addEventListener('keydown', e => {
+			this.keysPressed.set(e.code, true)
+		})
+		document.querySelector('iframe').contentDocument.addEventListener('keyup', e => {
+			this.keysPressed.set(e.code, false)
+		})
 	}
 
 	isPressed = code => this.keysPressed.get(code)

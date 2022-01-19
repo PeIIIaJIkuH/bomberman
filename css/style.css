@@ -729,8 +729,8 @@ img {
 
 #skip-btn {
     position: absolute;
-    right: 15px;
-    bottom: 15px;
+    right: 45px;
+    bottom: 45px;
 }
 
 .bomberman-upgrade-text + .bomberman-upgrade-text {

@@ -643,13 +643,10 @@ class Game {
 				this.screens.hideStage()
 				this.mainMenu.hide()
 				this.screens.prehistory.show()
-				this.media.bombermanOrigins.play()
 				prevTime = curTime
 				this.state = 'bomberman-origins'
-			} else if (this.state === 'bomberman-origins' && (this.keyListener.isPressed('Enter') ||
-				curTime - prevTime >= this.media.bombermanOrigins.durationMS())) {
+			} else if (this.state === 'bomberman-origins' && (this.keyListener.isPressed('Enter'))) {
 				this.screens.prehistory.hide()
-				this.media.bombermanOrigins.stop()
 				this.state = 'initialize'
 			} else if (this.state === 'initialize') {
 				this.initialize()

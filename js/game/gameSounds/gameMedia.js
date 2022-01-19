@@ -12,7 +12,6 @@ export class GameMedia {
 		this.findExit = new Media('find-exit-music', true)
 		this.pause = new Media('pause-sound')
 		this.die = new Media('die-sound')
-		this.bombermanOrigins = new Media('bomberman-origins')
 	}
 
 	playStageMusic = areEnemiesDead => {
