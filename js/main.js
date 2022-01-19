@@ -43,6 +43,10 @@ class Game {
 		this.state = 'click-me'
 		this.stageOfUpgrade = 0
 
+		document.getElementById('bomberman-origins').addEventListener('ended', () => {
+			this.state = 'bomberman-origins-ended'
+		})
+
 		changeTitle('Activate the Game | Bomberman')
 		this.handleUserInteraction()
 	}
@@ -643,10 +647,12 @@ class Game {
 				this.screens.hideStage()
 				this.mainMenu.hide()
 				this.screens.prehistory.show()
+				this.media.bombermanOrigins.play()
 				prevTime = curTime
 				this.state = 'bomberman-origins'
-			} else if (this.state === 'bomberman-origins' && (this.keyListener.isPressed('Enter'))) {
+			} else if ((this.state === 'bomberman-origins' && this.keyListener.isPressed('Enter')) || this.state === 'bomberman-origins-ended') {
 				this.screens.prehistory.hide()
+				this.media.bombermanOrigins.stop()
 				this.state = 'initialize'
 			} else if (this.state === 'initialize') {
 				this.initialize()
