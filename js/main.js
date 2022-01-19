@@ -16,7 +16,6 @@ import {
 	POWER_UP_TYPES,
 	POWER_UPS,
 	resetEnemyId,
-	SFX_VOLUME,
 	TILE_SIZE,
 	TILES,
 	XP_TO_UPGRADE,
@@ -42,6 +41,7 @@ class Game {
 		this.bomberman = new Bomberman({board: this.stage.board, liveCount})
 		this.keyListener = new KeyListener()
 		this.state = 'click-me'
+		this.stageOfUpgrade = 0
 
 		changeTitle('Activate the Game | Bomberman')
 		this.handleUserInteraction()
@@ -392,7 +392,9 @@ class Game {
 			this.stage.options.updateScore()
 			if (this.stage.enemies.size <= 0) {
 				this.stage.options.areEnemiesDead = true
-				this.state = 'pre-find-exit'
+				new Timer(() => {
+					this.state = 'pre-find-exit'
+				}, DURATIONS.ENEMY_DIE)
 			}
 			return true
 		}
@@ -569,6 +571,9 @@ class Game {
 		this.cancelPowerUps()
 		this.stage.restart()
 		this.bomberman.resetPosition()
+		if (this.stageOfUpgrade) {
+			this.stageOfUpgrade = 0
+		}
 	}
 
 	restartGame = () => {
@@ -577,6 +582,7 @@ class Game {
 		this.stage.options.reset(this.settings)
 		this.bomberman.reset(this.settings)
 		this.gameMenu.hide()
+		this.stageOfUpgrade = 0
 	}
 
 	gameMenuListener = e => {
@@ -713,6 +719,7 @@ class Game {
 				this.media.die.stop()
 				this.media.lifeLost.play()
 				this.stage.options.score = this.stage.options.initialScore
+				this.stage.options.updateScore()
 				this.state = 'die'
 			} else if (this.state === 'die' && curTime - prevTime >= (this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
 				prevTime = curTime
@@ -724,8 +731,9 @@ class Game {
 				this.restartStage()
 				this.state = 'pre-stage-start'
 			} else if (this.state === 'pre-find-exit') {
-				if (this.stage.options.score >= XP_TO_UPGRADE) {
+				if (this.stage.options.score >= XP_TO_UPGRADE && !this.stageOfUpgrade) {
 					this.state = 'pre-upgrade'
+					this.stageOfUpgrade = this.settings.stageNumber
 				} else {
 					this.state = 'find-exit'
 				}
@@ -740,12 +748,7 @@ class Game {
 				this.screens.stage.hide()
 				this.screens.info.hide()
 				this.screens.upgrade.show()
-				const sound = document.createElement('audio')
-				sound.src = './assets/sounds/power-up.wav'
-				sound.volume = SFX_VOLUME
-				sound.play().then(() => {
-					this.media.lifeLost.play()
-				})
+				this.media.lifeLost.play()
 				this.state = 'upgrade'
 				prevTime = curTime
 			} else if (this.state === 'upgrade' && curTime - prevTime >= this.media.lifeLost.durationMS() + 5000) {
@@ -806,7 +809,7 @@ class Game {
 				document.querySelector('#lode-runner img').className = 'bomberman-run'
 				new Timer(() => {
 					document.querySelector('#lode-runner img').className = 'lode-runner-run'
-				}, 6700)
+				}, 6600)
 				new Timer(() => {
 					document.querySelector('#lode-runner img').className = 'lode-runner-stop'
 				}, 21000)
@@ -832,13 +835,10 @@ const defaultGames = {
 			rows: 15, columns: 15,
 			enemies: {balloom: 2, oneal: 2},
 			powerUps: {bombs: 1, 'bomb-pass': 1, 'wall-pass': 1},
-			// xp 600
 		}, {
 			rows: 15, columns: 15,
 			enemies: {doll: 2, minvo: 2},
 			powerUps: {flames: 1, detonator: 1, 'flame-pass': 1},
-			// xp 2400
-			// if xp >== 3000, then play some stage
 		}, {
 			rows: 15, columns: 15,
 			enemies: {kondoria: 2, ovapi: 2},
@@ -918,7 +918,4 @@ window.game = game
 //          add page, where user can write his nickname and send his score to the backend
 //          add page, where user can see scores of the other players, from highest to the lowest, pagination
 // add responsive design: just change PIXEL_SIZE OR move the camera if the playfield is big
-
 // change logic of going to main menu from game menu
-
-// add prehistory of the bomberman and some middle screens

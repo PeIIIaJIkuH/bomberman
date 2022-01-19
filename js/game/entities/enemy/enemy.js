@@ -1,4 +1,4 @@
-import {createEnemyId, DIRECTIONS, DURATIONS} from '../../../utils/constants.js'
+import {createEnemyId, DIRECTIONS, DURATIONS, PIXEL_SIZE} from '../../../utils/constants.js'
 import {getRandomDirection} from '../../../utils/helpers.js'
 import {Timer} from '../../../utils/timers/timer.js'
 import {Entity} from '../entity.js'
@@ -19,53 +19,45 @@ export class Enemy extends Entity {
 	handleType = () => {
 		switch (this.type) {
 			case 'balloom':
-				if (this.xp !== 0)
-					this.xp = 100
-				this.speed = 0.5
+				if (this.xp !== 0) this.xp = 100
+				this.speed = PIXEL_SIZE / 4
 				this.createHTML('./assets/img/enemies/balloom.png')
 				break
 			case 'oneal':
-				if (this.xp !== 0)
-					this.xp = 200
-				this.speed = 1
+				if (this.xp !== 0) this.xp = 200
+				this.speed = PIXEL_SIZE / 2
 				this.createHTML('./assets/img/enemies/oneal.png')
 				break
 			case 'doll':
-				if (this.xp !== 0)
-					this.xp = 400
-				this.speed = 1.25
+				if (this.xp !== 0) this.xp = 400
+				this.speed = 5 * PIXEL_SIZE / 8
 				this.createHTML('./assets/img/enemies/doll.png')
 				break
 			case 'minvo':
-				if (this.xp !== 0)
-					this.xp = 800
-				this.speed = 1.5
+				if (this.xp !== 0) this.xp = 800
+				this.speed = 3 * PIXEL_SIZE / 4
 				this.createHTML('./assets/img/enemies/minvo.png')
 				break
 			case 'kondoria':
-				if (this.xp !== 0)
-					this.xp = 1000
-				this.speed = 0.25
+				if (this.xp !== 0) this.xp = 1000
+				this.speed = PIXEL_SIZE / 8
 				this.wallPass = true
 				this.createHTML('./assets/img/enemies/kondoria.png')
 				break
 			case 'ovapi':
-				if (this.xp !== 0)
-					this.xp = 2000
-				this.speed = 0.5
+				if (this.xp !== 0) this.xp = 2000
+				this.speed = PIXEL_SIZE / 4
 				this.wallPass = true
 				this.createHTML('./assets/img/enemies/ovapi.png')
 				break
 			case 'pass':
-				if (this.xp !== 0)
-					this.xp = 4000
-				this.speed = 1.5
+				if (this.xp !== 0) this.xp = 4000
+				this.speed = 3 * PIXEL_SIZE / 4
 				this.createHTML('./assets/img/enemies/pass.png')
 				break
 			case 'pontan':
-				if (this.xp !== 0)
-					this.xp = 8000
-				this.speed = 1.5
+				if (this.xp !== 0) this.xp = 8000
+				this.speed = 3 * PIXEL_SIZE / 4
 				this.wallPass = true
 				this.createHTML('./assets/img/enemies/pontan.png')
 				break
@@ -106,14 +98,12 @@ export class Enemy extends Entity {
 		this.dead = true
 		this.timer = new Timer(() => {
 			this.img.className = 'enemy-dead'
-			this.div.remove()
-			if (this.xp !== 0)
+			if (this.xp !== 0) {
 				new EnemyXP({
-					board: this.board,
-					left: this.left,
-					top: this.top,
-					amount: this.xp
+					board: this.board, left: this.left, top: this.top, amount: this.xp,
 				})
+			}
+			this.div.remove()
 		}, DURATIONS.ENEMY_DIE)
 	}
 }

@@ -4,7 +4,7 @@ import {Bomberman} from './bomberman/bomberman.js'
 export class Entity {
 	constructor({board, left, top}) {
 		this.board = board
-		this.speed = 1
+		this.speed = PIXEL_SIZE / 2
 		this.left = left || PIXEL_SIZE * 2
 		this.top = top || PIXEL_SIZE * 2
 		this.size = TILE_SIZE * 0.75

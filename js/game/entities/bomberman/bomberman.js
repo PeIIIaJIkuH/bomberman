@@ -6,6 +6,7 @@ import {Entity} from '../entity.js'
 export class Bomberman extends Entity {
 	constructor({board, liveCount}) {
 		super({board})
+		this.speed = PIXEL_SIZE / 2
 		this.left = 2 * PIXEL_SIZE
 		this.top = 2 * PIXEL_SIZE
 		this.liveCount = liveCount
@@ -88,12 +89,13 @@ export class Bomberman extends Entity {
 		this.detonator = false
 		this.invincible = false
 		this.isSurroundedWithBombs = false
-		this.speed = 1
+		this.speed = PIXEL_SIZE / 2
 	}
 
 	draw() {
 		super.draw()
-		if (this.liveCountDiv)
+		if (this.liveCountDiv) {
 			this.liveCountDiv.querySelector('span').innerText = `${this.liveCount}`
+		}
 	}
 }

@@ -45,8 +45,8 @@ img {
 }
 
 #bomberman img {
-    height: 400%;
-    width: 1000%;
+    height: 420%;
+    width: 1050%;
     will-change: transform;
 }
 
@@ -68,7 +68,7 @@ img {
 }
 
 .wall img {
-    height: 100%;
+    height: 125%;
     will-change: transform;
 }
 
@@ -183,8 +183,8 @@ img {
 }
 
 .enemy img {
-    height: 200%;
-    width: 1000%;
+    height: 210%;
+    width: 1050%;
     will-change: transform;
 }
 
@@ -265,7 +265,7 @@ img {
 }
 
 .bomb img {
-    height: 100%;
+    height: 125%;
     will-change: transform;
 }
 
@@ -292,7 +292,7 @@ img {
 }
 
 .explosion img {
-    height: 500%;
+    height: 1250%;
     will-change: transform;
 }
 
@@ -315,10 +315,10 @@ img {
 
 @keyframes explosion-horizontal {
     from {
-        transform: translate(0, -20%);
+        transform: translate(0, -10%);
     }
     to {
-        transform: translate(-100%, -20%);
+        transform: translate(-100%, -10%);
     }
 }
 
@@ -328,10 +328,10 @@ img {
 
 @keyframes explosion-vertical {
     from {
-        transform: translate(0, -40%);
+        transform: translate(0, -20%);
     }
     to {
-        transform: translate(-100%, -40%);
+        transform: translate(-100%, -20%);
     }
 }
 
@@ -341,10 +341,10 @@ img {
 
 @keyframes explosion-left {
     from {
-        transform: translate(0, -60%);
+        transform: translate(0, -30%);
     }
     to {
-        transform: translate(-100%, -60%);
+        transform: translate(-100%, -30%);
     }
 }
 
@@ -354,10 +354,10 @@ img {
 
 @keyframes explosion-right {
     from {
-        transform: translate(-75%, -60%) scaleX(-1);
+        transform: translate(0, -50%);
     }
     to {
-        transform: translate(25%, -60%) scaleX(-1);
+        transform: translate(-100%, -50%);
     }
 }
 
@@ -367,10 +367,10 @@ img {
 
 @keyframes explosion-top {
     from {
-        transform: translate(0, -80%);
+        transform: translate(0, -40%);
     }
     to {
-        transform: translate(-100%, -80%);
+        transform: translate(-100%, -40%);
     }
 }
 
@@ -380,10 +380,10 @@ img {
 
 @keyframes explosion-bottom {
     from {
-        transform: translate(0, 0) scaleY(-1);
+        transform: translate(0, -60%);
     }
     to {
-        transform: translate(-100%, 0) scaleY(-1);
+        transform: translate(-100%, -60%);
     }
 }
 
@@ -713,6 +713,7 @@ img {
 
 #main-menu-info {
     margin-top: 50px;
+    color: #a6a6a6;
 }
 
 #bomberman-prehistory {

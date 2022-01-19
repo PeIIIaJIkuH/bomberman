@@ -20,7 +20,7 @@ export class EnemyXP {
 		this.div = document.createElement('div')
 		this.div.className = 'enemy-xp'
 		this.div.innerText = this.amount
-		this.div.style.transform = `translate3d(${this.left}px, ${this.top + (3 * PIXEL_SIZE)}px, 0)`
+		this.div.style.transform = `translate3d(${this.left + (3 * PIXEL_SIZE)}px, ${this.top + (3 * PIXEL_SIZE)}px, 0)`
 		this.board.append(this.div)
 	}
 

@@ -1,4 +1,4 @@
-export const PIXEL_SIZE = 3,
+export const PIXEL_SIZE = 4,
 	TILE_SIZE = PIXEL_SIZE * 16
 
 export const DEFAULT = {
@@ -21,7 +21,7 @@ export const GAME_MENU = {
 	RESTART: 1,
 	SFX: 2,
 	MUSIC: 3,
-	MAIN_MENU: 4
+	MAIN_MENU: 4,
 }
 
 export const MAIN_MENU = {
@@ -45,7 +45,7 @@ export let SFX_VOLUME = 0.2,
 export const TILES = {
 	EMPTY: 0,
 	ROCK: 1,
-	WALL: 2
+	WALL: 2,
 }
 
 export const DIRECTIONS = {
