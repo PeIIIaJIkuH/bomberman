@@ -1,4 +1,4 @@
-import {DEFAULT, TILE_SIZE, TILES} from '../../utils/constants.js'
+import {DEFAULT, DURATIONS, TILE_SIZE, TILES} from '../../utils/constants.js'
 import {createId, getRandomInt} from '../../utils/helpers.js'
 import {ExitDoor} from '../blocks/exitDoor.js'
 import {PowerUp} from '../blocks/powerUp.js'
@@ -11,7 +11,7 @@ export class GameStage {
 	constructor({data, bombCount, explosionSize}) {
 		let rows = data.rows || DEFAULT.ROWS,
 			columns = data.columns || DEFAULT.COLUMNS
-		const roundTime = data.roundTime || 200,
+		const roundTime = data.roundTime || DURATIONS.ROUND_TIME,
 			enemies = data.enemies || {},
 			powerUps = data.powerUps || {},
 			map = data.map
@@ -23,7 +23,7 @@ export class GameStage {
 			columns = map[0].length + 2
 		}
 		this.options = new GameStageOptions({
-			rows, columns, enemies, bombCount, powerUps, explosionSize, roundTime, score: 0, map
+			rows, columns, enemies, bombCount, powerUps, explosionSize, roundTime, score: 0, map,
 		})
 		this.rocks = new Map()
 		this.walls = new Map()
@@ -43,7 +43,7 @@ export class GameStage {
 		this.removeAllDivs()
 		let rows = data.rows || DEFAULT.ROWS,
 			columns = data.columns || DEFAULT.COLUMNS
-		const roundTime = data.roundTime || 200,
+		const roundTime = data.roundTime || DURATIONS.ROUND_TIME,
 			enemies = data.enemies,
 			powerUps = data.powerUps || {},
 			map = data.map
@@ -53,7 +53,7 @@ export class GameStage {
 		}
 		const {explosionSize, score} = this.options
 		this.options = new GameStageOptions({
-			rows, columns, enemies, bombCount: this.bombCount, explosionSize, roundTime, score, powerUps, map
+			rows, columns, enemies, bombCount: this.bombCount, explosionSize, roundTime, score, powerUps, map,
 		})
 		this.createStage()
 		this.changeStyles()

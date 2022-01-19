@@ -14,6 +14,7 @@ export const DURATIONS = {
 	ENEMY_DIE: 1100,
 	BOMBERMAN_DIE: 600,
 	CHAIN_EXPLOSION: 100,
+	ROUND_TIME: 200,
 }
 
 export const GAME_MENU = {
