@@ -1,4 +1,4 @@
-export const PIXEL_SIZE = 4,
+export const PIXEL_SIZE = 3,
 	TILE_SIZE = PIXEL_SIZE * 16
 
 export const DEFAULT = {
