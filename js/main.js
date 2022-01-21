@@ -43,12 +43,13 @@ class Game {
 		this.state = 'click-me'
 		this.stageOfUpgrade = 0
 
-		document.getElementById('bomberman-origins').addEventListener('ended', () => {
-			this.state = 'bomberman-origins-ended'
-		})
+		this.leaderboardDiv = document.getElementById('game-leaderboard-users')
+		this.leaderboardPage = 1
 
 		changeTitle('Activate the Game | Bomberman')
+		this.addEventListeners()
 		this.handleUserInteraction()
+		this.loadLeaderboard().then()
 	}
 
 	checkArguments = (explosionSize, bombCount, liveCount, stages) => {
@@ -392,8 +393,7 @@ class Game {
 			this.stage.isExplosion(right, top) || this.stage.isExplosion(right, bottom)) {
 			this.stage.deleteEnemy(enemy.id)
 			enemy.die()
-			this.stage.options.score += enemy.xp
-			this.stage.options.updateScore()
+			this.stage.options.updateScore(this.stage.options.score + enemy.xp)
 			if (this.stage.enemies.size <= 0) {
 				this.stage.options.areEnemiesDead = true
 				new Timer(() => {
@@ -472,8 +472,56 @@ class Game {
 		this.mainMenu.hide()
 		this.stage.initialize()
 		this.bomberman.initialize()
+	}
 
-		this.addEventListeners()
+	updatePageDiv = (page) => {
+		this.leaderboardPage = page
+		document.getElementById('game-leaderboard-current').innerText = `${page}`
+		this.updateLeaderboard()
+	}
+
+	updatePage = (isNextPage) => {
+		const maxPage = Math.ceil(this.leaderboardData.length / 5)
+		if (maxPage === 1) {
+			return
+		}
+		if (isNextPage && this.leaderboardPage < maxPage) {
+			this.updatePageDiv(this.leaderboardPage + 1)
+		}
+		if (!isNextPage && this.leaderboardPage > 1) {
+			this.updatePageDiv(this.leaderboardPage - 1)
+		}
+	}
+
+	/**
+	 * @typedef LeaderboardUser
+	 * @type {object}
+	 * @property {string} nickname
+	 * @property {number} score
+	 * @property {number} time
+	 * @property {number} stage
+	 * @property {number} lives
+	 */
+
+	loadLeaderboard = async () => {
+		const {data} = await (await fetch('http://localhost:8082/api/scoreboard/get')).json()
+		/** @type {LeaderboardUser[]} */
+		this.leaderboardData = data
+		this.updatePageDiv(1)
+		document.getElementById('game-leaderboard-max').innerText = `${Math.ceil(this.leaderboardData.length / 5)}`
+	}
+
+	updateLeaderboard = () => {
+		for (let i = 0; i < 5 && i < this.leaderboardData.length; i++) {
+			const j = (i + 1) * 6,
+				k = (this.leaderboardPage - 1) * 5 + i
+			this.leaderboardDiv.children[j].innerText = `${k + 1}`
+			this.leaderboardDiv.children[j + 1].innerText = this.leaderboardData[k].nickname
+			this.leaderboardDiv.children[j + 2].innerText = this.leaderboardData[k].score
+			this.leaderboardDiv.children[j + 3].innerText = this.leaderboardData[k].time
+			this.leaderboardDiv.children[j + 4].innerText = this.leaderboardData[k].stage
+			this.leaderboardDiv.children[j + 5].innerText = this.leaderboardData[k].lives
+		}
 	}
 
 	addEventListeners = () => {
@@ -491,6 +539,13 @@ class Game {
 					bomb.createExplosions()
 				}
 			}
+			if (this.state === 'leaderboard') {
+				if (e.code === 'ArrowRight') {
+					this.updatePage(true)
+				} else if (e.code === 'ArrowLeft') {
+					this.updatePage(false)
+				}
+			}
 		})
 		document.addEventListener('visibilitychange', () => {
 			if (document.hidden && this.state === 'stage') {
@@ -504,6 +559,9 @@ class Game {
 				this.stage.options.interval && this.stage.options.interval.resume()
 				this.resume()
 			}
+		})
+		document.getElementById('bomberman-origins').addEventListener('ended', () => {
+			this.state = 'bomberman-origins-ended'
 		})
 	}
 
@@ -721,8 +779,7 @@ class Game {
 			} else if (this.state === 'pre-die' && curTime - prevTime >= this.media.die.durationMS()) {
 				this.media.die.stop()
 				this.media.lifeLost.play()
-				this.stage.options.score = this.stage.options.initialScore
-				this.stage.options.updateScore()
+				this.stage.options.updateScore(this.stage.options.initialScore)
 				this.state = 'die'
 			} else if (this.state === 'die' && curTime - prevTime >= (this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
 				prevTime = curTime
@@ -817,6 +874,8 @@ class Game {
 					document.querySelector('#lode-runner img').className = 'lode-runner-stop'
 				}, 21000)
 				this.state = 'END'
+			} else if (this.state === 'leaderboard') {
+
 			}
 			prevFPSTime = curTime
 		}
@@ -913,7 +972,6 @@ const game = new Game({
 game.run()
 
 window.game = game
-
 
 // TODO:
 // add different enemy logic by levels: 1, 2, 3

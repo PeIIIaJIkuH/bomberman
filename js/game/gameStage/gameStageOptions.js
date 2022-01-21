@@ -13,8 +13,9 @@ export class GameStageOptions {
 		this.initialScore = score
 		this.powerUps = powerUps
 		this.deathCount = 0
-		if (map)
+		if (map) {
 			this.map = map
+		}
 		this.areEnemiesDead = false
 		this.createdStageEndEnemies = false
 
@@ -25,12 +26,14 @@ export class GameStageOptions {
 		this.initializeTimer()
 		this.initializeScore()
 	}
-	
-	updateScore = () => {
+
+	updateScore = (score) => {
+		this.score = score
 		this.scoreDiv.querySelector('span').innerText = `${this.score}`
 	}
 
-	updateTimer = () => {
+	updateTimer = (time) => {
+		this.roundTime = time
 		this.timerDiv.querySelector('span').innerText = `${this.roundTime}`
 	}
 
@@ -68,23 +71,19 @@ export class GameStageOptions {
 		this.resetRoundTime()
 		this.interval && this.interval.clear()
 		this.interval = new IntervalTimer(() => {
-			this.roundTime--
-			this.updateTimer()
+			this.updateTimer(this.roundTime - 1)
 			this.passedTime++
-			if (this.roundTime <= 0)
-				this.interval.clear()
+			if (this.roundTime <= 0) this.interval.clear()
 		})
 	}
 
 	resetRoundTime = () => {
-		this.roundTime += this.passedTime
+		this.updateTimer(this.roundTime + this.passedTime)
 		this.passedTime = 0
-		this.updateTimer()
 	}
 
 	reset = settings => {
-		this.score = 0
-		this.updateScore()
+		this.updateScore(0)
 		this.bombCount = settings.bombCount
 		this.explosionSize = settings.explosionSize
 	}

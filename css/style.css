@@ -448,6 +448,38 @@ img {
     margin-bottom: 40px;
 }
 
+#game-leaderboard-users {
+    display: grid;
+    grid-template-columns: 0.5fr 2fr 2fr 1fr 1fr 1fr;
+    grid-template-rows: repeat(6, 1fr);
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+}
+
+.game-leaderboard-user {
+    display: flex;
+    justify-content: space-between;
+    max-width: 500px;
+    width: 100%;
+}
+
+#game-leaderboard-pages {
+    margin-top: 20px;
+    display: flex;
+}
+
+#game-leaderboard-current {
+    margin-right: 5px;
+}
+
+#game-leaderboard-max {
+    margin-left: 5px;
+}
+
+#game-leaderboard-info {
+    margin-top: 20px;
+}
+
 .game-controls-item {
     display: flex;
     align-items: center;
