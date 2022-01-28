@@ -33,7 +33,7 @@ export class GameScreens {
 	}
 
 	setGameScore = score => {
-		this.gameScore.div.querySelector('span').innerText = String(score)
+		this.gameScore.div.querySelector('#game-score-inner').innerText = String(score)
 	}
 
 	removeIncorrectArguments = () => {

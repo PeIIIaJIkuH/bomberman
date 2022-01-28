@@ -9,6 +9,7 @@ export class GameStageOptions {
 		this.explosionSize = explosionSize
 		this.roundTime = roundTime
 		this.passedTime = 0
+		this.totalPassedTime = 0
 		this.score = score
 		this.initialScore = score
 		this.powerUps = powerUps
@@ -73,6 +74,7 @@ export class GameStageOptions {
 		this.interval = new IntervalTimer(() => {
 			this.updateTimer(this.roundTime - 1)
 			this.passedTime++
+			this.totalPassedTime++
 			if (this.roundTime <= 0) this.interval.clear()
 		})
 	}

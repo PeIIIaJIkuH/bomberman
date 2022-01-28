@@ -530,8 +530,7 @@ img {
     left: initial;
 }
 
-#stage-start,
-#game-score {
+#stage-start {
     flex-direction: row;
 }
 
@@ -766,5 +765,25 @@ img {
 }
 
 .bomberman-upgrade-text + .bomberman-upgrade-text {
+    margin-top: 20px;
+}
+
+#game-score {
+    flex-direction: column;
+}
+
+#game-score-header {
+    margin-bottom: 20px;
+}
+
+#game-score-input {
+    outline: none;
+    border: none;
+    background: #000;
+    font-size: 16px;
+    width: 200px;
+}
+
+.game-score-text {
     margin-top: 20px;
 }

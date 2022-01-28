@@ -46,6 +46,8 @@ class Game {
 		this.leaderboardDiv = document.getElementById('game-leaderboard-users')
 		this.leaderboardPage = 1
 
+		this.fetching = false
+
 		changeTitle('Activate the Game | Bomberman')
 		this.addEventListeners()
 		this.handleUserInteraction()
@@ -53,18 +55,23 @@ class Game {
 	}
 
 	checkArguments = (explosionSize, bombCount, liveCount, stages) => {
-		if (isNaN(explosionSize) || explosionSize < 1)
+		if (isNaN(explosionSize) || explosionSize < 1) {
 			return `incorrect explosionSize: ${String(explosionSize)}`
-		if (isNaN(bombCount) || bombCount < 1)
+		}
+		if (isNaN(bombCount) || bombCount < 1) {
 			return `incorrect bombCount: ${String(bombCount)}`
-		if (isNaN(liveCount) || liveCount < 1)
+		}
+		if (isNaN(liveCount) || liveCount < 1) {
 			return `incorrect liveCount: ${String(liveCount)}`
-		if (!(stages instanceof Array))
+		}
+		if (!(stages instanceof Array)) {
 			return `incorrect stages: ${String(stages)}`
+		}
 		for (let i = 0; i < stages.length; i++) {
 			const stage = stages[i]
-			if (!(stage instanceof Object))
+			if (!(stage instanceof Object)) {
 				return `incorrect stage(${i + 1}): ${String(stage)}`
+			}
 			const rows = stage.rows || DEFAULT.ROWS,
 				columns = stage.columns || DEFAULT.COLUMNS,
 				roundTime = stage.roundTime || DEFAULT.ROUND_TIME,
@@ -72,47 +79,63 @@ class Game {
 				powerUps = stage.powerUps || {},
 				map = stage.map
 			let error = this.checkStageArguments(rows, columns, roundTime, enemies, powerUps, i)
-			if (map)
+			if (map) {
 				error = this.checkMap(map, powerUps, i)
-			if (error)
+			}
+			if (error) {
 				return error
+			}
 		}
 	}
 
 	checkMap = (map, powerUps, i) => {
-		if (!isRectangle(map) || map[0][0] !== TILES.EMPTY)
+		if (!isRectangle(map) || map[0][0] !== TILES.EMPTY) {
 			return `incorrect stage map: ${i + 1}`
+		}
 		const wallCount = tileCount(map, TILES.WALL),
 			powerUpCount = powerUpsCount(powerUps)
-		if (wallCount < powerUpCount + 1)
+		if (wallCount < powerUpCount + 1) {
 			return `incorrect stage(${i + 1}) wall count: ${wallCount}`
+		}
 	}
 
 	checkStageArguments = (rows, columns, roundTime, enemies, powerUps, index) => {
-		if (isNaN(rows) || rows < 7)
+		if (isNaN(rows) || rows < 7) {
 			return `incorrect stage(${index + 1}) rows: ${String(rows)}`
-		if (isNaN(columns) || columns < 7)
+		}
+		if (isNaN(columns) || columns < 7) {
 			return `incorrect stage(${index + 1}) columns: ${String(columns)}`
-		if (isNaN(roundTime))
+		}
+		if (isNaN(roundTime)) {
 			return `incorrect stage(${index + 1}) roundTime: ${String(roundTime)}`
-		if (!(enemies instanceof Object))
+		}
+		if (!(enemies instanceof Object)) {
 			return `incorrect stage(${index + 1}) enemies: ${String(enemies)}`
-		if (enemies)
+		}
+		if (enemies) {
 			for (const enemyType of Object.keys(enemies)) {
-				if (!ENEMY_TYPES.includes(enemyType))
+				if (!ENEMY_TYPES.includes(enemyType)) {
 					return `incorrect stage(${index + 1}) enemy: ${enemyType}`
-				if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1)
+				}
+				if (isNaN(enemies[enemyType]) || enemies[enemyType] < 1) {
 					return `incorrect stage(${index + 1}) enemy(${enemyType}) count: ${String(enemies[enemyType])}`
+				}
 			}
-		if (powerUps !== undefined && !(powerUps instanceof Object))
+		}
+		if (powerUps !== undefined && !(powerUps instanceof Object)) {
 			return `incorrect stage(${index + 1}) powerUps: ${String(powerUps)}`
-		if (powerUps)
+		}
+		if (powerUps) {
 			for (const powerUpType of Object.keys(powerUps)) {
-				if (!POWER_UP_TYPES.includes(powerUpType))
+				if (!POWER_UP_TYPES.includes(powerUpType)) {
 					return `incorrect stage(${index + 1}) powerUp: ${String(powerUpType)}`
-				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1)
-					return `incorrect stage(${index + 1}) powerUp(${powerUpType}) count: ${String(powerUps[powerUpType])}`
+				}
+				if (isNaN(powerUps[powerUpType]) || powerUps[powerUpType] < 1) {
+					return `incorrect stage(${index + 1}) powerUp(${powerUpType}) count: ${String(
+						powerUps[powerUpType])}`
+				}
 			}
+		}
 	}
 
 	handleUserInteraction = () => {
@@ -132,8 +155,9 @@ class Game {
 			const {
 				left: eLeft, right: eRight, top: eTop, bottom: eBottom,
 			} = enemy.getBorders({own: true})
-			if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop))
+			if (!(top > eBottom || right < eLeft || left > eRight || bottom < eTop)) {
 				return true
+			}
 		}
 	}
 
@@ -258,21 +282,23 @@ class Game {
 
 	handleBombermanSurroundedWithBombs = (left, right, top, bottom) => {
 		if (!this.stage.isBomb(left, top) && !this.stage.isBomb(left, bottom) && !this.stage.isBomb(right, top) &&
-			!this.stage.isBomb(right, bottom))
+			!this.stage.isBomb(right, bottom)) {
 			this.bomberman.isSurroundedWithBombs = false
+		}
 	}
 
 	handleBombermanMove = diff => {
 		const {left, right, top, bottom} = this.bomberman.getBorders({own: false})
 
-		this.handleBombermanSurroundedWithBombs(Math.floor(left), Math.floor(right), Math.floor(top), Math.floor(bottom))
+		this.handleBombermanSurroundedWithBombs(Math.floor(left), Math.floor(right), Math.floor(top),
+			Math.floor(bottom))
 
 		let moved = false
 		const isSurrounded = this.bomberman.isSurroundedWithBombs
 		const bombPass = this.bomberman.bombPass || isSurrounded,
 			wallPass = this.bomberman.wallPass
 
-		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25) {
 			if (this.keyListener.isPressed('KeyA') && !this.keyListener.isPressed('KeyD') &&
 				!this.stage.isBlock(left - (i * diff / TILE_SIZE), top, {bombPass, wallPass}) &&
 				!this.stage.isBlock(left - (i * diff / TILE_SIZE), bottom, {bombPass, wallPass})) {
@@ -280,7 +306,8 @@ class Game {
 				moved = true
 				break
 			}
-		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
+		}
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25) {
 			if (this.keyListener.isPressed('KeyD') && !this.keyListener.isPressed('KeyA') &&
 				!this.stage.isBlock(right + (i * diff / TILE_SIZE), top, {bombPass, wallPass}) &&
 				!this.stage.isBlock(right + (i * diff / TILE_SIZE), bottom, {bombPass, wallPass})) {
@@ -288,7 +315,8 @@ class Game {
 				moved = true
 				break
 			}
-		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
+		}
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25) {
 			if (this.keyListener.isPressed('KeyW') && !this.keyListener.isPressed('KeyS') &&
 				!this.stage.isBlock(left, top - (i * diff / TILE_SIZE), {bombPass, wallPass}) &&
 				!this.stage.isBlock(right, top - (i * diff / TILE_SIZE), {bombPass, wallPass})) {
@@ -296,7 +324,8 @@ class Game {
 				moved = true
 				break
 			}
-		for (let i = this.bomberman.speed; i > 0; i -= 0.25)
+		}
+		for (let i = this.bomberman.speed; i > 0; i -= 0.25) {
 			if (this.keyListener.isPressed('KeyS') && !this.keyListener.isPressed('KeyW') &&
 				!this.stage.isBlock(left, bottom + (i * diff / TILE_SIZE), {bombPass, wallPass}) &&
 				!this.stage.isBlock(right, bottom + (i * diff / TILE_SIZE), {bombPass, wallPass})) {
@@ -304,8 +333,10 @@ class Game {
 				moved = true
 				break
 			}
-		if (!moved)
+		}
+		if (!moved) {
 			this.bomberman.setLookDirection('bomberman')
+		}
 	}
 
 	moveEnemyRandomly = (id, diff) => {
@@ -316,54 +347,62 @@ class Game {
 			const wallPass = enemy.wallPass
 			if (enemy.direction === DIRECTIONS.LEFT) {
 				let moved = false
-				for (let i = enemy.speed; i > 0; i -= 0.25)
+				for (let i = enemy.speed; i > 0; i -= 0.25) {
 					if (!this.stage.isBlock(left - (i * diff / TILE_SIZE), top, {wallPass, enemy: true}) &&
 						!this.stage.isBlock(left - (i * diff / TILE_SIZE), bottom, {wallPass, enemy: true})) {
 						enemy.moveLeft(i * diff)
 						moved = true
 						break
 					}
-				if (!moved)
+				}
+				if (!moved) {
 					enemy.direction = getRandomDirection(DIRECTIONS.LEFT)
+				}
 				return
 			}
 			if (enemy.direction === DIRECTIONS.RIGHT) {
 				let moved = false
-				for (let i = enemy.speed; i > 0; i -= 0.25)
+				for (let i = enemy.speed; i > 0; i -= 0.25) {
 					if (!this.stage.isBlock(right + (i * diff / TILE_SIZE), top, {wallPass, enemy: true}) &&
 						!this.stage.isBlock(right + (i * diff / TILE_SIZE), bottom, {wallPass, enemy: true})) {
 						enemy.moveRight(i * diff)
 						moved = true
 						break
 					}
-				if (!moved)
+				}
+				if (!moved) {
 					enemy.direction = getRandomDirection(DIRECTIONS.RIGHT)
+				}
 				return
 			}
 			if (enemy.direction === DIRECTIONS.UP) {
 				let moved = false
-				for (let i = enemy.speed; i > 0; i -= 0.25)
+				for (let i = enemy.speed; i > 0; i -= 0.25) {
 					if (!this.stage.isBlock(left, top - (i * diff / TILE_SIZE), {wallPass, enemy: true}) &&
 						!this.stage.isBlock(right, top - (i * diff / TILE_SIZE), {wallPass, enemy: true})) {
 						enemy.moveUp(i * diff)
 						moved = true
 						break
 					}
-				if (!moved)
+				}
+				if (!moved) {
 					enemy.direction = getRandomDirection(DIRECTIONS.UP)
+				}
 				return
 			}
 			if (enemy.direction === DIRECTIONS.DOWN) {
 				let moved = false
-				for (let i = enemy.speed; i > 0; i -= 0.25)
+				for (let i = enemy.speed; i > 0; i -= 0.25) {
 					if (!this.stage.isBlock(left, bottom + (i * diff / TILE_SIZE), {wallPass, enemy: true}) &&
 						!this.stage.isBlock(right, bottom + (i * diff / TILE_SIZE), {wallPass, enemy: true})) {
 						enemy.moveDown(i * diff)
 						moved = true
 						break
 					}
-				if (!moved)
+				}
+				if (!moved) {
 					enemy.direction = getRandomDirection(DIRECTIONS.DOWN)
+				}
 			}
 		}
 	}
@@ -406,13 +445,15 @@ class Game {
 	}
 
 	updateEnemies = diff => {
-		for (const [enemyId] of this.stage.enemies)
+		for (const [enemyId] of this.stage.enemies) {
 			this.updateEnemy(enemyId, diff)
+		}
 	}
 
 	updateEnemy = (id, diff) => {
-		if (!this.isEnemyExploded(id))
+		if (!this.isEnemyExploded(id)) {
 			this.moveEnemyRandomly(id, diff)
+		}
 	}
 
 	updateInstantBombs = () => {
@@ -454,13 +495,15 @@ class Game {
 		this.updateBomberman(diff)
 		this.updateEnemies(diff)
 
-		if (this.stage.options.roundTime === 0 && !this.stage.options.createdStageEndEnemies)
+		if (this.stage.options.roundTime === 0 && !this.stage.options.createdStageEndEnemies) {
 			this.stage.createStageEndEnemies()
+		}
 	}
 
 	drawEnemies = () => {
-		for (const [, enemy] of this.stage.enemies)
+		for (const [, enemy] of this.stage.enemies) {
 			enemy.draw()
+		}
 	}
 
 	draw = () => {
@@ -515,12 +558,21 @@ class Game {
 		for (let i = 0; i < 5 && i < this.leaderboardData.length; i++) {
 			const j = (i + 1) * 6,
 				k = (this.leaderboardPage - 1) * 5 + i
-			this.leaderboardDiv.children[j].innerText = `${k + 1}`
-			this.leaderboardDiv.children[j + 1].innerText = this.leaderboardData[k].nickname
-			this.leaderboardDiv.children[j + 2].innerText = this.leaderboardData[k].score
-			this.leaderboardDiv.children[j + 3].innerText = this.leaderboardData[k].time
-			this.leaderboardDiv.children[j + 4].innerText = this.leaderboardData[k].stage
-			this.leaderboardDiv.children[j + 5].innerText = this.leaderboardData[k].lives
+			if (this.leaderboardData[k]) {
+				this.leaderboardDiv.children[j].innerText = `${k + 1}`
+				this.leaderboardDiv.children[j + 1].innerText = this.leaderboardData[k].nickname
+				this.leaderboardDiv.children[j + 2].innerText = this.leaderboardData[k].score
+				this.leaderboardDiv.children[j + 3].innerText = this.leaderboardData[k].time
+				this.leaderboardDiv.children[j + 4].innerText = this.leaderboardData[k].stage
+				this.leaderboardDiv.children[j + 5].innerText = this.leaderboardData[k].lives
+			} else {
+				this.leaderboardDiv.children[j].innerText = ''
+				this.leaderboardDiv.children[j + 1].innerText = ''
+				this.leaderboardDiv.children[j + 2].innerText = ''
+				this.leaderboardDiv.children[j + 3].innerText = ''
+				this.leaderboardDiv.children[j + 4].innerText = ''
+				this.leaderboardDiv.children[j + 5].innerText = ''
+			}
 		}
 	}
 
@@ -584,7 +636,8 @@ class Game {
 					this.screens.leaderboard.show()
 					this.state = 'leaderboard'
 				}
-			} else if (e.code === 'Escape' && (this.state === 'controls' || this.state === 'help' || this.state === 'leaderboard')) {
+			} else if (e.code === 'Escape' &&
+				(this.state === 'controls' || this.state === 'help' || this.state === 'leaderboard')) {
 				this.screens.hideMainMenuScreens()
 				this.mainMenu.show()
 				this.state = 'main-menu'
@@ -609,8 +662,9 @@ class Game {
 	}
 
 	resumeEnemies = () => {
-		for (const [, enemy] of this.stage.enemies)
+		for (const [, enemy] of this.stage.enemies) {
 			enemy.timer && enemy.timer.resume()
+		}
 	}
 
 	pauseBombs = () => {
@@ -708,7 +762,8 @@ class Game {
 				this.media.bombermanOrigins.play()
 				prevTime = curTime
 				this.state = 'bomberman-origins'
-			} else if ((this.state === 'bomberman-origins' && this.keyListener.isPressed('Enter')) || this.state === 'bomberman-origins-ended') {
+			} else if ((this.state === 'bomberman-origins' && this.keyListener.isPressed('Enter')) || this.state ===
+				'bomberman-origins-ended') {
 				this.screens.prehistory.hide()
 				this.media.bombermanOrigins.stop()
 				this.state = 'initialize'
@@ -781,12 +836,14 @@ class Game {
 				this.media.lifeLost.play()
 				this.stage.options.updateScore(this.stage.options.initialScore)
 				this.state = 'die'
-			} else if (this.state === 'die' && curTime - prevTime >= (this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
+			} else if (this.state === 'die' && curTime - prevTime >=
+				(this.media.die.durationMS() + this.media.lifeLost.durationMS())) {
 				prevTime = curTime
-				if (this.bomberman.liveCount > 0)
+				if (this.bomberman.liveCount > 0) {
 					this.state = 'restart'
-				else
+				} else {
 					this.state = 'pre-game-score'
+				}
 			} else if (this.state === 'restart') {
 				this.restartStage()
 				this.state = 'pre-stage-start'
@@ -847,19 +904,52 @@ class Game {
 					this.state = 'pre-game-score'
 				}
 			} else if (this.state === 'pre-game-score') {
-				changeTitle(`Stage ${this.settings.getStageNumber()} Start | Bomberman`)
 				this.screens.hideStage()
 				this.screens.setGameScore(this.stage.options.score)
 				this.screens.gameScore.show()
 				prevTime = curTime
 				changeTitle('Final Score | Bomberman')
 				this.state = 'game-score'
-			} else if (this.state === 'game-score' && curTime - prevTime >= 5000) {
+				document.getElementById('game-score-input').focus()
+			} else if (this.state === 'game-score' && this.keyListener.isPressed('Enter')) {
+				const input = document.getElementById('game-score-input')
+				const sendScore = async () => {
+					if (!input || this.fetching) {
+						return
+					}
+					const stage = this.settings.stageNumber || 1
+					const data = {
+						nickname: input.value,
+						score: this.stage.options.score,
+						time: this.stage.options.totalPassedTime,
+						stage,
+						lives: this.bomberman.liveCount,
+					}
+					this.fetching = true
+					const {ok} = await fetch('http://localhost:8082/api/scoreboard/add', {
+						method: 'POST',
+						mode: 'cors',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(data),
+					})
+					this.fetching = false
+					if (ok) {
+						this.state = 'game-score-end'
+					} else {
+						alert('Some error happened, try again!')
+						input.value = ''
+					}
+				}
+				sendScore().then()
+			} else if (this.state === 'game-score-end') {
 				this.screens.gameScore.hide()
-				if (this.settings.completed)
+				if (this.settings.completed) {
 					this.state = 'ending'
-				else
+				} else {
 					this.state = 'over'
+				}
 			} else if (this.state === 'ending') {
 				changeTitle('Game End | Bomberman')
 				this.screens.info.hide()
@@ -874,8 +964,6 @@ class Game {
 					document.querySelector('#lode-runner img').className = 'lode-runner-stop'
 				}, 21000)
 				this.state = 'END'
-			} else if (this.state === 'leaderboard') {
-
 			}
 			prevFPSTime = curTime
 		}
