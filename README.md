@@ -18,7 +18,7 @@
 
 ## Screenshots
 * Main menu
-![Main Menu](https://raw.githubusercontent.com/PeIIIaJIkuH/make-your-game/main/assets/img/screenshots/main-menu.jpg)
+![Main Menu](assets/img/screenshots/main-menu.jpg)
 * Leaderboard
 ![Leaderboard](assets/img/screenshots/leaderboard.jpg)
 * Gameplay
