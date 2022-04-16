@@ -18,15 +18,15 @@
 
 ## Screenshots
 * Main menu
-![Main Menu](assets/img/screenshots/main-menu.jpg)
+* ![Main Menu](assets/img/screenshots/main-menu.jpg)
 * Leaderboard
-![Leaderboard](assets/img/screenshots/leaderboard.jpg)
+* ![Leaderboard](assets/img/screenshots/leaderboard.jpg)
 * Gameplay
-![Gameplay 1](assets/img/screenshots/gameplay-1.jpg)
-![Gameplay 2](assets/img/screenshots/gameplay-2.jpg)
+* ![Gameplay 1](assets/img/screenshots/gameplay-1.jpg)
+* ![Gameplay 2](assets/img/screenshots/gameplay-2.jpg)
 * New stage
-![New stage](assets/img/screenshots/new-stage.jpg)
+* ![New stage](assets/img/screenshots/new-stage.jpg)
 * Enter a score
-![Enter score](assets/img/screenshots/enter-score.jpg)
+* ![Enter score](assets/img/screenshots/enter-score.jpg)
 * Ending
-![Ending](assets/img/screenshots/ending.jpg)
+* ![Ending](assets/img/screenshots/ending.jpg)
